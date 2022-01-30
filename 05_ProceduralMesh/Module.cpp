@@ -264,9 +264,9 @@ public:
 
 static SEntryDecl ModuleDecl = {
     // Game title
-    "AngieEngine: Procedural Mesh",
+    "Hork Engine: Procedural Mesh",
     // Root path
-    "Samples/05_ProceduralMesh",
+    "Data",
     // Module class
     &AModule::ClassMeta()};
 

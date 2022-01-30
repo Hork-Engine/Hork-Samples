@@ -327,9 +327,9 @@ public:
 
 static SEntryDecl ModuleDecl = {
     // Game title
-    "AngieEngine: Character Controller",
+    "Hork Engine: Character Controller",
     // Root path
-    "Samples/02_CharacterController",
+    "Data",
     // Module class
     &AModule::ClassMeta()};
 

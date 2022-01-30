@@ -302,9 +302,9 @@ public:
 
 static SEntryDecl ModuleDecl = {
     // Game title
-    "AngieEngine: Triggers",
+    "Hork Engine: Triggers",
     // Root path
-    "Samples/03_Triggers",
+    "Data",
     // Module class
     &AModule::ClassMeta()};
 

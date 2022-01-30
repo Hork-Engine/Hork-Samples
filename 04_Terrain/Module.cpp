@@ -136,7 +136,7 @@ public:
             static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/Skybox"));
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/SkydomeHemisphere"));
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/Skydome"));
-            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst(_CTS("/Root/Skybox2/Skybox_MaterialInstance.asset"));
+            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst(_CTS("/Root/Skybox/skybox_matinst.minst"));
 
             meshComponent->SetMesh(SkyMesh.GetObject());
             meshComponent->SetMaterialInstance(0, SkyboxMaterialInst.GetObject());
@@ -148,9 +148,9 @@ public:
 
 static SEntryDecl ModuleDecl = {
     // Game title
-    "AngieEngine: Terrain",
+    "Hork Engine: Terrain",
     // Root path
-    "Samples/04_Terrain",
+    "Data",
     // Module class
     &AModule::ClassMeta()};
 
