@@ -58,8 +58,7 @@ protected:
         TriggerBody->SetCollisionMask(CM_PAWN);
 
         SCollisionBoxDef box;
-        ACollisionModel* collisionModel = CreateInstanceOf<ACollisionModel>();
-        collisionModel->Initialize(&box);
+        ACollisionModel* collisionModel = CreateInstanceOf<ACollisionModel>(&box);
 
         TriggerBody->SetCollisionModel(collisionModel);
 

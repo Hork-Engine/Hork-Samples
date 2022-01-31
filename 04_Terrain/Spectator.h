@@ -142,7 +142,7 @@ protected:
 
                 ATerrainComponent* terrainComponent = result.Object->GetOwnerActor()->GetComponent<ATerrainComponent>();
                 if (terrainComponent)
-                    terrainComponent->GetTerrainTriangle(result.TriangleHit.Location, HitTriangle);
+                    terrainComponent->GetTriangle(result.TriangleHit.Location, HitTriangle);
             }
         }
     }

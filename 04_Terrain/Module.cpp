@@ -124,7 +124,7 @@ public:
         AActor*            terrain          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/terrain.def"));
         ATerrainComponent* terrainComponent = terrain->GetComponent<ATerrainComponent>();
         if (terrainComponent)
-            terrainComponent->SetTerrain(CreateInstanceOf<ATerrain>());
+            terrainComponent->SetTerrain(GetOrCreateResource<ATerrain>("/Root/terrain.asset"));
 
         // Spawn skybox
         STransform t;

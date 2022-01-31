@@ -90,8 +90,7 @@ protected:
         capsule.Radius = CHARACTER_CAPSULE_RADIUS;
         capsule.Height = CHARACTER_CAPSULE_HEIGHT;
 
-        ACollisionModel* model = CreateInstanceOf<ACollisionModel>();
-        model->Initialize(&capsule);
+        ACollisionModel* model = CreateInstanceOf<ACollisionModel>(&capsule);
 
         // Create simulated physics body
         CharacterPhysics = CreateComponent<APhysicalBody>("CharacterPhysics");
