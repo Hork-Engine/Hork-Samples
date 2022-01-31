@@ -235,7 +235,7 @@ public:
         // Create material instance for ground
         {
             static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial1"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Common/blank256.png"));
+            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/blank256.png"));
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
@@ -246,7 +246,7 @@ public:
         // Create material instance for character
         {
             static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial2"));
-            static TStaticResourceFinder<ATexture>  CharacterTexture(_CTS("/Common/blank512.png"));
+            static TStaticResourceFinder<ATexture>  CharacterTexture(_CTS("/Root/blank512.png"));
 
             AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             CharacterMaterialInstance->SetMaterial(ExampleMaterial.GetObject());

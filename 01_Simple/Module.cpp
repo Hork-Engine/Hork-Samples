@@ -270,7 +270,7 @@ public:
         // Create material
         {
             static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Common/grid8.png"));
+            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/grid8.png"));
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
