@@ -36,6 +36,9 @@ SOFTWARE.
 
 #include "Spectator.h"
 
+#define STB_PERLIN_IMPLEMENTATION
+#include "stb_perlin.h"
+
 class AModule final : public AGameModule
 {
     AN_CLASS(AModule, AGameModule)
@@ -90,7 +93,10 @@ public:
                  .SetPlayerController(playerController)
                  .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
                  .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetFocus());
+                 .SetFocus()
+                    [WNew(WTextDecorate)
+                    .SetColor({1,1,1})
+                    .SetText("Use WASD to move, SPACE - move up\nY - Toggle wireframe")]);
 
         AShortcutContainer* shortcuts = CreateInstanceOf<AShortcutContainer>();
         shortcuts->AddShortcut(KEY_Y, 0, {this, &AModule::ToggleWireframe});
@@ -117,14 +123,35 @@ public:
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
-            dirlightcomponent->SetDirection({-0.5f, -2, -2});
+            dirlightcomponent->SetDirection(Float3(1, -1, -1));
+            dirlightcomponent->SetIlluminance(20000.0f);
+            dirlightcomponent->SetShadowMaxDistance(40);
+            dirlightcomponent->SetShadowCascadeResolution(2048);
+            dirlightcomponent->SetShadowCascadeOffset(0.0f);
+            dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
         }
 
         // Spawn terrain
         AActor*            terrain          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/terrain.def"));
         ATerrainComponent* terrainComponent = terrain->GetComponent<ATerrainComponent>();
         if (terrainComponent)
-            terrainComponent->SetTerrain(GetOrCreateResource<ATerrain>("/Root/terrain.asset"));
+        {
+            // Generate heightmap
+            size_t res = 4097;
+            TPodVectorHeap<float> heightmap(res * res);
+            float* data = heightmap.ToPtr();
+            for (int y = 0; y < res; y++) {
+                for (int x = 0; x < res; x++) {
+                    data[y*res + x] = stb_perlin_ridge_noise3((float)x / res * 3, (float)y /res * 3, 0, 2.3f, 0.5f, 1, 4) * 400 - 300;
+                }
+            }
+            ATerrain* resource = CreateInstanceOf<ATerrain>(res, data);
+
+            // Load heightmap from file
+            //ATerrain* resource = GetOrCreateResource<ATerrain>("/Root/terrain.asset");
+
+            terrainComponent->SetTerrain(resource);
+        }
 
         // Spawn skybox
         STransform t;
