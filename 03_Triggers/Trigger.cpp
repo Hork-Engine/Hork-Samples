@@ -30,4 +30,4 @@ SOFTWARE.
 
 #include "Trigger.h"
 
-AN_CLASS_META(ATrigger)
+HK_CLASS_META(ATrigger)

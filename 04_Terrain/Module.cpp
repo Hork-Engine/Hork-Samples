@@ -41,7 +41,7 @@ SOFTWARE.
 
 class AModule final : public AGameModule
 {
-    AN_CLASS(AModule, AGameModule)
+    HK_CLASS(AModule, AGameModule)
 
 public:
     ARenderingParameters* RenderingParams;
@@ -181,10 +181,10 @@ static SEntryDecl ModuleDecl = {
     // Module class
     &AModule::ClassMeta()};
 
-AN_ENTRY_DECL(ModuleDecl)
+HK_ENTRY_DECL(ModuleDecl)
 
 //
 // Declare meta
 //
 
-AN_CLASS_META(AModule)
+HK_CLASS_META(AModule)

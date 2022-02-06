@@ -36,7 +36,7 @@ SOFTWARE.
 
 class ASpectator : public AActor
 {
-    AN_ACTOR(ASpectator, AActor)
+    HK_ACTOR(ASpectator, AActor)
 
 protected:
     ACameraComponent* Camera{};

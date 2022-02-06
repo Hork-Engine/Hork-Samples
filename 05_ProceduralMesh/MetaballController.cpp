@@ -30,4 +30,4 @@ SOFTWARE.
 
 #include "MetaballController.h"
 
-AN_CLASS_META(AMetaballController)
+HK_CLASS_META(AMetaballController)

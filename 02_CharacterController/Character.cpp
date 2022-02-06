@@ -30,4 +30,4 @@ SOFTWARE.
 
 #include "Character.h"
 
-AN_CLASS_META(ACharacter)
+HK_CLASS_META(ACharacter)

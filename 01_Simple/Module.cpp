@@ -38,7 +38,7 @@ SOFTWARE.
 
 class APlayer : public AActor
 {
-    AN_ACTOR(APlayer, AActor)
+    HK_ACTOR(APlayer, AActor)
 
 protected:
     AMeshComponent*   Movable{};
@@ -129,7 +129,7 @@ protected:
 
 class AModule final : public AGameModule
 {
-    AN_CLASS(AModule, AGameModule)
+    HK_CLASS(AModule, AGameModule)
 
 public:
     AModule()
@@ -294,11 +294,11 @@ static SEntryDecl ModuleDecl = {
     // Module class
     &AModule::ClassMeta()};
 
-AN_ENTRY_DECL(ModuleDecl)
+HK_ENTRY_DECL(ModuleDecl)
 
 //
 // Declare meta
 //
 
-AN_CLASS_META(APlayer)
-AN_CLASS_META(AModule)
+HK_CLASS_META(APlayer)
+HK_CLASS_META(AModule)

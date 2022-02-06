@@ -34,7 +34,7 @@ SOFTWARE.
 
 class APlatform : public AActor
 {
-    AN_ACTOR(APlatform, AActor)
+    HK_ACTOR(APlatform, AActor)
 
 public:
     float PlatformY{};

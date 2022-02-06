@@ -34,7 +34,7 @@ SOFTWARE.
 
 class AMetaballController : public AActor
 {
-    AN_ACTOR(AMetaballController, AActor)
+    HK_ACTOR(AMetaballController, AActor)
 
 protected:
     AProceduralMeshComponent* ProcMesh{};

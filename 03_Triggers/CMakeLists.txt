@@ -25,5 +25,5 @@ target_link_libraries( ${PROJECT} HorkEngine )
 
 #set_property( TARGET ${PROJECT} PROPERTY POSITION_INDEPENDENT_CODE ON )
 
-target_compile_definitions(${PROJECT} PUBLIC ${AN_COMPILER_DEFINES})
-target_compile_options(${PROJECT} PUBLIC ${AN_COMPILER_FLAGS})
+target_compile_definitions(${PROJECT} PUBLIC ${HK_COMPILER_DEFINES})
+target_compile_options(${PROJECT} PUBLIC ${HK_COMPILER_FLAGS})

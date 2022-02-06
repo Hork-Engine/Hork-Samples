@@ -30,4 +30,4 @@ SOFTWARE.
 
 #include "Platform.h"
 
-AN_CLASS_META(APlatform)
+HK_CLASS_META(APlatform)

@@ -36,7 +36,7 @@ SOFTWARE.
 
 class ATrigger : public AActor
 {
-    AN_ACTOR(ATrigger, AActor)
+    HK_ACTOR(ATrigger, AActor)
 
 public:
     std::function<void()> SpawnFunction;

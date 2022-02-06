@@ -30,4 +30,4 @@ SOFTWARE.
 
 #include "Spectator.h"
 
-AN_CLASS_META(ASpectator)
+HK_CLASS_META(ASpectator)

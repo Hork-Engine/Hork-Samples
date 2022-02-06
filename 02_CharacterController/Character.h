@@ -38,7 +38,7 @@ constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;
 
 class ACharacter : public AActor
 {
-    AN_ACTOR(ACharacter, AActor)
+    HK_ACTOR(ACharacter, AActor)
 
 public:
     void SetFirstPersonCamera(bool FirstPersonCamera)
