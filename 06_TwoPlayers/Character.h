@@ -83,8 +83,6 @@ protected:
     float                     SideMove{};
     bool                      bWantJump{};
     Float3                    TotalVelocity{};
-    AProceduralMeshComponent* ProcMesh;
-    TRef<AProceduralMesh>     ProcMeshResource;
     float                     NextJumpTime{};
     bool                      bFirstPersonCamera{};
     float                     FirstPersonCameraPitch{};
