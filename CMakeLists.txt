@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.13)
 
 project(Hork_Samples)
 
@@ -14,7 +14,14 @@ endif()
 set(HK_ASSET_DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Data")
 set(HK_ASSET_DATA_INSTALL_PATH "${HK_PROJECT_BUILD_PATH}/Data")
 
+if (UNIX)
 add_custom_target(InstallDataPath ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${HK_ASSET_DATA_PATH} ${HK_ASSET_DATA_INSTALL_PATH})
+endif()
+if (WIN32)
+file(TO_NATIVE_PATH "${HK_ASSET_DATA_INSTALL_PATH}" HK_ASSET_DATA_INSTALL_PATH_NATIVE)
+file(TO_NATIVE_PATH "${HK_ASSET_DATA_PATH}" HK_ASSET_DATA_PATH_NATIVE)
+add_custom_target(InstallDataPath ALL cmd.exe /c mklink /J "${HK_ASSET_DATA_INSTALL_PATH_NATIVE}" "${HK_ASSET_DATA_PATH_NATIVE}")
+endif()
 
 include(Hork-Source/Source/hork_config.cmake)
 include_directories(Hork-Source/Source)
@@ -26,4 +33,3 @@ add_subdirectory(03_Triggers)
 add_subdirectory(04_Terrain)
 add_subdirectory(05_ProceduralMesh)
 add_subdirectory(06_TwoPlayers)
-
