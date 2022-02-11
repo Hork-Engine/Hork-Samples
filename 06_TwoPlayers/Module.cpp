@@ -33,6 +33,7 @@ SOFTWARE.
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
+#include <Runtime/EnvironmentMap.h>
 
 #include "Character.h"
 #include "Platform.h"
@@ -264,6 +265,8 @@ public:
         spawnTransform.Scale    = Float3(2, 0.3f, 2);
         spawnTransform.Position = Float3(0, 0.5f, -1);
         world->SpawnActor2<APlatform>(spawnTransform);
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
     }
 
     void CreateResources()

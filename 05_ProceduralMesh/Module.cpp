@@ -33,6 +33,7 @@ SOFTWARE.
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
+#include <Runtime/EnvironmentMap.h>
 
 #include "Character.h"
 #include "MetaballController.h"
@@ -160,6 +161,8 @@ public:
 
         // Spawn metaballs
         world->SpawnActor2<AMetaballController>({{0, 2, 0}, {1, 0, 0, 0}, {1.0f, 1.0f, 1.0f}});
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
     }
 
     void CreateResources()

@@ -35,6 +35,7 @@ SOFTWARE.
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
+#include <Runtime/EnvironmentMap.h>
 
 class APlayer : public AActor
 {
@@ -201,6 +202,8 @@ public:
             groundMesh->SetMaterialInstance(0, ExampleMaterialInstance.GetObject());
             groundMesh->SetCastShadow(false);
         }
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
 
         // Create UI desktop
         WDesktop* desktop = CreateInstanceOf<WDesktop>();

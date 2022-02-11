@@ -33,6 +33,7 @@ SOFTWARE.
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
+#include <Runtime/EnvironmentMap.h>
 
 #include "Character.h"
 #include "Trigger.h"
@@ -188,6 +189,8 @@ public:
                 meshComp->SetRestitution(0.4f);
             }
         };
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
     }
 
     void CreateResources()

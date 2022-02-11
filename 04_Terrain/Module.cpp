@@ -33,6 +33,7 @@ SOFTWARE.
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
+#include <Runtime/EnvironmentMap.h>
 
 #include "Spectator.h"
 
@@ -167,7 +168,9 @@ public:
 
             meshComponent->SetMesh(SkyMesh.GetObject());
             meshComponent->SetMaterialInstance(0, SkyboxMaterialInst.GetObject());
-        }        
+        }
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
     }
 };
 
