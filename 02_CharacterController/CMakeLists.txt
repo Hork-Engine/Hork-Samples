@@ -3,7 +3,7 @@
 set( PROJECT 02_CharacterController )
 
 file( GLOB Code *.h *.cpp )
-file( GLOB Resources res/resource.rc res/icon1.ico res/resource.h )
+file( GLOB Resources res/resource.rc res/hork.ico res/resource.h )
 
 source_group( "" FILES ${Code} )
 source_group( "res" FILES ${Resources} )
