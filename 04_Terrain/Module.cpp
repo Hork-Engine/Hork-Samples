@@ -67,10 +67,8 @@ public:
         inputMappings->MapAction("TakeScreenshot", {ID_KEYBOARD, KEY_F12}, 0, CONTROLLER_PLAYER_1);
 
         RenderingParams = CreateInstanceOf<ARenderingParameters>();
-        RenderingParams->BackgroundColor      = Color4(0.0f);
-        RenderingParams->bClearBackground     = true;
-        RenderingParams->bWireframe           = false;
-        RenderingParams->bDrawDebug           = true;
+        RenderingParams->bWireframe = false;
+        RenderingParams->bDrawDebug = true;
 
         AWorld* world = AWorld::CreateWorld();
 
