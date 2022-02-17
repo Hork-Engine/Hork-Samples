@@ -74,11 +74,9 @@ protected:
         E_OnUpdateOverlap.Add(this, &ATrigger::OnUpdateOverlap);
     }
 
-    void OnBeginOverlap(SOverlapEvent const& _Event)
+    void OnBeginOverlap(SOverlapEvent const& Event)
     {
-        GLogger.Printf("OnBeginOverlap: self %s other %s\n",
-                       _Event.SelfBody->GetObjectName().CStr(),
-                       _Event.OtherBody->GetObjectName().CStr());
+        LOG("OnBeginOverlap: self {} other {}\n", Event.SelfBody->GetObjectName(), Event.OtherBody->GetObjectName());
 
         if (!Timer)
         {
@@ -91,20 +89,15 @@ protected:
         }
     }
 
-    void OnEndOverlap(SOverlapEvent const& _Event)
+    void OnEndOverlap(SOverlapEvent const& Event)
     {
-        GLogger.Printf("OnEndOverlap: self %s other %s\n",
-                       _Event.SelfBody->GetObjectName().CStr(),
-                       _Event.OtherBody->GetObjectName().CStr());
+        LOG("OnEndOverlap: self {} other {}\n", Event.SelfBody->GetObjectName(), Event.OtherBody->GetObjectName());
 
         Timer->Stop();
     }
 
     void OnUpdateOverlap(SOverlapEvent const& _Event)
     {
-        //    GLogger.Printf( "OnUpdateOverlap: self %s other %s\n",
-        //                    _Event.SelfBody->GetObjectName().CStr(),
-        //                    _Event.OtherBody->GetObjectName().CStr() );
     }
 
     void OnTimer()
