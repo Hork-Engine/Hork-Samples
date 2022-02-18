@@ -34,6 +34,7 @@ SOFTWARE.
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/ResourceManager.h>
 
 #include "Spectator.h"
 

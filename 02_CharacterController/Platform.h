@@ -31,6 +31,7 @@ SOFTWARE.
 #pragma once
 
 #include <Runtime/MeshComponent.h>
+#include <Runtime/ResourceManager.h>
 
 class APlatform : public AActor
 {

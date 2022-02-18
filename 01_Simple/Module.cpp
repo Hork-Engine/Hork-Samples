@@ -36,6 +36,7 @@ SOFTWARE.
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/ResourceManager.h>
 
 class APlayer : public AActor
 {

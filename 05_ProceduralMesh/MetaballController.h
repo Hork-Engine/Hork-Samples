@@ -30,6 +30,7 @@ SOFTWARE.
 
 #pragma once
 
+#include <Runtime/ResourceManager.h>
 #include "Metaballs.h"
 
 class AMetaballController : public AActor

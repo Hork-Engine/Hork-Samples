@@ -32,12 +32,13 @@ SOFTWARE.
 
 #include <Runtime/InputComponent.h>
 #include <Runtime/MeshComponent.h>
+#include <Runtime/ResourceManager.h>
 
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;
 
-constexpr int PLAYER1_SKYBOX_VISIBILITY_GROUP = 8;
-constexpr int PLAYER2_SKYBOX_VISIBILITY_GROUP = 16;
+constexpr VISIBILITY_GROUP PLAYER1_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(8);
+constexpr VISIBILITY_GROUP PLAYER2_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(16);
 
 class ACharacter : public AActor
 {

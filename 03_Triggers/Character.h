@@ -32,6 +32,7 @@ SOFTWARE.
 
 #include <Runtime/InputComponent.h>
 #include <Runtime/MeshComponent.h>
+#include <Runtime/ResourceManager.h>
 
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;

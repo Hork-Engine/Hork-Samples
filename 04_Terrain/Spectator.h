@@ -33,6 +33,7 @@ SOFTWARE.
 #include <Runtime/MeshComponent.h>
 #include <Runtime/InputComponent.h>
 #include <Runtime/TerrainComponent.h>
+#include <Runtime/World.h>
 
 class ASpectator : public AActor
 {
