@@ -139,7 +139,7 @@ protected:
             filter.VisibilityMask = VISIBILITY_GROUP_TERRAIN;
             if (GetWorld()->RaycastClosest(result, Camera->GetWorldPosition(), Camera->GetWorldForwardVector() * 10000, &filter))
             {
-                HitResult.Append(result.TriangleHit);
+                HitResult.Add(result.TriangleHit);
 
                 ATerrainComponent* terrainComponent = result.Object->GetOwnerActor()->GetComponent<ATerrainComponent>();
                 if (terrainComponent)

@@ -51,8 +51,8 @@ protected:
 
     void Initialize(SActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AIndexedMesh>      BoxMesh(_CTS("Box"));
-        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
+        static TStaticResourceFinder<AIndexedMesh>      BoxMesh("Box"s);
+        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
 
         RootComponent = CreateComponent<ASceneComponent>("Root");
 
@@ -195,8 +195,8 @@ public:
         AMeshComponent* groundMesh = ground->GetComponent<AMeshComponent>();
         if (groundMesh)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("GroundMesh"));
+            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("GroundMesh"s);
 
             // Setup mesh and material
             groundMesh->SetMesh(GroundMesh.GetObject());
@@ -273,8 +273,8 @@ public:
 
         // Create material
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/grid8.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial"s);
+            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());

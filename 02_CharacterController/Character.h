@@ -81,8 +81,8 @@ protected:
 
     void Initialize(SActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AIndexedMesh>      CapsuleMesh(_CTS("CharacterCapsule"));
-        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance(_CTS("CharacterMaterialInstance"));
+        static TStaticResourceFinder<AIndexedMesh>      CapsuleMesh("CharacterCapsule"s);
+        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         // Create capsule collision model
         SCollisionCapsuleDef capsule;
@@ -111,8 +111,8 @@ protected:
         Camera->SetAngles(-60, 0, 0);
         Camera->AttachTo(CharacterMesh);
 
-        static TStaticResourceFinder<AIndexedMesh>      UnitBox(_CTS("/Default/Meshes/Skybox"));
-        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst(_CTS("/Root/Skybox/skybox_matinst.minst"));
+        static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Skybox"s);
+        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("/Root/Skybox/skybox_matinst.minst"s);
         AMeshComponent*                                 SkyboxComponent;
         SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);

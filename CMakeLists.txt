@@ -25,6 +25,9 @@ endif()
 
 include(Hork-Source/Source/hork_config.cmake)
 include_directories(Hork-Source/Source)
+include_directories(Hork-Source/Source/ThirdParty/fmt/include)
+include_directories(Hork-Source/Source/ThirdParty/EASTL/include)
+include_directories(Hork-Source/Source/ThirdParty/EASTL/EABase/include/Common)
 add_subdirectory(Hork-Source/Source)
 
 add_subdirectory(01_Simple)

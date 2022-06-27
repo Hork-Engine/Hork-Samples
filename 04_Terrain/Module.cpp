@@ -138,7 +138,7 @@ public:
         {
             // Generate heightmap
             size_t res = 4097;
-            TPodVectorHeap<float> heightmap(res * res);
+            TVector<float> heightmap(res * res);
             float* data = heightmap.ToPtr();
             for (int y = 0; y < res; y++) {
                 for (int x = 0; x < res; x++) {
@@ -160,10 +160,10 @@ public:
         AMeshComponent* meshComponent = skybox->GetComponent<AMeshComponent>();
         if (meshComponent)
         {
-            static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/Skybox"));
-            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/SkydomeHemisphere"));
-            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh(_CTS("/Default/Meshes/Skydome"));
-            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst(_CTS("/Root/Skybox/skybox_matinst.minst"));
+            static TStaticResourceFinder<AIndexedMesh> SkyMesh("/Default/Meshes/Skybox"s);
+            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/SkydomeHemisphere"s);
+            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
+            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("/Root/Skybox/skybox_matinst.minst"s);
 
             meshComponent->SetMesh(SkyMesh.GetObject());
             meshComponent->SetMaterialInstance(0, SkyboxMaterialInst.GetObject());

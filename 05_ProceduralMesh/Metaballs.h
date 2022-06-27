@@ -45,11 +45,11 @@ struct SGridVolume
         int Vertices[8];
     };
 
-    TPodVectorHeap<float>  Values;
-    TPodVectorHeap<Float3> Normals;
+    TVector<float>  Values;
+    TVector<Float3> Normals;
 
-    TPodVectorHeap<Float3> const&    GetPositions() const { return Positions; }
-    TPodVectorHeap<SGridCube> const& GetCubes() const { return Cubes; }
+    TVector<Float3> const&    GetPositions() const { return Positions; }
+    TVector<SGridCube> const& GetCubes() const { return Cubes; }
     BvAxisAlignedBox const&          GetBounds() const { return Bounds; }
 
     SGridVolume(int GridResolution, float Scale)
@@ -98,8 +98,8 @@ struct SGridVolume
     }
 
 private:
-    TPodVectorHeap<Float3>    Positions;
-    TPodVectorHeap<SGridCube> Cubes;
+    TVector<Float3>    Positions;
+    TVector<SGridCube> Cubes;
     BvAxisAlignedBox          Bounds;
 };
 

@@ -123,8 +123,8 @@ public:
 
     void CreateScene(AWorld* world)
     {
-        static TStaticResourceFinder<AActorDefinition> DirLightDef(_CTS("/Embedded/Actors/directionallight.def"));
-        static TStaticResourceFinder<AActorDefinition> StaticMeshDef(_CTS("/Embedded/Actors/staticmesh.def"));
+        static TStaticResourceFinder<AActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
+        static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
         AActor*                     dirlight          = world->SpawnActor2(DirLightDef.GetObject());
@@ -150,8 +150,8 @@ public:
         AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("/Default/Meshes/PlaneXZ"));
+            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh.GetObject());
@@ -209,7 +209,7 @@ public:
 
             graph->MaterialType                 = MATERIAL_TYPE_PBR;
             graph->bAllowScreenSpaceReflections = true;
-            graph->TessellationMethod           = TESSELLATION_PN;
+            //graph->TessellationMethod           = TESSELLATION_PN;
 
             MGTextureSlot* diffuseTexture      = graph->AddNode<MGTextureSlot>();
             diffuseTexture->SamplerDesc.Filter = TEXTURE_FILTER_MIPMAP_TRILINEAR;
@@ -237,8 +237,8 @@ public:
 
         // Create material instance for ground
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial1"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/blank256.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial1"s);
+            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/blank256.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
@@ -248,8 +248,8 @@ public:
 
         // Create material instance for character
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial2"));
-            static TStaticResourceFinder<ATexture>  CharacterTexture(_CTS("/Root/blank512.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial2"s);
+            static TStaticResourceFinder<ATexture>  CharacterTexture("/Root/blank512.png"s);
 
             AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             CharacterMaterialInstance->SetMaterial(ExampleMaterial.GetObject());

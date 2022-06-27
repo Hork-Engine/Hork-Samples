@@ -41,7 +41,7 @@ protected:
     AProceduralMeshComponent* ProcMesh{};
     TRef<AProceduralMesh>     ProcMeshResource;
     SGridVolume               GridVolume{40, 2.0f};
-    TPodVector<SMetaball>     Metaballs{5};
+    TVector<SMetaball>        Metaballs{5};
     float                     Time{};
 
     AMetaballController()
@@ -49,7 +49,7 @@ protected:
 
     void Initialize(SActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance(_CTS("CharacterMaterialInstance"));
+        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         ProcMesh = CreateComponent<AProceduralMeshComponent>("ProcMesh");
         ProcMeshResource = CreateInstanceOf<AProceduralMesh>();

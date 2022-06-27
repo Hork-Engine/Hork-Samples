@@ -140,8 +140,8 @@ public:
                                    .SetText("\n\n\nPLAYER2\nPress ENTER to switch First/Third person camera\nUse Up,Down,Left,Right to move, V to jump")]]);
 
         WWidgetShareFocusGroup* focusShareGroup = CreateInstanceOf<WWidgetShareFocusGroup>();
-        focusShareGroup->Widgets.emplace_back(TWeakRef<WViewport>(viewport1));
-        focusShareGroup->Widgets.emplace_back(TWeakRef<WViewport>(viewport2));
+        focusShareGroup->Widgets.EmplaceBack(TWeakRef<WViewport>(viewport1));
+        focusShareGroup->Widgets.EmplaceBack(TWeakRef<WViewport>(viewport2));
 
         viewport1->SetFocus();
 
@@ -167,8 +167,8 @@ public:
 
     void CreateScene(AWorld* world)
     {
-        static TStaticResourceFinder<AActorDefinition> DirLightDef(_CTS("/Embedded/Actors/directionallight.def"));
-        static TStaticResourceFinder<AActorDefinition> StaticMeshDef(_CTS("/Embedded/Actors/staticmesh.def"));
+        static TStaticResourceFinder<AActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
+        static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
         AActor*                     dirlight          = world->SpawnActor2(DirLightDef.GetObject());
@@ -189,8 +189,8 @@ public:
         AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("/Default/Meshes/PlaneXZ"));
+            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh.GetObject());
@@ -203,8 +203,8 @@ public:
         meshComp           = staticWall->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance(_CTS("WallMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      UnitBox(_CTS("/Default/Meshes/Box"));
+            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
             // Set mesh and material resources for mesh component
             meshComp->SetMesh(UnitBox.GetObject());
@@ -216,8 +216,8 @@ public:
         meshComp    = box->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance(_CTS("WallMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      UnitBox(_CTS("/Default/Meshes/Box"));
+            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
             // Set mesh and material resources for mesh component
             meshComp->SetMesh(UnitBox.GetObject());
@@ -237,8 +237,8 @@ public:
         meshComp      = floor->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("/Default/IndexedMesh/UnitBox"));
+            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh.GetObject());
@@ -252,8 +252,8 @@ public:
         meshComp                = floor2->GetComponent<AMeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("/Default/IndexedMesh/UnitBox"));
+            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh.GetObject());
@@ -340,8 +340,8 @@ public:
 
         // Create material instance for ground
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial1"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/blank256.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial1"s);
+            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/blank256.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
@@ -351,8 +351,8 @@ public:
 
         // Create material instance for wall
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial1"));
-            static TStaticResourceFinder<ATexture>  ExampleTexture(_CTS("/Root/grid8.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial1"s);
+            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
 
             AMaterialInstance* WallMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             WallMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
@@ -362,8 +362,8 @@ public:
 
         // Create material instance for character
         {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial(_CTS("ExampleMaterial2"));
-            static TStaticResourceFinder<ATexture>  CharacterTexture(_CTS("/Root/blank512.png"));
+            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial2"s);
+            static TStaticResourceFinder<ATexture>  CharacterTexture("/Root/blank512.png"s);
 
             AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
             CharacterMaterialInstance->SetMaterial(ExampleMaterial.GetObject());

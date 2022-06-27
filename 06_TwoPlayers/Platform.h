@@ -48,8 +48,8 @@ public:
     {
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
 
-        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance(_CTS("ExampleMaterialInstance"));
-        static TStaticResourceFinder<AIndexedMesh>      GroundMesh(_CTS("/Default/IndexedMesh/UnitBox"));
+        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+        static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
 
         // Setup mesh and material
         mesh->SetMesh(GroundMesh.GetObject());

@@ -468,19 +468,19 @@ void UpdateMetaballs(AProceduralMesh* ProcMeshResource, SMetaball const* Metabal
 
             v.SetNormal(edgeVertices[indices[k + 0]].Normal);
             v.Position = edgeVertices[indices[k + 0]].Position;
-            meshVerts.Append(v);
+            meshVerts.Add(v);
 
             v.SetNormal(edgeVertices[indices[k + 2]].Normal);
             v.Position = edgeVertices[indices[k + 2]].Position;
-            meshVerts.Append(v);
+            meshVerts.Add(v);
 
             v.SetNormal(edgeVertices[indices[k + 1]].Normal);
             v.Position = edgeVertices[indices[k + 1]].Position;
-            meshVerts.Append(v);
+            meshVerts.Add(v);
 
-            meshIndices.Append(n);
-            meshIndices.Append(n + 1);
-            meshIndices.Append(n + 2);
+            meshIndices.Add(n);
+            meshIndices.Add(n + 1);
+            meshIndices.Add(n + 2);
         }
     }
 }
