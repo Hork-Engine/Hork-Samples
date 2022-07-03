@@ -1,5 +1,3 @@
-#cmake_minimum_required(VERSION 3.8)
-
 set( PROJECT 01_Simple )
 
 file( GLOB Code *.h *.cpp )
@@ -22,8 +20,6 @@ add_executable( ${PROJECT} ${SRCS} )
 endif()
 
 target_link_libraries( ${PROJECT} HorkEngine )
-
-#set_property( TARGET ${PROJECT} PROPERTY POSITION_INDEPENDENT_CODE ON )
 
 target_compile_definitions(${PROJECT} PUBLIC ${HK_COMPILER_DEFINES})
 target_compile_options(${PROJECT} PUBLIC ${HK_COMPILER_FLAGS})
