@@ -127,7 +127,7 @@ public:
         static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(DirLightDef.GetObject());
+        AActor*                     dirlight          = world->SpawnActor2(DirLightDef);
         ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -146,7 +146,7 @@ public:
         spawnTransform.Rotation = Quat::Identity();
         spawnTransform.Scale    = Float3(2, 1, 2);
 
-        AActor*         ground   = world->SpawnActor2(StaticMeshDef.GetObject(), spawnTransform);
+        AActor*         ground   = world->SpawnActor2(StaticMeshDef, spawnTransform);
         AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
         if (meshComp)
         {
@@ -154,8 +154,8 @@ public:
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             // Setup mesh and material
-            meshComp->SetMesh(GroundMesh.GetObject());
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance.GetObject());
+            meshComp->SetMesh(GroundMesh);
+            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
             meshComp->SetCastShadow(false);
         }
 
@@ -241,8 +241,8 @@ public:
             static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/blank256.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            ExampleMaterialInstance->SetTexture(0, ExampleTexture.GetObject());
+            ExampleMaterialInstance->SetMaterial(ExampleMaterial);
+            ExampleMaterialInstance->SetTexture(0, ExampleTexture);
             RegisterResource(ExampleMaterialInstance, "ExampleMaterialInstance");
         }
 
@@ -252,8 +252,8 @@ public:
             static TStaticResourceFinder<ATexture>  CharacterTexture("/Root/blank512.png"s);
 
             AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            CharacterMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            CharacterMaterialInstance->SetTexture(0, CharacterTexture.GetObject());
+            CharacterMaterialInstance->SetMaterial(ExampleMaterial);
+            CharacterMaterialInstance->SetTexture(0, CharacterTexture);
             RegisterResource(CharacterMaterialInstance, "CharacterMaterialInstance");
         }
     }

@@ -54,7 +54,7 @@ protected:
         ProcMesh = CreateComponent<AProceduralMeshComponent>("ProcMesh");
         ProcMeshResource = CreateInstanceOf<AProceduralMesh>();
         ProcMesh->SetMesh(ProcMeshResource);
-        ProcMesh->SetMaterialInstance(CharacterMaterialInstance.GetObject());
+        ProcMesh->SetMaterialInstance(CharacterMaterialInstance);
 
         RootComponent = ProcMesh;
 

@@ -100,8 +100,8 @@ protected:
 
         // Create character model and attach it to physics body
         CharacterMesh = CreateComponent<AMeshComponent>("CharacterMesh");
-        CharacterMesh->SetMesh(CapsuleMesh.GetObject());
-        CharacterMesh->SetMaterialInstance(CharacterMaterialInstance.GetObject());
+        CharacterMesh->SetMesh(CapsuleMesh);
+        CharacterMesh->SetMaterialInstance(CharacterMaterialInstance);
         CharacterMesh->SetMotionBehavior(MB_KINEMATIC);
         CharacterMesh->AttachTo(CharacterPhysics);
 
@@ -116,8 +116,8 @@ protected:
         AMeshComponent*                                 SkyboxComponent;
         SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);
-        SkyboxComponent->SetMesh(UnitBox.GetObject());
-        SkyboxComponent->SetMaterialInstance(SkyboxMaterialInst.GetObject());
+        SkyboxComponent->SetMesh(UnitBox);
+        SkyboxComponent->SetMaterialInstance(SkyboxMaterialInst);
         SkyboxComponent->AttachTo(Camera);
         SkyboxComponent->SetAbsoluteRotation(true);
 

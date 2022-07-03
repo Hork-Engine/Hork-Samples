@@ -96,7 +96,8 @@ public:
                  .SetFocus()
                      [WNew(WTextDecorate)
                           .SetColor({1, 1, 1})
-                          .SetText("Press ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")]);
+                          .SetText("Press ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")
+                          .SetHorizontalAlignment(WIDGET_ALIGNMENT_RIGHT)]);
 
         // Hide mouse cursor
         desktop->SetCursorVisible(false);
@@ -122,7 +123,7 @@ public:
         static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(DirLightDef.GetObject());
+        AActor*                     dirlight          = world->SpawnActor2(DirLightDef);
         ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -140,7 +141,7 @@ public:
         spawnTransform.Position = Float3(0);
         spawnTransform.Rotation = Quat::Identity();
 
-        AActor*         ground   = world->SpawnActor2(StaticMeshDef.GetObject(), spawnTransform);
+        AActor*         ground   = world->SpawnActor2(StaticMeshDef, spawnTransform);
         AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
         if (meshComp)
         {
@@ -148,13 +149,13 @@ public:
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             // Setup mesh and material
-            meshComp->SetMesh(GroundMesh.GetObject());
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance.GetObject());
+            meshComp->SetMesh(GroundMesh);
+            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
             meshComp->SetCastShadow(false);
         }
 
         // Spawn wall
-        AActor* staticWall = world->SpawnActor2(StaticMeshDef.GetObject(), {{0, 1, -7}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
+        AActor* staticWall = world->SpawnActor2(StaticMeshDef, {{0, 1, -7}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
         meshComp           = staticWall->GetComponent<AMeshComponent>();
         if (meshComp)
         {
@@ -162,15 +163,15 @@ public:
             static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
             // Set mesh and material resources for mesh component
-            meshComp->SetMesh(UnitBox.GetObject());
-            meshComp->SetMaterialInstance(0, WallMaterialInstance.GetObject());
+            meshComp->SetMesh(UnitBox);
+            meshComp->SetMaterialInstance(0, WallMaterialInstance);
         }
 
         // Spawn trigger
         ATrigger* trigger = world->SpawnActor2<ATrigger>({{0, 1, -2}, {1, 0, 0, 0}, {1.5f, 2, 1.5f}});
         trigger->SpawnFunction = [world]()
         {
-            AActor*         box      = world->SpawnActor2(StaticMeshDef.GetObject(), {{0, 10, -5}, Angl(45, 45, 45).ToQuat(), {0.5f, 0.5f, 0.5f}});
+            AActor*         box      = world->SpawnActor2(StaticMeshDef, {{0, 10, -5}, Angl(45, 45, 45).ToQuat(), {0.5f, 0.5f, 0.5f}});
             AMeshComponent* meshComp = box->GetComponent<AMeshComponent>();
             if (meshComp)
             {
@@ -179,8 +180,8 @@ public:
                 static TStaticResourceFinder<AIndexedMesh>      UnitSphere("/Default/Meshes/Sphere"s);
 
                 // Set mesh and material resources for mesh component
-                meshComp->SetMesh(GEngine->Rand.GetFloat() < 0.9f ? UnitBox.GetObject() : UnitSphere.GetObject());
-                meshComp->SetMaterialInstance(0, WallMaterialInstance.GetObject());
+                meshComp->SetMesh(GEngine->Rand.GetFloat() < 0.5f ? UnitBox : UnitSphere);
+                meshComp->SetMaterialInstance(0, WallMaterialInstance);
 
                 // Setup physics
                 meshComp->SetMass(1.0f);
@@ -268,8 +269,8 @@ public:
             static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/blank256.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            ExampleMaterialInstance->SetTexture(0, ExampleTexture.GetObject());
+            ExampleMaterialInstance->SetMaterial(ExampleMaterial);
+            ExampleMaterialInstance->SetTexture(0, ExampleTexture);
             RegisterResource(ExampleMaterialInstance, "ExampleMaterialInstance");
         }
 
@@ -279,8 +280,8 @@ public:
             static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
 
             AMaterialInstance* WallMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            WallMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            WallMaterialInstance->SetTexture(0, ExampleTexture.GetObject());
+            WallMaterialInstance->SetMaterial(ExampleMaterial);
+            WallMaterialInstance->SetTexture(0, ExampleTexture);
             RegisterResource(WallMaterialInstance, "WallMaterialInstance");
         }
 
@@ -290,8 +291,8 @@ public:
             static TStaticResourceFinder<ATexture>  CharacterTexture("/Root/blank512.png"s);
 
             AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            CharacterMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            CharacterMaterialInstance->SetTexture(0, CharacterTexture.GetObject());
+            CharacterMaterialInstance->SetMaterial(ExampleMaterial);
+            CharacterMaterialInstance->SetTexture(0, CharacterTexture);
             RegisterResource(CharacterMaterialInstance, "CharacterMaterialInstance");
         }
     }

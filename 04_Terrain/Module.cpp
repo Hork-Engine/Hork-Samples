@@ -165,8 +165,8 @@ public:
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
             static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("/Root/Skybox/skybox_matinst.minst"s);
 
-            meshComponent->SetMesh(SkyMesh.GetObject());
-            meshComponent->SetMaterialInstance(0, SkyboxMaterialInst.GetObject());
+            meshComponent->SetMesh(SkyMesh);
+            meshComponent->SetMaterialInstance(0, SkyboxMaterialInst);
         }
 
         world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));

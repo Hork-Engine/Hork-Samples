@@ -57,8 +57,8 @@ protected:
         RootComponent = CreateComponent<ASceneComponent>("Root");
 
         Movable = CreateComponent<AMeshComponent>("Movable");
-        Movable->SetMesh(BoxMesh.GetObject());
-        Movable->SetMaterialInstance(ExampleMaterialInstance.GetObject());
+        Movable->SetMesh(BoxMesh);
+        Movable->SetMaterialInstance(ExampleMaterialInstance);
         Movable->SetMotionBehavior(MB_KINEMATIC);
         Movable->AttachTo(RootComponent);
 
@@ -199,8 +199,8 @@ public:
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("GroundMesh"s);
 
             // Setup mesh and material
-            groundMesh->SetMesh(GroundMesh.GetObject());
-            groundMesh->SetMaterialInstance(0, ExampleMaterialInstance.GetObject());
+            groundMesh->SetMesh(GroundMesh);
+            groundMesh->SetMaterialInstance(0, ExampleMaterialInstance);
             groundMesh->SetCastShadow(false);
         }
 
@@ -277,8 +277,8 @@ public:
             static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
 
             AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            ExampleMaterialInstance->SetMaterial(ExampleMaterial.GetObject());
-            ExampleMaterialInstance->SetTexture(0, ExampleTexture.GetObject());
+            ExampleMaterialInstance->SetMaterial(ExampleMaterial);
+            ExampleMaterialInstance->SetTexture(0, ExampleTexture);
             RegisterResource(ExampleMaterialInstance, "ExampleMaterialInstance");
         }
     }

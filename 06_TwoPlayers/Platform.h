@@ -52,8 +52,8 @@ public:
         static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
 
         // Setup mesh and material
-        mesh->SetMesh(GroundMesh.GetObject());
-        mesh->SetMaterialInstance(0, ExampleMaterialInstance.GetObject());
+        mesh->SetMesh(GroundMesh);
+        mesh->SetMaterialInstance(0, ExampleMaterialInstance);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
         RootComponent = mesh;
