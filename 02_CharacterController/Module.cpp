@@ -187,7 +187,7 @@ public:
         if (meshComp)
         {
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);
@@ -202,7 +202,7 @@ public:
         if (meshComp)
         {
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
+            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);

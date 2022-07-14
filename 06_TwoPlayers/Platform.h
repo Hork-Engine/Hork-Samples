@@ -49,7 +49,7 @@ public:
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
 
         static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-        static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
+        static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
         // Setup mesh and material
         mesh->SetMesh(GroundMesh);

@@ -49,10 +49,10 @@ public:
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
 
         static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-        static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/IndexedMesh/UnitBox"s);
+        static TStaticResourceFinder<AIndexedMesh>      Mesh("/Default/Meshes/Box"s);
 
         // Setup mesh and material
-        mesh->SetMesh(GroundMesh);
+        mesh->SetMesh(Mesh);
         mesh->SetMaterialInstance(0, ExampleMaterialInstance);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
