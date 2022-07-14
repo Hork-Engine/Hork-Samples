@@ -182,8 +182,7 @@ public:
 
         // Create character capsule
         {
-            AIndexedMesh* mesh = CreateInstanceOf<AIndexedMesh>();
-            mesh->InitializeCapsuleMesh(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16);
+            AIndexedMesh* mesh = mesh->CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16);
             RegisterResource(mesh, "CharacterCapsule");
         }
 
@@ -214,7 +213,7 @@ public:
             graph->Metallic->Connect(metallic->OutValue);
             graph->Roughness->Connect(roughness->OutValue);
 
-            AMaterial* material = CreateMaterial(graph);
+            AMaterial* material = AMaterial::Create(graph);
             RegisterResource(material, "ExampleMaterial1");
         }
         {
@@ -243,7 +242,7 @@ public:
             graph->Metallic->Connect(metallic->OutValue);
             graph->Roughness->Connect(roughness->OutValue);
 
-            AMaterial* material = CreateMaterial(graph);
+            AMaterial* material = AMaterial::Create(graph);
             RegisterResource(material, "ExampleMaterial2");
         }
 
