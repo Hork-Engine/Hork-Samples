@@ -228,15 +228,13 @@ public:
     {
         // Create mesh for ground
         {
-            AIndexedMesh* mesh = CreateInstanceOf<AIndexedMesh>();
-            mesh->InitializePlaneMeshXZ(256, 256, 256);
+            AIndexedMesh* mesh = AIndexedMesh::CreatePlaneXZ(256, 256, 256);
             RegisterResource(mesh, "GroundMesh");
         }
 
         // Create box
         {
-            AIndexedMesh* mesh = CreateInstanceOf<AIndexedMesh>();
-            mesh->InitializeBoxMesh(Float3(1.0f), 1.0f);
+            AIndexedMesh* mesh = AIndexedMesh::CreateBox(Float3(1.0f), 1.0f);
             RegisterResource(mesh, "Box");
         }
 
@@ -267,7 +265,7 @@ public:
             graph->Metallic->Connect(metallic->OutValue);
             graph->Roughness->Connect(roughness->OutValue);
 
-            AMaterial* material = CreateMaterial(graph);
+            AMaterial* material = AMaterial::Create(graph);
             RegisterResource(material, "ExampleMaterial");
         }
 
