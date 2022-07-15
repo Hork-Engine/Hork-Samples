@@ -65,7 +65,6 @@ public:
         inputMappings->MapAction("Trace", {ID_KEYBOARD, KEY_LEFT_CONTROL}, 0, CONTROLLER_PLAYER_1);
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_P}, 0, CONTROLLER_PLAYER_1);
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
-        inputMappings->MapAction("TakeScreenshot", {ID_KEYBOARD, KEY_F12}, 0, CONTROLLER_PLAYER_1);
 
         RenderingParams = CreateInstanceOf<ARenderingParameters>();
         RenderingParams->bWireframe = false;
