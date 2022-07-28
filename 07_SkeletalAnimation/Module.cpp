@@ -47,6 +47,8 @@ class AModule final : public AGameModule
 public:
     ACharacter* Player;
 
+    Float3 LightDir = Float3(1, -1, -1).Normalized();
+
     AModule()
     {
         // Create game resources
@@ -128,7 +130,7 @@ public:
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
-            dirlightcomponent->SetDirection(Float3(1, -1, -1));
+            dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
             dirlightcomponent->SetShadowMaxDistance(40);
             dirlightcomponent->SetShadowCascadeResolution(2048);
@@ -157,13 +159,13 @@ public:
         // Spawn model with skeletal animation
         world->SpawnActor2<ABrainStem>({{0, 0, -2}});
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
     }
 
     void CreateResources()
     {
         // Import resource only on first start
-        if (!AResource::IsResourceExists("/Root/models/BrainStem/brainstem_mesh.mesh"))
+        if (!GEngine->GetResourceManager()->IsResourceExists("/Root/models/BrainStem/brainstem_mesh.mesh"))
         {
             AAssetImporter       importer;
             SAssetImportSettings importSettings;
@@ -181,92 +183,50 @@ public:
         }
 
         // Create character capsule
-        {
-            AIndexedMesh* mesh = mesh->CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16);
-            RegisterResource(mesh, "CharacterCapsule");
-        }
+        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
 
         // Create material
+        MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
+
+        // Create material
+        AMaterial* material = CreateInstanceOf<AMaterial>(graph->Compile());
+        RegisterResource(material, "ExampleMaterial");
+
+        // Instantiate material
         {
-            MGMaterialGraph* graph = CreateInstanceOf<MGMaterialGraph>();
-
-            graph->MaterialType                 = MATERIAL_TYPE_PBR;
-            graph->bAllowScreenSpaceReflections = false;
-
-            MGTextureSlot* diffuseTexture      = graph->AddNode<MGTextureSlot>();
-            diffuseTexture->SamplerDesc.Filter = TEXTURE_FILTER_MIPMAP_TRILINEAR;
-            graph->RegisterTextureSlot(diffuseTexture);
-
-            MGInTexCoord* texCoord = graph->AddNode<MGInTexCoord>();
-
-            MGSampler* diffuseSampler = graph->AddNode<MGSampler>();
-            diffuseSampler->TexCoord->Connect(texCoord, "Value");
-            diffuseSampler->TextureSlot->Connect(diffuseTexture, "Value");
-
-            MGFloatNode* metallic = graph->AddNode<MGFloatNode>();
-            metallic->Value       = 0.0f;
-
-            MGFloatNode* roughness = graph->AddNode<MGFloatNode>();
-            roughness->Value       = 1;
-
-            graph->Color->Connect(diffuseSampler->RGBA);
-            graph->Metallic->Connect(metallic->OutValue);
-            graph->Roughness->Connect(roughness->OutValue);
-
-            AMaterial* material = AMaterial::Create(graph);
-            RegisterResource(material, "ExampleMaterial1");
+            AMaterialInstance* materialInstance = material->Instantiate();
+            // base color
+            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.png"));
+            // metallic
+            materialInstance->SetConstant(0, 0);
+            // roughness
+            materialInstance->SetConstant(1, 1);
+            RegisterResource(materialInstance, "ExampleMaterialInstance");
         }
         {
-            MGMaterialGraph* graph = CreateInstanceOf<MGMaterialGraph>();
-
-            graph->MaterialType                 = MATERIAL_TYPE_PBR;
-            graph->bAllowScreenSpaceReflections = true;
-
-            MGTextureSlot* diffuseTexture      = graph->AddNode<MGTextureSlot>();
-            diffuseTexture->SamplerDesc.Filter = TEXTURE_FILTER_MIPMAP_TRILINEAR;
-            graph->RegisterTextureSlot(diffuseTexture);
-
-            MGInTexCoord* texCoord = graph->AddNode<MGInTexCoord>();
-
-            MGSampler* diffuseSampler = graph->AddNode<MGSampler>();
-            diffuseSampler->TexCoord->Connect(texCoord, "Value");
-            diffuseSampler->TextureSlot->Connect(diffuseTexture, "Value");
-
-            MGFloatNode* metallic = graph->AddNode<MGFloatNode>();
-            metallic->Value       = 0.0f;
-
-            MGFloatNode* roughness = graph->AddNode<MGFloatNode>();
-            roughness->Value       = 0.1f; //1;
-
-            graph->Color->Connect(diffuseSampler->RGBA);
-            graph->Metallic->Connect(metallic->OutValue);
-            graph->Roughness->Connect(roughness->OutValue);
-
-            AMaterial* material = AMaterial::Create(graph);
-            RegisterResource(material, "ExampleMaterial2");
+            AMaterialInstance* materialInstance = material->Instantiate();
+            // base color
+            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.png"));
+            // metallic
+            materialInstance->SetConstant(0, 0);
+            // roughness
+            materialInstance->SetConstant(1, 0.1f);
+            RegisterResource(materialInstance, "CharacterMaterialInstance");
         }
 
-        // Create material instance for ground
-        {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial1"s);
-            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
+        ImageStorage skyboxImage = GenerateAtmosphereSkybox(512, LightDir);
 
-            AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            ExampleMaterialInstance->SetMaterial(ExampleMaterial);
-            ExampleMaterialInstance->SetTexture(0, ExampleTexture);
-            RegisterResource(ExampleMaterialInstance, "ExampleMaterialInstance");
-        }
+        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        RegisterResource(skybox, "AtmosphereSkybox");
 
-        // Create material instance for character
-        {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial2"s);
-            static TStaticResourceFinder<ATexture>  CharacterTexture("/Root/blank512.png"s);
+        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        RegisterResource(envmap, "Envmap");
 
-            AMaterialInstance* CharacterMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            CharacterMaterialInstance->SetMaterial(ExampleMaterial);
-            CharacterMaterialInstance->SetTexture(0, CharacterTexture);
-            RegisterResource(CharacterMaterialInstance, "CharacterMaterialInstance");
-        }
+        material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
+
+        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
+        skyboxMaterialInst->SetTexture(0, skybox);
+        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
     }
 };
 

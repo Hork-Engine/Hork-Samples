@@ -1,0 +1,38 @@
+version "1"
+MaterialType "PBR"
+bAllowScreenSpaceReflections "false"
+$Color "base_color"
+$Metallic "metallic"
+$Roughness "roughness"
+textures
+[
+	{
+		id "tex_base_color"
+		filter "Trilinear"
+	}
+]
+nodes
+[
+	{
+		type "InTexCoord"
+		id "tc"
+	}
+	{
+		type "TextureLoad"
+		id "base_color"
+		$TexCoord "tc"
+		$Texture "tex_base_color"
+	}
+	{
+		type "UniformAddress"
+		id "metallic"
+		address "0"
+		uniformtype "float"
+	}
+	{
+		type "UniformAddress"
+		id "roughness"
+		address "1"
+		uniformtype "float"
+	}
+]

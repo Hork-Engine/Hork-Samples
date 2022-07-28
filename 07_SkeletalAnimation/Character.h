@@ -112,8 +112,9 @@ protected:
         Camera->AttachTo(CharacterMesh);
 
         static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Skybox"s);
-        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("/Root/Skybox/skybox_matinst.minst"s);
+        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
         AMeshComponent*                                 SkyboxComponent;
+
         SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);
         SkyboxComponent->SetMesh(UnitBox);

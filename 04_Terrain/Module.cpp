@@ -35,6 +35,7 @@ SOFTWARE.
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/ResourceManager.h>
+#include <Runtime/AssetImporter.h>
 
 #include "Spectator.h"
 
@@ -47,9 +48,12 @@ class AModule final : public AGameModule
 
 public:
     ARenderingParameters* RenderingParams;
+    Float3                LightDir = Float3(1, -1, -1).Normalized();
 
     AModule()
     {
+        CreateResources();
+
         AInputMappings* inputMappings = CreateInstanceOf<AInputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
@@ -114,6 +118,23 @@ public:
         RenderingParams->bDrawDebug ^= 1;
     }
 
+    void CreateResources()
+    {
+        ImageStorage skyboxImage = GenerateAtmosphereSkybox(512, LightDir);
+
+        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        RegisterResource(skybox, "AtmosphereSkybox");
+
+        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        RegisterResource(envmap, "Envmap");
+
+        AMaterial* material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
+
+        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
+        skyboxMaterialInst->SetTexture(0, skybox);
+        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
+    }
+
     void CreateScene(AWorld* world)
     {
         // Spawn directional light
@@ -122,7 +143,7 @@ public:
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
-            dirlightcomponent->SetDirection(Float3(1, -1, -1));
+            dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
             dirlightcomponent->SetShadowMaxDistance(40);
             dirlightcomponent->SetShadowCascadeResolution(2048);
@@ -162,13 +183,13 @@ public:
             static TStaticResourceFinder<AIndexedMesh> SkyMesh("/Default/Meshes/Skybox"s);
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/SkydomeHemisphere"s);
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
-            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("/Root/Skybox/skybox_matinst.minst"s);
+            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
 
             meshComponent->SetMesh(SkyMesh);
             meshComponent->SetMaterialInstance(0, SkyboxMaterialInst);
         }
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
     }
 };
 

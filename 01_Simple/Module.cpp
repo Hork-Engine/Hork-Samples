@@ -37,6 +37,7 @@ SOFTWARE.
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/ResourceManager.h>
+#include <Runtime/AssetImporter.h>
 
 class APlayer : public AActor
 {
@@ -134,6 +135,8 @@ class AModule final : public AGameModule
     HK_CLASS(AModule, AGameModule)
 
 public:
+    Float3 LightDir = Float3(1, -1, -1).Normalized();
+
     AModule()
     {
         // Create game resources
@@ -149,6 +152,8 @@ public:
         AInputMappings* inputMappings = CreateInstanceOf<AInputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
+        inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_UP}, 1.0f, CONTROLLER_PLAYER_1);
+        inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_DOWN}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_D}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveUp", {ID_KEYBOARD, KEY_SPACE}, 1.0f, CONTROLLER_PLAYER_1);
@@ -171,40 +176,7 @@ public:
         playerController->SetRenderingParameters(renderingParams);
         playerController->SetPawn(player);
 
-        // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/directionallight.def"));
-        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
-        if (dirlightcomponent)
-        {
-            dirlightcomponent->SetCastShadow(true);
-            dirlightcomponent->SetDirection(Float3(1, -1, -1));
-            dirlightcomponent->SetIlluminance(20000.0f);
-            dirlightcomponent->SetShadowMaxDistance(40);
-            dirlightcomponent->SetShadowCascadeResolution(2048);
-            dirlightcomponent->SetShadowCascadeOffset(0.0f);
-            dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
-        }
-
-        // Spawn ground
-        STransform spawnTransform;
-        spawnTransform.Position = Float3(0);
-        spawnTransform.Rotation = Quat::Identity();
-        spawnTransform.Scale    = Float3(2, 1, 2);
-
-        AActor*         ground     = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
-        AMeshComponent* groundMesh = ground->GetComponent<AMeshComponent>();
-        if (groundMesh)
-        {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("GroundMesh"s);
-
-            // Setup mesh and material
-            groundMesh->SetMesh(GroundMesh);
-            groundMesh->SetMaterialInstance(0, ExampleMaterialInstance);
-            groundMesh->SetCastShadow(false);
-        }
-
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("/Root/envmaps/sample.envmap"));
+        CreateScene(world);
 
         // Create UI desktop
         WDesktop* desktop = CreateInstanceOf<WDesktop>();
@@ -227,58 +199,67 @@ public:
     void CreateResources()
     {
         // Create mesh for ground
-        {
-            AIndexedMesh* mesh = AIndexedMesh::CreatePlaneXZ(256, 256, 256);
-            RegisterResource(mesh, "GroundMesh");
-        }
+        RegisterResource(AIndexedMesh::CreatePlaneXZ(256, 256, 256), "GroundMesh");
 
         // Create box
-        {
-            AIndexedMesh* mesh = AIndexedMesh::CreateBox(Float3(1.0f), 1.0f);
-            RegisterResource(mesh, "Box");
-        }
+        RegisterResource(AIndexedMesh::CreateBox(Float3(1.0f), 1.0f), "Box");
 
         // Create material
-        {
-            MGMaterialGraph* graph = CreateInstanceOf<MGMaterialGraph>();
-
-            graph->MaterialType                 = MATERIAL_TYPE_PBR;
-            graph->bAllowScreenSpaceReflections = false;
-
-            MGTextureSlot* diffuseTexture      = graph->AddNode<MGTextureSlot>();
-            diffuseTexture->SamplerDesc.Filter = TEXTURE_FILTER_MIPMAP_TRILINEAR;
-            graph->RegisterTextureSlot(diffuseTexture);
-
-            MGInTexCoord* texCoord = graph->AddNode<MGInTexCoord>();
-
-            MGSampler* diffuseSampler = graph->AddNode<MGSampler>();
-            diffuseSampler->TexCoord->Connect(texCoord, "Value");
-            diffuseSampler->TextureSlot->Connect(diffuseTexture, "Value");
-
-            MGFloatNode* metallic = graph->AddNode<MGFloatNode>();
-            metallic->Value       = 0.0f;
-
-            MGFloatNode* roughness = graph->AddNode<MGFloatNode>();
-            roughness->Value       = 1;
-
-            graph->Color->Connect(diffuseSampler->RGBA);
-            graph->Metallic->Connect(metallic->OutValue);
-            graph->Roughness->Connect(roughness->OutValue);
-
-            AMaterial* material = AMaterial::Create(graph);
-            RegisterResource(material, "ExampleMaterial");
-        }
+        MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        {
-            static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial"s);
-            static TStaticResourceFinder<ATexture>  ExampleTexture("/Root/grid8.png"s);
+        AMaterial* material = CreateInstanceOf<AMaterial>(graph->Compile());
+        RegisterResource(material, "ExampleMaterial");
 
-            AMaterialInstance* ExampleMaterialInstance = CreateInstanceOf<AMaterialInstance>();
-            ExampleMaterialInstance->SetMaterial(ExampleMaterial);
-            ExampleMaterialInstance->SetTexture(0, ExampleTexture);
-            RegisterResource(ExampleMaterialInstance, "ExampleMaterialInstance");
+        // Instantiate material
+        AMaterialInstance* materialInstance = material->Instantiate();
+        // base color
+        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.png"));
+        // metallic
+        materialInstance->SetConstant(0, 0);
+        // roughness
+        materialInstance->SetConstant(1, 1);
+        RegisterResource(materialInstance, "ExampleMaterialInstance");
+
+        ImageStorage skyboxImage = GenerateAtmosphereSkybox(512, LightDir);
+
+        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        RegisterResource(envmap, "Envmap");
+    }
+
+    void CreateScene(AWorld* world)
+    {
+        // Spawn directional light
+        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/directionallight.def"));
+        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+        if (dirlightcomponent)
+        {
+            dirlightcomponent->SetCastShadow(true);
+            dirlightcomponent->SetDirection(LightDir);
+            dirlightcomponent->SetIlluminance(20000.0f);
+            dirlightcomponent->SetShadowMaxDistance(40);
+            dirlightcomponent->SetShadowCascadeResolution(2048);
+            dirlightcomponent->SetShadowCascadeOffset(0.0f);
+            dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
         }
+
+        // Spawn ground
+        STransform spawnTransform;
+        spawnTransform.Position = Float3(0);
+        spawnTransform.Rotation = Quat::Identity();
+        spawnTransform.Scale    = Float3(2, 1, 2);
+
+        AActor*         ground     = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
+        AMeshComponent* groundMesh = ground->GetComponent<AMeshComponent>();
+        if (groundMesh)
+        {
+            // Setup mesh and material
+            groundMesh->SetMesh(GetResource<AIndexedMesh>("GroundMesh"));
+            groundMesh->SetMaterialInstance(GetResource<AMaterialInstance>("ExampleMaterialInstance"));
+            groundMesh->SetCastShadow(false);
+        }
+
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
     }
 };
 
