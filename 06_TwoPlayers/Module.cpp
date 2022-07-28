@@ -34,6 +34,7 @@ SOFTWARE.
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/AssetImporter.h>
 
 #include "Character.h"
 #include "Platform.h"
@@ -45,6 +46,7 @@ class AModule final : public AGameModule
 public:
     ACharacter* Player1;
     ACharacter* Player2;
+    Float3      LightDir = Float3(1, -1, -1).Normalized();
 
     AModule()
     {
