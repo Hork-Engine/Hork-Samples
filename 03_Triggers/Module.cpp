@@ -135,7 +135,7 @@ public:
         {
             AMaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank256.png"));
+            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank256.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -145,7 +145,7 @@ public:
         {
             AMaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.png"));
+            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -155,7 +155,7 @@ public:
         {
             AMaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.png"));
+            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness

@@ -214,7 +214,7 @@ public:
         // Instantiate material
         AMaterialInstance* materialInstance = material->Instantiate();
         // base color
-        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.png"));
+        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.webp"));
         // metallic
         materialInstance->SetConstant(0, 0);
         // roughness
