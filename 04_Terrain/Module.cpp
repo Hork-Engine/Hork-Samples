@@ -120,7 +120,7 @@ public:
 
     void CreateResources()
     {
-        ImageStorage skyboxImage = GenerateAtmosphereSkybox(512, LightDir);
+        ImageStorage skyboxImage = GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
         ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");

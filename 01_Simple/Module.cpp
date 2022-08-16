@@ -221,7 +221,7 @@ public:
         materialInstance->SetConstant(1, 1);
         RegisterResource(materialInstance, "ExampleMaterialInstance");
 
-        ImageStorage skyboxImage = GenerateAtmosphereSkybox(512, LightDir);
+        ImageStorage skyboxImage = GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
         AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
