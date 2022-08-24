@@ -34,7 +34,6 @@ SOFTWARE.
 #include <Runtime/WDesktop.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
-#include <Runtime/AssetImporter.h>
 
 #include "Character.h"
 #include "Platform.h"
@@ -211,7 +210,7 @@ public:
             RegisterResource(materialInstance, "CharacterMaterialInstance");
         }
 
-        ImageStorage skyboxImage = GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
+        ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
         ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");

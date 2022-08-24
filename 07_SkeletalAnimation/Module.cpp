@@ -38,7 +38,7 @@ SOFTWARE.
 #include "Character.h"
 #include "BrainStem.h"
 
-#include <Runtime/AssetImporter.h>
+#include <Assets/AssetImporter.h>
 
 class AModule final : public AGameModule
 {
@@ -167,10 +167,10 @@ public:
         // Import resource only on first start
         if (!GEngine->GetResourceManager()->IsResourceExists("/Root/models/BrainStem/brainstem_mesh.mesh"))
         {
-            AAssetImporter       importer;
-            SAssetImportSettings importSettings;
+            AssetImportSettings importSettings;
             importSettings.ImportFile        = "Data/models/BrainStem/source/BrainStem.gltf";
             importSettings.OutputPath        = "models/BrainStem";
+            importSettings.RootPath          = GEngine->GetRootPath();
             importSettings.bImportMeshes     = true;
             importSettings.bImportMaterials  = true;
             importSettings.bImportSkinning   = true;
@@ -179,7 +179,7 @@ public:
             importSettings.bImportTextures   = true;
             importSettings.bSingleModel      = true;
             importSettings.bMergePrimitives  = true;
-            importer.ImportGLTF(importSettings);
+            ImportGLTF(importSettings);
         }
 
         // Create character capsule
@@ -214,7 +214,7 @@ public:
             RegisterResource(materialInstance, "CharacterMaterialInstance");
         }
 
-        ImageStorage skyboxImage = GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
+        ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
         ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");
