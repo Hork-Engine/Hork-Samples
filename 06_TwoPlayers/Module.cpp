@@ -31,7 +31,10 @@ SOFTWARE.
 #include <Runtime/DirectionalLightComponent.h>
 #include <Runtime/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
-#include <Runtime/WDesktop.h>
+#include <Runtime/UI/UIViewport.h>
+#include <Runtime/UI/UILabel.h>
+#include <Runtime/UI/UIGrid.h>
+#include <Runtime/UI/UIManager.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 
@@ -104,60 +107,66 @@ public:
         playerController2->SetRenderingParameters(renderingParams2);
         playerController2->SetPawn(Player2);
 
-        // Create UI desktop
-        WDesktop* desktop = CreateInstanceOf<WDesktop>();
+        UIViewport *viewport1, *viewport2;
+        UIGrid* splitView;
 
-        WViewport* viewport1;
-        WViewport* viewport2;
+        // Add viewport to desktop
+        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
+        desktop->AddWidget(UINewAssign(splitView, UIGrid, 0, 0)
+                               .AddColumn(1)
+                               .AddRow(0.5f)
+                               .AddRow(0.5f)
+                               .WithNormalizedColumnWidth(true)
+                               .WithNormalizedRowWidth(true)
+                               .WithHSpacing(0)
+                               .WithVSpacing(0)
+                               .WithPadding(0)
+                               .AddWidget(UINewAssign(viewport1, UIViewport)
+                                              .SetPlayerController(playerController1)
+                                              .WithGridOffset(UIGridOffset()
+                                                                  .WithColumnIndex(0)
+                                                                  .WithRowIndex(0))
+                                              .WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_TOP))
+                                                  [UINew(UILabel)
+                                                       .WithText(UINew(UIText, "PLAYER1\nPress ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")
+                                                                     .WithFontSize(16)
+                                                                     .WithWordWrap(false)
+                                                                     .WithAlignment(TEXT_ALIGNMENT_HCENTER))
+                                                       .WithAutoWidth(true)
+                                                       .WithAutoHeight(true)])
+                               .AddWidget(UINewAssign(viewport2, UIViewport)
+                                              .SetPlayerController(playerController2)
+                                              .WithGridOffset(UIGridOffset()
+                                                                  .WithColumnIndex(0)
+                                                                  .WithRowIndex(1))
+                                              .WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_TOP))
+                                                  [UINew(UILabel)
+                                                       .WithText(UINew(UIText, "PLAYER2\nPress ENTER to switch First/Third person camera\nUse Up,Down,Left,Right to move, V to jump")
+                                                                     .WithFontSize(16)
+                                                                     .WithWordWrap(false)
+                                                                     .WithAlignment(TEXT_ALIGNMENT_HCENTER))
+                                                       .WithAutoWidth(true)
+                                                       .WithAutoHeight(true)]));
 
-        // Add viewports to desktop
-        desktop->AddWidget(
-            &WNew(WWidget)
-                 .SetLayout(WIDGET_LAYOUT_GRID)
-                 .SetGridSize(1, 2)
-                 .SetRowWidth(0, 0.5f)
-                 .SetRowWidth(1, 0.5f)
-                 .SetColumnWidth(0, 1.0f)
-                 .SetFitColumns(true)
-                 .SetFitRows(true)
-                 .SetMargin(0, 0, 0, 0)
-                 .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                     [WNewAssign(viewport1, WViewport)
-                          .SetPlayerController(playerController1)
-                          .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                          .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                          .SetGridCell(0, 0)
-                              [WNew(WTextDecorate)
-                                   .SetColor({1, 1, 1})
-                                   .SetText("\n\n\nPLAYER1\nPress ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")]]
-                     [WNewAssign(viewport2, WViewport)
-                          .SetPlayerController(playerController2)
-                          .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                          .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                          .SetGridCell(0, 1)
-                              [WNew(WTextDecorate)
-                                   .SetColor({1, 1, 1})
-                                   .SetText("\n\n\nPLAYER2\nPress ENTER to switch First/Third person camera\nUse Up,Down,Left,Right to move, V to jump")]]);
+        UIShareInputs* shareInputs = UINew(UIShareInputs)
+                                         .Add(viewport1)
+                                         .Add(viewport2);
 
-        WWidgetShareFocusGroup* focusShareGroup = CreateInstanceOf<WWidgetShareFocusGroup>();
-        focusShareGroup->Widgets.EmplaceBack(TWeakRef<WViewport>(viewport1));
-        focusShareGroup->Widgets.EmplaceBack(TWeakRef<WViewport>(viewport2));
+        viewport1->WithShareInputs(shareInputs);
+        viewport2->WithShareInputs(shareInputs);
 
-        viewport1->SetFocus();
-
-        viewport1->SetShareFocus(focusShareGroup);
-        viewport2->SetShareFocus(focusShareGroup);
+        desktop->SetFullscreenWidget(splitView);
+        desktop->SetFocusWidget(viewport1);
 
         // Hide mouse cursor
-        desktop->SetCursorVisible(false);
+        GUIManager->bCursorVisible = false;
 
-        AShortcutContainer* shortcuts = CreateInstanceOf<AShortcutContainer>();
+        // Add desktop and set current
+        GUIManager->AddDesktop(desktop);
+
+        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
-        desktop->SetShortcuts(shortcuts);
-
-        // Set current desktop
-        GEngine->SetDesktop(desktop);
+        desktop->SetShortcuts(shortcuts);        
     }
 
     void ToggleFirstPersonCamera()

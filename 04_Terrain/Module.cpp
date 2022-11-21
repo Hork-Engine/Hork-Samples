@@ -31,7 +31,9 @@ SOFTWARE.
 #include <Runtime/DirectionalLightComponent.h>
 #include <Runtime/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
-#include <Runtime/WDesktop.h>
+#include <Runtime/UI/UIManager.h>
+#include <Runtime/UI/UIViewport.h>
+#include <Runtime/UI/UILabel.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/ResourceManager.h>
@@ -87,23 +89,35 @@ public:
         playerController->SetRenderingParameters(RenderingParams);
         playerController->SetPawn(spectator);
 
-        WDesktop* desktop = CreateInstanceOf<WDesktop>();
-        GEngine->SetDesktop(desktop);
+        // Create UI desktop
+        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
 
-        desktop->AddWidget(
-            &WNew(WViewport)
-                 .SetPlayerController(playerController)
-                 .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetFocus()
-                    [WNew(WTextDecorate)
-                    .SetColor({1,1,1})
-                    .SetText("Use WASD to move, SPACE - move up\nY - Toggle wireframe")]);
+        // Add viewport to desktop
+        UIViewport* viewport;
+        desktop->AddWidget(UINewAssign(viewport, UIViewport)
+                               .SetPlayerController(playerController)
+                               .WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_TOP))
+                                   [UINew(UILabel)
+                                        .WithText(UINew(UIText, "Use WASD to move, SPACE - move up\nY - Toggle wireframe")
+                                                      .WithFontSize(16)
+                                                      .WithWordWrap(false)
+                                                      .WithAlignment(TEXT_ALIGNMENT_HCENTER))
+                                        .WithAutoWidth(true)
+                                        .WithAutoHeight(true)]);
 
-        AShortcutContainer* shortcuts = CreateInstanceOf<AShortcutContainer>();
+        desktop->SetFullscreenWidget(viewport);
+        desktop->SetFocusWidget(viewport);
+
+        // Hide mouse cursor
+        GUIManager->bCursorVisible = false;
+
+        // Add desktop and set current
+        GUIManager->AddDesktop(desktop);
+
+        // Add shortcuts
+        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_Y, 0, {this, &AModule::ToggleWireframe});
         shortcuts->AddShortcut(KEY_G, 0, {this, &AModule::ToggleDebugDraw});
-        
         desktop->SetShortcuts(shortcuts);
     }
 

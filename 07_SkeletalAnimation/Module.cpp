@@ -31,7 +31,9 @@ SOFTWARE.
 #include <Runtime/DirectionalLightComponent.h>
 #include <Runtime/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
-#include <Runtime/WDesktop.h>
+#include <Runtime/UI/UIManager.h>
+#include <Runtime/UI/UIViewport.h>
+#include <Runtime/UI/UILabel.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 
@@ -89,29 +91,34 @@ public:
         playerController->SetPawn(Player);
 
         // Create UI desktop
-        WDesktop* desktop = CreateInstanceOf<WDesktop>();
+        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
 
         // Add viewport to desktop
-        desktop->AddWidget(
-            &WNew(WViewport)
-                 .SetPlayerController(playerController)
-                 .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetFocus()
-                     [WNew(WTextDecorate)
-                          .SetColor({1, 1, 1})
-                          .SetText("Press ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")
-                          .SetHorizontalAlignment(WIDGET_ALIGNMENT_RIGHT)]);
+        UIViewport* viewport;
+        desktop->AddWidget(UINewAssign(viewport, UIViewport)
+                               .SetPlayerController(playerController)
+                               .WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_TOP))
+                                   [UINew(UILabel)
+                                        .WithText(UINew(UIText, "Press ENTER to switch First/Third person camera\n\rUse WASD to move, SPACE to jump")
+                                                      .WithFontSize(16)
+                                                      .WithWordWrap(false)
+                                                      .WithAlignment(TEXT_ALIGNMENT_HCENTER))
+                                        .WithAutoWidth(true)
+                                        .WithAutoHeight(true)]);
+
+        desktop->SetFullscreenWidget(viewport);
+        desktop->SetFocusWidget(viewport);
 
         // Hide mouse cursor
-        desktop->SetCursorVisible(false);
+        GUIManager->bCursorVisible = false;
 
-        AShortcutContainer* shortcuts = CreateInstanceOf<AShortcutContainer>();
+        // Add desktop and set current
+        GUIManager->AddDesktop(desktop);
+
+        // Add shortcuts
+        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);
-
-        // Set current desktop
-        GEngine->SetDesktop(desktop);
     }
 
     void ToggleFirstPersonCamera()

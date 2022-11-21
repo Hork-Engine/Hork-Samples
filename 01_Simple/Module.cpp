@@ -33,7 +33,9 @@ SOFTWARE.
 #include <Runtime/DirectionalLightComponent.h>
 #include <Runtime/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
-#include <Runtime/WDesktop.h>
+#include <Runtime/UI/UIDesktop.h>
+#include <Runtime/UI/UIViewport.h>
+#include <Runtime/UI/UIWindow.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/ResourceManager.h>
@@ -178,21 +180,21 @@ public:
         CreateScene(world);
 
         // Create UI desktop
-        WDesktop* desktop = CreateInstanceOf<WDesktop>();
+        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
 
         // Add viewport to desktop
-        desktop->AddWidget(
-            &WNew(WViewport)
-                 .SetPlayerController(playerController)
-                 .SetHorizontalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetVerticalAlignment(WIDGET_ALIGNMENT_STRETCH)
-                 .SetFocus());
+        UIViewport* viewport;
+        desktop->AddWidget(UINewAssign(viewport, UIViewport)
+                               .SetPlayerController(playerController));
+
+        desktop->SetFullscreenWidget(viewport);
+        desktop->SetFocusWidget(viewport);
 
         // Hide mouse cursor
-        desktop->SetCursorVisible(false);
+        GUIManager->bCursorVisible = false;
 
-        // Set current desktop
-        GEngine->SetDesktop(desktop);
+        // Add desktop and set current
+        GUIManager->AddDesktop(desktop);
     }
 
     void CreateResources()
