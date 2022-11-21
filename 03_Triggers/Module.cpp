@@ -96,7 +96,7 @@ public:
                                .SetPlayerController(playerController)
                                .WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_TOP))
                                    [UINew(UILabel)
-                                        .WithText(UINew(UIText, "Press ENTER to switch First/Third person camera\n\rUse WASD to move, SPACE to jump")
+                                        .WithText(UINew(UIText, "Press ENTER to switch First/Third person camera\nUse WASD to move, SPACE to jump")
                                                       .WithFontSize(16)
                                                       .WithWordWrap(false)
                                                       .WithAlignment(TEXT_ALIGNMENT_HCENTER))
