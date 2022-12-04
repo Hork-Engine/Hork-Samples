@@ -134,9 +134,9 @@ protected:
         SkyboxComponent->SetAbsoluteRotation(true);
 
         // Set root
-        RootComponent = CharacterPhysics;
+        m_RootComponent = CharacterPhysics;
         // Set pawn camera
-        PawnCamera = Camera;
+        m_PawnCamera = Camera;
 
         // Call TickPrePhysics() events
         Initializer.bTickPrePhysics = true;

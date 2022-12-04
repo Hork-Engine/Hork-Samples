@@ -56,7 +56,7 @@ protected:
         ProcMesh->SetMesh(ProcMeshResource);
         ProcMesh->SetMaterialInstance(CharacterMaterialInstance);
 
-        RootComponent = ProcMesh;
+        m_RootComponent = ProcMesh;
 
         for (int i = 0; i < Metaballs.Size(); i++)
             Metaballs[i] = {Float3(0), 0.32f + float(i)*0.04f};

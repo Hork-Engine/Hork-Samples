@@ -56,8 +56,8 @@ protected:
     void Initialize(SActorInitializer& Initializer) override
     {
         Camera        = CreateComponent<ACameraComponent>("Camera");
-        RootComponent = Camera;
-        PawnCamera    = Camera;
+        m_RootComponent = Camera;
+        m_PawnCamera    = Camera;
 
         Initializer.bCanEverTick        = true;
         Initializer.bTickEvenWhenPaused = true;
@@ -67,12 +67,12 @@ protected:
     {
         Super::BeginPlay();
 
-        Float3 vec = RootComponent->GetBackVector();
+        Float3 vec = m_RootComponent->GetBackVector();
         Float2 projected(vec.X, vec.Z);
         float  lenSqr = projected.LengthSqr();
         if (lenSqr < 0.0001f)
         {
-            vec         = RootComponent->GetRightVector();
+            vec = m_RootComponent->GetRightVector();
             projected.X = vec.X;
             projected.Y = vec.Z;
             projected.NormalizeSelf();
@@ -86,7 +86,7 @@ protected:
 
         Angles.Pitch = Angles.Roll = 0;
 
-        RootComponent->SetAngles(Angles);
+        m_RootComponent->SetAngles(Angles);
     }
 
     void SetupInputComponent(AInputComponent* Input) override
@@ -120,7 +120,7 @@ protected:
             const float moveSpeed = TimeStep * (bSpeed ? MOVE_HIGH_SPEED : MOVE_SPEED);
             Float3      dir       = MoveVector * moveSpeed;
 
-            RootComponent->Step(dir);
+            m_RootComponent->Step(dir);
 
             MoveVector.Clear();
         }
@@ -150,12 +150,12 @@ protected:
 
     void MoveForward(float Value)
     {
-        MoveVector += RootComponent->GetForwardVector() * Math::Sign(Value);
+        MoveVector += m_RootComponent->GetForwardVector() * Math::Sign(Value);
     }
 
     void MoveRight(float Value)
     {
-        MoveVector += RootComponent->GetRightVector() * Math::Sign(Value);
+        MoveVector += m_RootComponent->GetRightVector() * Math::Sign(Value);
     }
 
     void MoveUp(float Value)
@@ -174,14 +174,14 @@ protected:
     {
         Angles.Yaw -= Value;
         Angles.Yaw = Angl::Normalize180(Angles.Yaw);
-        RootComponent->SetAngles(Angles);
+        m_RootComponent->SetAngles(Angles);
     }
 
     void TurnUp(float Value)
     {
         Angles.Pitch += Value;
         Angles.Pitch = Math::Clamp(Angles.Pitch, -90.0f, 90.0f);
-        RootComponent->SetAngles(Angles);
+        m_RootComponent->SetAngles(Angles);
     }
 
     void SpeedPress()

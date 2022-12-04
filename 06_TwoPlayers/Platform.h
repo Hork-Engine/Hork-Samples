@@ -56,24 +56,24 @@ public:
         mesh->SetMaterialInstance(0, ExampleMaterialInstance);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
-        RootComponent = mesh;
+        m_RootComponent = mesh;
 
         Initializer.bCanEverTick = true;
     }
 
     void BeginPlay()
     {
-        PlatformY = RootComponent->GetPosition().Y;
+        PlatformY = m_RootComponent->GetPosition().Y;
     }
 
     void Tick(float TimeStep)
     {
         const float RotationSpeed = 0.2f;
-        RootComponent->TurnRightFPS(TimeStep * RotationSpeed);
+        m_RootComponent->TurnRightFPS(TimeStep * RotationSpeed);
 
         PlatformOffset = Math::FMod(PlatformOffset + TimeStep, Math::_2PI);
-        Float3 p       = RootComponent->GetPosition();
-        p.Y            = Math::Abs(Math::Sin(PlatformOffset)) * 5;
-        RootComponent->SetPosition(p);
+        Float3 p = m_RootComponent->GetPosition();
+        p.Y = Math::Abs(Math::Sin(PlatformOffset)) * 5;
+        m_RootComponent->SetPosition(p);
     }
 };

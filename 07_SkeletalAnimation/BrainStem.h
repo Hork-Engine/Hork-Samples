@@ -59,7 +59,7 @@ protected:
         SkinnedComponent->SetMesh(Mesh);
         SkinnedComponent->CopyMaterialsFromMeshResource();
 
-        RootComponent            = SkinnedComponent;
+        m_RootComponent = SkinnedComponent;
         Initializer.bCanEverTick = true;
     }
 

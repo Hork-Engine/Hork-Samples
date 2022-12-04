@@ -57,20 +57,20 @@ protected:
         static TStaticResourceFinder<AIndexedMesh>      BoxMesh("Box"s);
         static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
 
-        RootComponent = CreateComponent<ASceneComponent>("Root");
+        m_RootComponent = CreateComponent<ASceneComponent>("Root");
 
         Movable = CreateComponent<AMeshComponent>("Movable");
         Movable->SetMesh(BoxMesh);
         Movable->SetMaterialInstance(ExampleMaterialInstance);
         Movable->SetMotionBehavior(MB_KINEMATIC);
-        Movable->AttachTo(RootComponent);
+        Movable->AttachTo(m_RootComponent);
 
         Camera = CreateComponent<ACameraComponent>("Camera");
         Camera->SetPosition(2, 4, 2);
         Camera->SetAngles(-60, 45, 0);
-        Camera->AttachTo(RootComponent);
+        Camera->AttachTo(m_RootComponent);
 
-        PawnCamera = Camera;
+        m_PawnCamera = Camera;
     }
 
     void SetupInputComponent(AInputComponent* Input) override
@@ -84,16 +84,16 @@ protected:
 
     void MoveForward(float Value)
     {
-        Float3 pos = RootComponent->GetPosition();
+        Float3 pos = m_RootComponent->GetPosition();
         pos += Movable->GetForwardVector() * Value;
-        RootComponent->SetPosition(pos);
+        m_RootComponent->SetPosition(pos);
     }
 
     void MoveRight(float Value)
     {
-        Float3 pos = RootComponent->GetPosition();
+        Float3 pos = m_RootComponent->GetPosition();
         pos += Movable->GetRightVector() * Value;
-        RootComponent->SetPosition(pos);
+        m_RootComponent->SetPosition(pos);
     }
 
     void MoveUp(float Value)

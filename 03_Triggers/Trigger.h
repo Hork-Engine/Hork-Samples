@@ -62,7 +62,7 @@ protected:
 
         TriggerBody->SetCollisionModel(collisionModel);
 
-        RootComponent = TriggerBody;
+        m_RootComponent = TriggerBody;
     }
 
     void BeginPlay()
@@ -76,7 +76,10 @@ protected:
 
     void OnBeginOverlap(SOverlapEvent const& Event)
     {
-        LOG("OnBeginOverlap: self {} other {}\n", Event.SelfBody->GetObjectName(), Event.OtherBody->GetObjectName());
+        ASceneComponent* self = Event.SelfBody->GetOwnerComponent();
+        ASceneComponent* other = Event.OtherBody->GetOwnerComponent();
+
+        LOG("OnBeginOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
         if (!Timer)
         {
@@ -91,7 +94,10 @@ protected:
 
     void OnEndOverlap(SOverlapEvent const& Event)
     {
-        LOG("OnEndOverlap: self {} other {}\n", Event.SelfBody->GetObjectName(), Event.OtherBody->GetObjectName());
+        ASceneComponent* self = Event.SelfBody->GetOwnerComponent();
+        ASceneComponent* other = Event.OtherBody->GetOwnerComponent();
+
+        LOG("OnEndOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
         Timer->Stop();
     }
