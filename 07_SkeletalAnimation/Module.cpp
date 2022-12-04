@@ -65,7 +65,7 @@ public:
         CreateScene(world);
 
         // Set input mappings
-        AInputMappings* inputMappings = CreateInstanceOf<AInputMappings>();
+        AInputMappings* inputMappings = NewObj<AInputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -80,7 +80,7 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Set rendering parameters
-        WorldRenderView* renderView = CreateInstanceOf<WorldRenderView>();
+        WorldRenderView* renderView = NewObj<WorldRenderView>();
         renderView->bDrawDebug = true;
 
         // Spawn player controller
@@ -91,7 +91,7 @@ public:
         playerController->SetPawn(Player);
 
         // Create UI desktop
-        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
+        UIDesktop* desktop = NewObj<UIDesktop>();
 
         // Add viewport to desktop
         UIViewport* viewport;
@@ -116,7 +116,7 @@ public:
         GUIManager->AddDesktop(desktop);
 
         // Add shortcuts
-        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
+        UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);
     }
@@ -196,7 +196,7 @@ public:
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = CreateInstanceOf<AMaterial>(graph->Compile());
+        AMaterial* material = NewObj<AMaterial>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Instantiate material

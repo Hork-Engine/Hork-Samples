@@ -52,7 +52,7 @@ protected:
         static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         ProcMesh = CreateComponent<AProceduralMeshComponent>("ProcMesh");
-        ProcMeshResource = CreateInstanceOf<AProceduralMesh>();
+        ProcMeshResource = NewObj<AProceduralMesh>();
         ProcMesh->SetMesh(ProcMeshResource);
         ProcMesh->SetMaterialInstance(CharacterMaterialInstance);
 

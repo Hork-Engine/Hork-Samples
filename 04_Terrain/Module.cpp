@@ -56,7 +56,7 @@ public:
     {
         CreateResources();
 
-        AInputMappings* inputMappings = CreateInstanceOf<AInputMappings>();
+        AInputMappings* inputMappings = NewObj<AInputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -72,7 +72,7 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_P}, 0, CONTROLLER_PLAYER_1);
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
-        RenderView = CreateInstanceOf<WorldRenderView>();
+        RenderView = NewObj<WorldRenderView>();
         RenderView->bWireframe = false;
         RenderView->bDrawDebug = true;
 
@@ -91,7 +91,7 @@ public:
         playerController->SetPawn(spectator);
 
         // Create UI desktop
-        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
+        UIDesktop* desktop = NewObj<UIDesktop>();
 
         // Add viewport to desktop
         UIViewport* viewport;
@@ -116,7 +116,7 @@ public:
         GUIManager->AddDesktop(desktop);
 
         // Add shortcuts
-        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
+        UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_Y, 0, {this, &AModule::ToggleWireframe});
         shortcuts->AddShortcut(KEY_G, 0, {this, &AModule::ToggleDebugDraw});
         desktop->SetShortcuts(shortcuts);
@@ -179,7 +179,7 @@ public:
                     data[y*res + x] = stb_perlin_ridge_noise3((float)x / res * 3, (float)y /res * 3, 0, 2.3f, 0.5f, 1, 4) * 400 - 300;
                 }
             }
-            ATerrain* resource = CreateInstanceOf<ATerrain>(res, data);
+            ATerrain* resource = NewObj<ATerrain>(res, data);
 
             // Load heightmap from file
             //ATerrain* resource = GetOrCreateResource<ATerrain>("/Root/terrain.asset");

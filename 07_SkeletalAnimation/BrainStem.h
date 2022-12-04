@@ -50,7 +50,7 @@ protected:
         TStaticResourceFinder<AIndexedMesh>       Mesh("/Root/models/BrainStem/brainstem_mesh.mesh"s);
         TStaticResourceFinder<ASkeletalAnimation> SkelAnim("/Root/models/BrainStem/brainstem_animation.animation"s);
 
-        AAnimationController* controller = CreateInstanceOf<AAnimationController>();
+        AAnimationController* controller = NewObj<AAnimationController>();
         controller->SetAnimation(SkelAnim);
         controller->SetPlayMode(ANIMATION_PLAY_WRAP);
 

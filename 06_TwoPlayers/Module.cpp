@@ -67,7 +67,7 @@ public:
         CreateScene(world);
 
         // Set input mappings
-        AInputMappings* inputMappings = CreateInstanceOf<AInputMappings>();
+        AInputMappings* inputMappings = NewObj<AInputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -86,11 +86,11 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Set rendering parameters
-        WorldRenderView* renderView1 = CreateInstanceOf<WorldRenderView>();
+        WorldRenderView* renderView1 = NewObj<WorldRenderView>();
         renderView1->bDrawDebug = true;
         renderView1->VisibilityMask = ~PLAYER2_SKYBOX_VISIBILITY_GROUP;
 
-        WorldRenderView* renderView2 = CreateInstanceOf<WorldRenderView>();
+        WorldRenderView* renderView2 = NewObj<WorldRenderView>();
         renderView2->bDrawDebug = true;
         renderView2->VisibilityMask = ~PLAYER1_SKYBOX_VISIBILITY_GROUP;
 
@@ -111,7 +111,7 @@ public:
         UIGrid* splitView;
 
         // Add viewport to desktop
-        UIDesktop* desktop = CreateInstanceOf<UIDesktop>();
+        UIDesktop* desktop = NewObj<UIDesktop>();
         desktop->AddWidget(UINewAssign(splitView, UIGrid, 0, 0)
                                .AddColumn(1)
                                .AddRow(0.5f)
@@ -164,7 +164,7 @@ public:
         // Add desktop and set current
         GUIManager->AddDesktop(desktop);
 
-        UIShortcutContainer* shortcuts = CreateInstanceOf<UIShortcutContainer>();
+        UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);        
     }
@@ -184,7 +184,7 @@ public:
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = CreateInstanceOf<AMaterial>(graph->Compile());
+        AMaterial* material = NewObj<AMaterial>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Instantiate material
