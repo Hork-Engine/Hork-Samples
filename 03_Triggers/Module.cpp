@@ -36,6 +36,7 @@ SOFTWARE.
 #include <Runtime/UI/UILabel.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/WorldRenderView.h>
 
 #include "Character.h"
 #include "Trigger.h"
@@ -77,14 +78,14 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Set rendering parameters
-        ARenderingParameters* renderingParams = CreateInstanceOf<ARenderingParameters>();
-        renderingParams->bDrawDebug           = true;
+        WorldRenderView* renderView = CreateInstanceOf<WorldRenderView>();
+        renderView->bDrawDebug = true;
 
         // Spawn player controller
         APlayerController* playerController = world->SpawnActor2<APlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
-        playerController->SetRenderingParameters(renderingParams);
+        playerController->SetRenderView(renderView);
         playerController->SetPawn(Player);
 
         // Create UI desktop

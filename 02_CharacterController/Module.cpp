@@ -36,6 +36,7 @@ SOFTWARE.
 #include <Runtime/UI/UILabel.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/WorldRenderView.h>
 
 #include "Character.h"
 #include "Platform.h"
@@ -50,8 +51,11 @@ public:
 
     AModule()
     {
+        WorldRenderView* renderView = CreateInstanceOf<WorldRenderView>();
+        renderView->bDrawDebug = true;
+
         // Create game resources
-        CreateResources();
+        CreateResources(renderView);
 
         // Create game world
         AWorld* world = AWorld::CreateWorld();
@@ -76,15 +80,11 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_P}, 0, CONTROLLER_PLAYER_1);
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
-        // Set rendering parameters
-        ARenderingParameters* renderingParams = CreateInstanceOf<ARenderingParameters>();
-        renderingParams->bDrawDebug           = true;
-
         // Spawn player controller
         APlayerController* playerController = world->SpawnActor2<APlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
-        playerController->SetRenderingParameters(renderingParams);
+        playerController->SetRenderView(renderView);
         playerController->SetPawn(Player);
 
         // Create UI desktop
@@ -126,7 +126,7 @@ public:
         Player->SetFirstPersonCamera(!Player->IsFirstPersonCamera());
     }
 
-    void CreateResources()
+    void CreateResources(WorldRenderView* renderView)
     {
         // Create character capsule
         RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");

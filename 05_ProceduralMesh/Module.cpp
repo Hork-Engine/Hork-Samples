@@ -36,6 +36,7 @@ SOFTWARE.
 #include <Runtime/UI/UILabel.h>
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
+#include <Runtime/WorldRenderView.h>
 
 #include "Character.h"
 #include "MetaballController.h"
@@ -45,9 +46,9 @@ class AModule final : public AGameModule
     HK_CLASS(AModule, AGameModule)
 
 public:
-    ACharacter*           Player;
-    ARenderingParameters* RenderingParams;
-    Float3                LightDir = Float3(1, -1, -1).Normalized();
+    ACharacter*      Player;
+    WorldRenderView* RenderView;
+    Float3           LightDir = Float3(1, -1, -1).Normalized();
 
     AModule()
     {
@@ -78,14 +79,14 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Set rendering parameters
-        RenderingParams = CreateInstanceOf<ARenderingParameters>();
-        RenderingParams->bDrawDebug = true;
+        RenderView = CreateInstanceOf<WorldRenderView>();
+        RenderView->bDrawDebug = true;
 
         // Spawn player controller
         APlayerController* playerController = world->SpawnActor2<APlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
-        playerController->SetRenderingParameters(RenderingParams);
+        playerController->SetRenderView(RenderView);
         playerController->SetPawn(Player);
 
         // Create UI desktop
@@ -127,7 +128,7 @@ public:
 
     void ToggleWireframe()
     {
-        RenderingParams->bWireframe ^= 1;
+        RenderView->bWireframe ^= 1;
     }
 
     void CreateResources()

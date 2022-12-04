@@ -86,25 +86,25 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Set rendering parameters
-        ARenderingParameters* renderingParams1 = CreateInstanceOf<ARenderingParameters>();
-        renderingParams1->bDrawDebug           = true;
-        renderingParams1->VisibilityMask       = ~PLAYER2_SKYBOX_VISIBILITY_GROUP;
+        WorldRenderView* renderView1 = CreateInstanceOf<WorldRenderView>();
+        renderView1->bDrawDebug = true;
+        renderView1->VisibilityMask = ~PLAYER2_SKYBOX_VISIBILITY_GROUP;
 
-        ARenderingParameters* renderingParams2 = CreateInstanceOf<ARenderingParameters>();
-        renderingParams2->bDrawDebug           = true;
-        renderingParams2->VisibilityMask       = ~PLAYER1_SKYBOX_VISIBILITY_GROUP;
+        WorldRenderView* renderView2 = CreateInstanceOf<WorldRenderView>();
+        renderView2->bDrawDebug = true;
+        renderView2->VisibilityMask = ~PLAYER1_SKYBOX_VISIBILITY_GROUP;
 
         // Spawn player controller
         APlayerController* playerController1 = world->SpawnActor2<APlayerController>();
         playerController1->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController1->SetInputMappings(inputMappings);
-        playerController1->SetRenderingParameters(renderingParams1);
+        playerController1->SetRenderView(renderView1);
         playerController1->SetPawn(Player1);
 
         APlayerController* playerController2 = world->SpawnActor2<APlayerController>();
         playerController2->SetPlayerIndex(CONTROLLER_PLAYER_2);
         playerController2->SetInputMappings(inputMappings);
-        playerController2->SetRenderingParameters(renderingParams2);
+        playerController2->SetRenderView(renderView2);
         playerController2->SetPawn(Player2);
 
         UIViewport *viewport1, *viewport2;

@@ -37,6 +37,7 @@ SOFTWARE.
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/ResourceManager.h>
+#include <Runtime/WorldRenderView.h>
 
 #include "Spectator.h"
 
@@ -48,8 +49,8 @@ class AModule final : public AGameModule
     HK_CLASS(AModule, AGameModule)
 
 public:
-    ARenderingParameters* RenderingParams;
-    Float3                LightDir = Float3(1, -1, -1).Normalized();
+    WorldRenderView* RenderView;
+    Float3 LightDir = Float3(1, -1, -1).Normalized();
 
     AModule()
     {
@@ -71,9 +72,9 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_P}, 0, CONTROLLER_PLAYER_1);
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
-        RenderingParams = CreateInstanceOf<ARenderingParameters>();
-        RenderingParams->bWireframe = false;
-        RenderingParams->bDrawDebug = true;
+        RenderView = CreateInstanceOf<WorldRenderView>();
+        RenderView->bWireframe = false;
+        RenderView->bDrawDebug = true;
 
         AWorld* world = AWorld::CreateWorld();
 
@@ -86,7 +87,7 @@ public:
         APlayerController* playerController = world->SpawnActor2<APlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
-        playerController->SetRenderingParameters(RenderingParams);
+        playerController->SetRenderView(RenderView);
         playerController->SetPawn(spectator);
 
         // Create UI desktop
@@ -123,12 +124,12 @@ public:
 
     void ToggleWireframe()
     {
-        RenderingParams->bWireframe ^= 1;
+        RenderView->bWireframe ^= 1;
     }
 
     void ToggleDebugDraw()
     {
-        RenderingParams->bDrawDebug ^= 1;
+        RenderView->bDrawDebug ^= 1;
     }
 
     void CreateResources()
