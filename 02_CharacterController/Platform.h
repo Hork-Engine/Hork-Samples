@@ -49,11 +49,14 @@ public:
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
 
         static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-        static TStaticResourceFinder<AIndexedMesh>      Mesh("/Default/Meshes/Box"s);
+        static TStaticResourceFinder<AIndexedMesh> Mesh("/Default/Meshes/Box"s);
+
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(ExampleMaterialInstance);
 
         // Setup mesh and material
         mesh->SetMesh(Mesh);
-        mesh->SetMaterialInstance(0, ExampleMaterialInstance);
+        mesh->SetRenderView(meshRender);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
         m_RootComponent = mesh;
@@ -72,8 +75,8 @@ public:
         m_RootComponent->TurnRightFPS(TimeStep * RotationSpeed);
 
         PlatformOffset = Math::FMod(PlatformOffset + TimeStep, Math::_2PI);
-        Float3 p       = m_RootComponent->GetPosition();
-        p.Y            = Math::Abs(Math::Sin(PlatformOffset)) * 5;
+        Float3 p = m_RootComponent->GetPosition();
+        p.Y = Math::Abs(Math::Sin(PlatformOffset)) * 5;
         m_RootComponent->SetPosition(p);
     }
 };

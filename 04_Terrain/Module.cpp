@@ -39,7 +39,7 @@ SOFTWARE.
 #include <Runtime/ResourceManager.h>
 #include <Runtime/WorldRenderView.h>
 
-#include "Spectator.h"
+#include "../Common/Spectator.h"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
@@ -199,8 +199,11 @@ public:
             //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
             static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(SkyboxMaterialInst);
+
             meshComponent->SetMesh(SkyMesh);
-            meshComponent->SetMaterialInstance(0, SkyboxMaterialInst);
+            meshComponent->SetRenderView(meshRender);
         }
 
         world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));

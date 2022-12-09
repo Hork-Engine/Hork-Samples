@@ -2,13 +2,16 @@ set( PROJECT 04_Terrain )
 
 file( GLOB Code *.h *.cpp )
 file( GLOB Resources res/resource.rc res/hork.ico res/resource.h )
+file( GLOB Common ../Common/*.cpp ../Common/*.h )
 
 source_group( "" FILES ${Code} )
 source_group( "res" FILES ${Resources} )
+source_group( "Common" FILES ${Common} )
 
 set( SRCS
 ${Code}
 ${Resources}
+${Common}
 )
 
 setup_msvc_runtime_library()

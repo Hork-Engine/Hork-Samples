@@ -37,11 +37,23 @@ SOFTWARE.
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;
 
+constexpr VISIBILITY_GROUP PLAYER1_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(8);
+constexpr VISIBILITY_GROUP PLAYER2_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(16);
+constexpr VISIBILITY_GROUP CAMERA_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(32);
+
 class ACharacter : public AActor
 {
     HK_ACTOR(ACharacter, AActor)
 
 public:
+    void SetPlayerIndex(int PlayerIndex)
+    {
+        if (PlayerIndex == 1)
+            SkyboxComponent->SetVisibilityGroup(PLAYER1_SKYBOX_VISIBILITY_GROUP);
+        else
+            SkyboxComponent->SetVisibilityGroup(PLAYER2_SKYBOX_VISIBILITY_GROUP);
+    }
+
     void SetFirstPersonCamera(bool FirstPersonCamera)
     {
         bFirstPersonCamera = FirstPersonCamera;
@@ -64,10 +76,36 @@ public:
         return bFirstPersonCamera;
     }
 
+    static void CreateCharacterResources()
+    {
+        static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial"s);
+        static TStaticResourceFinder<ATexture> SkyboxTexture("AtmosphereSkybox"s);
+        static TStaticResourceFinder<AMaterial> SkyboxMaterial("/Default/Materials/Skybox"s);
+
+        // Create character capsule
+        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
+
+        // Create character material instance
+        AMaterialInstance* materialInstance = ExampleMaterial->Instantiate();
+        // base color
+        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
+        // metallic
+        materialInstance->SetConstant(0, 0);
+        // roughness
+        materialInstance->SetConstant(1, 0.1f);
+        RegisterResource(materialInstance, "CharacterMaterialInstance");
+
+        // Create skybox material instance
+        AMaterialInstance* skyboxMaterialInst = SkyboxMaterial->Instantiate();
+        skyboxMaterialInst->SetTexture(0, SkyboxTexture);
+        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
+    }
+
 protected:
     AMeshComponent*           CharacterMesh{};
     APhysicalBody*            CharacterPhysics{};
     ACameraComponent*         Camera{};
+    AMeshComponent*           SkyboxComponent{};
     float                     ForwardMove{};
     float                     SideMove{};
     bool                      bWantJump{};
@@ -99,9 +137,11 @@ protected:
         CharacterPhysics->SetCollisionGroup(CM_PAWN);
 
         // Create character model and attach it to physics body
+        MeshRenderView* characterMeshRender = NewObj<MeshRenderView>();
+        characterMeshRender->SetMaterial(CharacterMaterialInstance);
         CharacterMesh = CreateComponent<AMeshComponent>("CharacterMesh");
         CharacterMesh->SetMesh(CapsuleMesh);
-        CharacterMesh->SetMaterialInstance(CharacterMaterialInstance);
+        CharacterMesh->SetRenderView(characterMeshRender);
         CharacterMesh->SetMotionBehavior(MB_KINEMATIC);
         CharacterMesh->AttachTo(CharacterPhysics);
 
@@ -113,11 +153,13 @@ protected:
 
         static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Skybox"s);
         static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
-        AMeshComponent*                                 SkyboxComponent;
+
+        MeshRenderView* skyboxMeshRender = NewObj<MeshRenderView>();
+        skyboxMeshRender->SetMaterial(SkyboxMaterialInst);
         SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);
         SkyboxComponent->SetMesh(UnitBox);
-        SkyboxComponent->SetMaterialInstance(SkyboxMaterialInst);
+        SkyboxComponent->SetRenderView(skyboxMeshRender);
         SkyboxComponent->AttachTo(Camera);
         SkyboxComponent->SetAbsoluteRotation(true);
 

@@ -38,7 +38,7 @@ SOFTWARE.
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/WorldRenderView.h>
 
-#include "Character.h"
+#include "../Common/Character.h"
 #include "Platform.h"
 
 class AModule final : public AGameModule
@@ -128,9 +128,6 @@ public:
 
     void CreateResources(WorldRenderView* renderView)
     {
-        // Create character capsule
-        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
-
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -158,17 +155,7 @@ public:
             // roughness
             materialInstance->SetConstant(1, 1);
             RegisterResource(materialInstance, "WallMaterialInstance");
-        }
-        {
-            AMaterialInstance* materialInstance = material->Instantiate();
-            // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
-            // metallic
-            materialInstance->SetConstant(0, 0);
-            // roughness
-            materialInstance->SetConstant(1, 0.1f);
-            RegisterResource(materialInstance, "CharacterMaterialInstance");
-        }
+        }        
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
@@ -178,11 +165,7 @@ public:
         AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
-
-        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
-        skyboxMaterialInst->SetTexture(0, skybox);
-        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
+        ACharacter::CreateCharacterResources();
     }
     
     void CreateScene(AWorld* world)
@@ -212,9 +195,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(ExampleMaterialInstance);
+
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
+            meshComp->SetRenderView(meshRender);
             meshComp->SetCastShadow(false);
         }
 
@@ -226,9 +212,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(WallMaterialInstance);
+
             // Set mesh and material resources for mesh component
             meshComp->SetMesh(UnitBox);
-            meshComp->SetMaterialInstance(0, WallMaterialInstance);
+            meshComp->SetRenderView(meshRender);
         }
 
         // Spawn small box with simulated physics
@@ -239,9 +228,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(WallMaterialInstance);
+
             // Set mesh and material resources for mesh component
             meshComp->SetMesh(UnitBox);
-            meshComp->SetMaterialInstance(0, WallMaterialInstance);
+            meshComp->SetRenderView(meshRender);
 
             // Setup physics
             meshComp->SetMass(1.0f);
@@ -260,9 +252,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(ExampleMaterialInstance);
+
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
+            meshComp->SetRenderView(meshRender);
         }
 
         spawnTransform.Rotation.FromAngles(0, -Math::_PI / 8, -Math::_PI / 4);
@@ -275,9 +270,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(ExampleMaterialInstance);
+
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
+            meshComp->SetRenderView(meshRender);
         }
 
 

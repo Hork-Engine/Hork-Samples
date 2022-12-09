@@ -49,11 +49,14 @@ public:
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
 
         static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-        static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
+        static TStaticResourceFinder<AIndexedMesh> Mesh("/Default/Meshes/Box"s);
+
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(ExampleMaterialInstance);
 
         // Setup mesh and material
-        mesh->SetMesh(GroundMesh);
-        mesh->SetMaterialInstance(0, ExampleMaterialInstance);
+        mesh->SetMesh(Mesh);
+        mesh->SetRenderView(meshRender);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
         m_RootComponent = mesh;

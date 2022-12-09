@@ -51,10 +51,13 @@ protected:
     {
         static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(CharacterMaterialInstance);
+
         ProcMesh = CreateComponent<AProceduralMeshComponent>("ProcMesh");
         ProcMeshResource = NewObj<AProceduralMesh>();
         ProcMesh->SetMesh(ProcMeshResource);
-        ProcMesh->SetMaterialInstance(CharacterMaterialInstance);
+        ProcMesh->SetRenderView(meshRender);
 
         m_RootComponent = ProcMesh;
 

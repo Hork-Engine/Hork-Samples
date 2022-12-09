@@ -59,9 +59,12 @@ protected:
 
         m_RootComponent = CreateComponent<ASceneComponent>("Root");
 
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(ExampleMaterialInstance);
+
         Movable = CreateComponent<AMeshComponent>("Movable");
         Movable->SetMesh(BoxMesh);
-        Movable->SetMaterialInstance(ExampleMaterialInstance);
+        Movable->SetRenderView(meshRender);
         Movable->SetMotionBehavior(MB_KINEMATIC);
         Movable->AttachTo(m_RootComponent);
 
@@ -201,7 +204,7 @@ public:
     void CreateResources()
     {
         // Create mesh for ground
-        RegisterResource(AIndexedMesh::CreatePlaneXZ(256, 256, 256), "GroundMesh");
+        RegisterResource(AIndexedMesh::CreatePlaneXZ(256, 256, Float2(256)), "GroundMesh");
 
         // Create box
         RegisterResource(AIndexedMesh::CreateBox(Float3(1.0f), 1.0f), "Box");
@@ -255,9 +258,12 @@ public:
         AMeshComponent* groundMesh = ground->GetComponent<AMeshComponent>();
         if (groundMesh)
         {
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(GetResource<AMaterialInstance>("ExampleMaterialInstance"));
+
             // Setup mesh and material
             groundMesh->SetMesh(GetResource<AIndexedMesh>("GroundMesh"));
-            groundMesh->SetMaterialInstance(GetResource<AMaterialInstance>("ExampleMaterialInstance"));
+            groundMesh->SetRenderView(meshRender);
             groundMesh->SetCastShadow(false);
         }
 

@@ -37,7 +37,7 @@ SOFTWARE.
 #include <Runtime/Engine.h>
 #include <Runtime/EnvironmentMap.h>
 
-#include "Character.h"
+#include "../Common/Character.h"
 #include "BrainStem.h"
 
 #include <Assets/AssetImporter.h>
@@ -157,9 +157,12 @@ public:
             static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
             static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(ExampleMaterialInstance);
+
             // Setup mesh and material
             meshComp->SetMesh(GroundMesh);
-            meshComp->SetMaterialInstance(0, ExampleMaterialInstance);
+            meshComp->SetRenderView(meshRender);
             meshComp->SetCastShadow(false);
         }
 
@@ -189,9 +192,6 @@ public:
             ImportGLTF(importSettings);
         }
 
-        // Create character capsule
-        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
-
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -210,16 +210,6 @@ public:
             materialInstance->SetConstant(1, 1);
             RegisterResource(materialInstance, "ExampleMaterialInstance");
         }
-        {
-            AMaterialInstance* materialInstance = material->Instantiate();
-            // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
-            // metallic
-            materialInstance->SetConstant(0, 0);
-            // roughness
-            materialInstance->SetConstant(1, 0.1f);
-            RegisterResource(materialInstance, "CharacterMaterialInstance");
-        }
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
@@ -229,11 +219,7 @@ public:
         AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
-
-        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
-        skyboxMaterialInst->SetTexture(0, skybox);
-        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
+        ACharacter::CreateCharacterResources();
     }
 };
 

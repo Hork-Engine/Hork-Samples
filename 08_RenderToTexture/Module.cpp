@@ -38,7 +38,7 @@ SOFTWARE.
 #include <Runtime/EnvironmentMap.h>
 #include <Runtime/WorldRenderView.h>
 
-#include "Character.h"
+#include "../Common/Character.h"
 
 class AMonitor : public AActor
 {
@@ -53,15 +53,18 @@ public:
         static TStaticResourceFinder<AIndexedMesh> Mesh("QuadXY"s);
 
         m_pRenderView = NewObj<WorldRenderView>();
-        m_pRenderView->VisibilityMask ^= PLAYER_SKYBOX_VISIBILITY_GROUP;
+        m_pRenderView->VisibilityMask ^= PLAYER1_SKYBOX_VISIBILITY_GROUP;
         m_pRenderView->SetViewport(512, 512);
 
         AMaterialInstance* materialInst = MonitorMaterial->Instantiate();
         materialInst->SetTexture(0, m_pRenderView->GetTextureView());
 
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(materialInst);
+
         AMeshComponent* mesh = CreateComponent<AMeshComponent>("Mesh");
         mesh->SetMesh(Mesh);
-        mesh->SetMaterialInstance(0, materialInst);
+        mesh->SetRenderView(meshRender);
         mesh->SetMotionBehavior(MB_KINEMATIC);
 
         m_RootComponent = mesh;
@@ -104,9 +107,13 @@ public:
         static TStaticResourceFinder<AIndexedMesh> UnitBox("/Default/Meshes/Skybox"s);
         static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
         AMeshComponent* SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
+
+        MeshRenderView* meshRender = NewObj<MeshRenderView>();
+        meshRender->SetMaterial(SkyboxMaterialInst);
+
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);
         SkyboxComponent->SetMesh(UnitBox);
-        SkyboxComponent->SetMaterialInstance(SkyboxMaterialInst);
+        SkyboxComponent->SetRenderView(meshRender);
         SkyboxComponent->AttachTo(m_CameraComponent);
         SkyboxComponent->SetAbsoluteRotation(true);
         SkyboxComponent->SetVisibilityGroup(CAMERA_SKYBOX_VISIBILITY_GROUP);
@@ -199,6 +206,8 @@ public:
     {
         WorldRenderView* renderView = NewObj<WorldRenderView>();
         renderView->bDrawDebug = true;
+        renderView->bClearBackground = true;
+        renderView->BackgroundColor = Color4::Black();
         renderView->VisibilityMask ^= CAMERA_SKYBOX_VISIBILITY_GROUP;
 
         // Create game resources
@@ -209,6 +218,7 @@ public:
 
         // Spawn player
         Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
+        Player->SetPlayerIndex(1);
 
         CreateScene(world);
 
@@ -275,9 +285,6 @@ public:
 
     void CreateResources()
     {
-        // Create character capsule
-        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
-
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -304,16 +311,6 @@ public:
             materialInstance->SetConstant(1, 1);
             RegisterResource(materialInstance, "GroundMaterialInst");
         }
-        {
-            AMaterialInstance* materialInstance = material->Instantiate();
-            // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
-            // metallic
-            materialInstance->SetConstant(0, 0);
-            // roughness
-            materialInstance->SetConstant(1, 0.1f);
-            RegisterResource(materialInstance, "CharacterMaterialInstance");
-        }
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
@@ -323,14 +320,10 @@ public:
         AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
-
-        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
-        skyboxMaterialInst->SetTexture(0, skybox);
-        RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
-
         AIndexedMesh* quadXY = AIndexedMesh::CreatePlaneXY(1, 1, Float2(1,-1));
         RegisterResource(quadXY, "QuadXY");
+
+        ACharacter::CreateCharacterResources();
     }
     
     void CreateScene(AWorld* world)
@@ -364,9 +357,12 @@ public:
                 static TStaticResourceFinder<AMaterialInstance> GroundMaterialInst("GroundMaterialInst"s);
                 static TStaticResourceFinder<AIndexedMesh> GroundMesh("/Default/Meshes/PlaneXZ"s);
 
+                MeshRenderView* meshRender = NewObj<MeshRenderView>();
+                meshRender->SetMaterial(GroundMaterialInst);
+
                 // Setup mesh and material
                 meshComp->SetMesh(GroundMesh);
-                meshComp->SetMaterialInstance(0, GroundMaterialInst);
+                meshComp->SetRenderView(meshRender);
                 meshComp->SetCastShadow(false);
             }
         }
