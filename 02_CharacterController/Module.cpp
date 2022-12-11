@@ -41,15 +41,15 @@ SOFTWARE.
 #include "../Common/Character.h"
 #include "Platform.h"
 
-class AModule final : public AGameModule
+class SampleModule final : public GameModule
 {
-    HK_CLASS(AModule, AGameModule)
+    HK_CLASS(SampleModule, GameModule)
 
 public:
     ACharacter* Player;
     Float3      LightDir = Float3(1, -1, -1).Normalized();
 
-    AModule()
+    SampleModule()
     {
         WorldRenderView* renderView = NewObj<WorldRenderView>();
         renderView->bDrawDebug = true;
@@ -58,7 +58,7 @@ public:
         CreateResources(renderView);
 
         // Create game world
-        AWorld* world = AWorld::CreateWorld();
+        World* world = World::CreateWorld();
 
         // Spawn player
         Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
@@ -66,7 +66,7 @@ public:
         CreateScene(world);
 
         // Set input mappings
-        AInputMappings* inputMappings = NewObj<AInputMappings>();
+        InputMappings* inputMappings = NewObj<InputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -117,7 +117,7 @@ public:
 
         // Add shortcuts
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
-        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
+        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);
     }
 
@@ -132,14 +132,14 @@ public:
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = NewObj<AMaterial>(graph->Compile());
+        Material* material = NewObj<Material>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Instantiate material
         {
-            AMaterialInstance* materialInstance = material->Instantiate();
+            MaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank256.webp"));
+            materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/blank256.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -147,9 +147,9 @@ public:
             RegisterResource(materialInstance, "ExampleMaterialInstance");
         }
         {
-            AMaterialInstance* materialInstance = material->Instantiate();
+            MaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.webp"));
+            materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/grid8.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -159,23 +159,23 @@ public:
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
-        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        Texture* skybox = Texture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");
 
-        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
         ACharacter::CreateCharacterResources();
     }
     
-    void CreateScene(AWorld* world)
+    void CreateScene(World* world)
     {
-        static TStaticResourceFinder<AActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
-        static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
+        static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
+        static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
         AActor*                     dirlight          = world->SpawnActor2(DirLightDef);
-        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
@@ -189,11 +189,11 @@ public:
 
         // Spawn ground
         AActor*         ground   = world->SpawnActor2(StaticMeshDef);
-        AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
+        MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
+            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(ExampleMaterialInstance);
@@ -206,11 +206,11 @@ public:
 
         // Spawn wall
         AActor* staticWall = world->SpawnActor2(StaticMeshDef, {{0, 1, -3}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
-        meshComp           = staticWall->GetComponent<AMeshComponent>();
+        meshComp           = staticWall->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
+            static TStaticResourceFinder<MaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(WallMaterialInstance);
@@ -222,11 +222,11 @@ public:
 
         // Spawn small box with simulated physics
         AActor* box = world->SpawnActor2(StaticMeshDef, {{3, 5, 3}, {1, 0, 0, 0}, {0.5f, 0.5f, 0.5f}});
-        meshComp    = box->GetComponent<AMeshComponent>();
+        meshComp    = box->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Box"s);
+            static TStaticResourceFinder<MaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      UnitBox("/Default/Meshes/Box"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(WallMaterialInstance);
@@ -241,16 +241,16 @@ public:
             meshComp->SetCollisionGroup(CM_WORLD_DYNAMIC);
         }
 
-        STransform spawnTransform;
+        Transform spawnTransform;
         spawnTransform.Rotation.FromAngles(0,0,Math::_PI/4);
         spawnTransform.Scale    = Float3(2, 1, 6);
         spawnTransform.Position = Float3(-4,2,2);
         AActor*         floor   = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        meshComp      = floor->GetComponent<AMeshComponent>();
+        meshComp      = floor->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
+            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(ExampleMaterialInstance);
@@ -264,11 +264,11 @@ public:
         spawnTransform.Scale    = Float3(6, 0.3f, 6);
         spawnTransform.Position = Float3(4, 0, 2);
         AActor* floor2           = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        meshComp                = floor2->GetComponent<AMeshComponent>();
+        meshComp                = floor2->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
+            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(ExampleMaterialInstance);
@@ -284,7 +284,7 @@ public:
         spawnTransform.Position = Float3(0, 0.5f, -1);
         world->SpawnActor2<APlatform>(spawnTransform);
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };
 
@@ -294,13 +294,13 @@ public:
 
 #include <Runtime/EntryDecl.h>
 
-static SEntryDecl ModuleDecl = {
+static EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Character Controller",
     // Root path
     "Data",
     // Module class
-    &AModule::ClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
 
@@ -308,4 +308,4 @@ HK_ENTRY_DECL(ModuleDecl)
 // Declare meta
 //
 
-HK_CLASS_META(AModule)
+HK_CLASS_META(SampleModule)

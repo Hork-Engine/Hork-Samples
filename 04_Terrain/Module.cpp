@@ -44,19 +44,19 @@ SOFTWARE.
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 
-class AModule final : public AGameModule
+class SampleModule final : public GameModule
 {
-    HK_CLASS(AModule, AGameModule)
+    HK_CLASS(SampleModule, GameModule)
 
 public:
     WorldRenderView* RenderView;
     Float3 LightDir = Float3(1, -1, -1).Normalized();
 
-    AModule()
+    SampleModule()
     {
         CreateResources();
 
-        AInputMappings* inputMappings = NewObj<AInputMappings>();
+        InputMappings* inputMappings = NewObj<InputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -76,7 +76,7 @@ public:
         RenderView->bWireframe = false;
         RenderView->bDrawDebug = true;
 
-        AWorld* world = AWorld::CreateWorld();
+        World* world = World::CreateWorld();
 
         // Spawn specator
         ASpectator* spectator = world->SpawnActor2<ASpectator>({Float3(0, 2, 0), Quat::Identity()});
@@ -117,8 +117,8 @@ public:
 
         // Add shortcuts
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
-        shortcuts->AddShortcut(KEY_Y, 0, {this, &AModule::ToggleWireframe});
-        shortcuts->AddShortcut(KEY_G, 0, {this, &AModule::ToggleDebugDraw});
+        shortcuts->AddShortcut(KEY_Y, 0, {this, &SampleModule::ToggleWireframe});
+        shortcuts->AddShortcut(KEY_G, 0, {this, &SampleModule::ToggleDebugDraw});
         desktop->SetShortcuts(shortcuts);
     }
 
@@ -136,24 +136,24 @@ public:
     {
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
-        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        Texture* skybox = Texture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");
 
-        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        AMaterial* material = GetOrCreateResource<AMaterial>("/Default/Materials/Skybox");
+        Material* material = GetOrCreateResource<Material>("/Default/Materials/Skybox");
 
-        AMaterialInstance* skyboxMaterialInst = material->Instantiate();
+        MaterialInstance* skyboxMaterialInst = material->Instantiate();
         skyboxMaterialInst->SetTexture(0, skybox);
         RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
     }
 
-    void CreateScene(AWorld* world)
+    void CreateScene(World* world)
     {
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/directionallight.def"));
-        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
+        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
@@ -166,8 +166,8 @@ public:
         }
 
         // Spawn terrain
-        AActor*            terrain          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/terrain.def"));
-        ATerrainComponent* terrainComponent = terrain->GetComponent<ATerrainComponent>();
+        AActor*            terrain          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/terrain.def"));
+        TerrainComponent* terrainComponent = terrain->GetComponent<TerrainComponent>();
         if (terrainComponent)
         {
             // Generate heightmap
@@ -176,28 +176,28 @@ public:
             float* data = heightmap.ToPtr();
             for (int y = 0; y < res; y++) {
                 for (int x = 0; x < res; x++) {
-                    data[y*res + x] = stb_perlin_ridge_noise3((float)x / res * 3, (float)y /res * 3, 0, 2.3f, 0.5f, 1, 4) * 400 - 300;
+                    data[y * res + x] = stb_perlin_fbm_noise3((float)x / res * 3, (float)y / res * 3, 0, 2.3f, 0.5f, 4) * 400 - 300;
                 }
             }
-            ATerrain* resource = NewObj<ATerrain>(res, data);
+            Terrain* resource = NewObj<Terrain>(res, data);
 
             // Load heightmap from file
-            //ATerrain* resource = GetOrCreateResource<ATerrain>("/Root/terrain.asset");
+            //Terrain* resource = GetOrCreateResource<Terrain>("/Root/terrain.asset");
 
             terrainComponent->SetTerrain(resource);
         }
 
         // Spawn skybox
-        STransform t;
+        Transform t;
         t.SetScale(4000);
-        AActor*         skybox        = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/staticmesh.def"), t);
-        AMeshComponent* meshComponent = skybox->GetComponent<AMeshComponent>();
+        AActor*         skybox        = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), t);
+        MeshComponent* meshComponent = skybox->GetComponent<MeshComponent>();
         if (meshComponent)
         {
-            static TStaticResourceFinder<AIndexedMesh> SkyMesh("/Default/Meshes/Skybox"s);
-            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/SkydomeHemisphere"s);
-            //static TStaticResourceFinder<AIndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
-            static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
+            static TStaticResourceFinder<IndexedMesh> SkyMesh("/Default/Meshes/Skybox"s);
+            //static TStaticResourceFinder<IndexedMesh>      SkyMesh("/Default/Meshes/SkydomeHemisphere"s);
+            //static TStaticResourceFinder<IndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
+            static TStaticResourceFinder<MaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(SkyboxMaterialInst);
@@ -206,19 +206,19 @@ public:
             meshComponent->SetRenderView(meshRender);
         }
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };
 
 #include <Runtime/EntryDecl.h>
 
-static SEntryDecl ModuleDecl = {
+static EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Terrain",
     // Root path
     "Data",
     // Module class
-    &AModule::ClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
 
@@ -226,4 +226,4 @@ HK_ENTRY_DECL(ModuleDecl)
 // Declare meta
 //
 
-HK_CLASS_META(AModule)
+HK_CLASS_META(SampleModule)

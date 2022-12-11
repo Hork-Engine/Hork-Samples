@@ -47,22 +47,22 @@ class AMonitor : public AActor
 public:
     AMonitor() = default;
 
-    void Initialize(SActorInitializer& Initializer)
+    void Initialize(ActorInitializer& Initializer)
     {
-        static TStaticResourceFinder<AMaterial> MonitorMaterial("MonitorMaterial"s);
-        static TStaticResourceFinder<AIndexedMesh> Mesh("QuadXY"s);
+        static TStaticResourceFinder<Material> MonitorMaterial("MonitorMaterial"s);
+        static TStaticResourceFinder<IndexedMesh> Mesh("QuadXY"s);
 
         m_pRenderView = NewObj<WorldRenderView>();
         m_pRenderView->VisibilityMask ^= PLAYER1_SKYBOX_VISIBILITY_GROUP;
         m_pRenderView->SetViewport(512, 512);
 
-        AMaterialInstance* materialInst = MonitorMaterial->Instantiate();
+        MaterialInstance* materialInst = MonitorMaterial->Instantiate();
         materialInst->SetTexture(0, m_pRenderView->GetTextureView());
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
         meshRender->SetMaterial(materialInst);
 
-        AMeshComponent* mesh = CreateComponent<AMeshComponent>("Mesh");
+        MeshComponent* mesh = CreateComponent<MeshComponent>("Mesh");
         mesh->SetMesh(Mesh);
         mesh->SetRenderView(meshRender);
         mesh->SetMotionBehavior(MB_KINEMATIC);
@@ -72,7 +72,7 @@ public:
         Initializer.bCanEverTick = true;
     }
 
-    void SetCamera(ACameraComponent* camera)
+    void SetCamera(CameraComponent* camera)
     {
         m_pRenderView->SetCamera(camera);
     }
@@ -95,18 +95,18 @@ class AVideoCamera : public AActor
 public:
     AVideoCamera() = default;
 
-    ACameraComponent* GetCamera()
+    CameraComponent* GetCamera()
     {
         return m_CameraComponent;
     }
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        m_CameraComponent = CreateComponent<ACameraComponent>("camera");
+        m_CameraComponent = CreateComponent<CameraComponent>("camera");
 
-        static TStaticResourceFinder<AIndexedMesh> UnitBox("/Default/Meshes/Skybox"s);
-        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
-        AMeshComponent* SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
+        static TStaticResourceFinder<IndexedMesh> UnitBox("/Default/Meshes/Skybox"s);
+        static TStaticResourceFinder<MaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
+        MeshComponent* SkyboxComponent = CreateComponent<MeshComponent>("Skybox");
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
         meshRender->SetMaterial(SkyboxMaterialInst);
@@ -130,7 +130,7 @@ public:
         m_CameraComponent->SetAngles(0, 0, roll);
     }
 
-    void DrawDebug(ADebugRenderer* renderer) override
+    void DrawDebug(DebugRenderer* renderer) override
     {
         Float3 vectorTR;
         Float3 vectorTL;
@@ -188,21 +188,21 @@ public:
     }
 
 private:
-    ACameraComponent* m_CameraComponent{};
+    CameraComponent* m_CameraComponent{};
 };
 
 HK_CLASS_META(AVideoCamera)
 
 
-class AModule final : public AGameModule
+class SampleModule final : public GameModule
 {
-    HK_CLASS(AModule, AGameModule)
+    HK_CLASS(SampleModule, GameModule)
 
 public:
     ACharacter* Player;
     Float3      LightDir = Float3(1, -1, -1).Normalized();
 
-    AModule()
+    SampleModule()
     {
         WorldRenderView* renderView = NewObj<WorldRenderView>();
         renderView->bDrawDebug = true;
@@ -214,7 +214,7 @@ public:
         CreateResources();
 
         // Create game world
-        AWorld* world = AWorld::CreateWorld();
+        World* world = World::CreateWorld();
 
         // Spawn player
         Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
@@ -223,7 +223,7 @@ public:
         CreateScene(world);
 
         // Set input mappings
-        AInputMappings* inputMappings = NewObj<AInputMappings>();
+        InputMappings* inputMappings = NewObj<InputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -274,7 +274,7 @@ public:
 
         // Add shortcuts
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
-        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
+        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);
     }
 
@@ -289,22 +289,22 @@ public:
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = NewObj<AMaterial>(graph->Compile());
+        Material* material = NewObj<Material>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Create material
         MGMaterialGraph* graph2 = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/pbr_base_color.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* monitorMaterial = NewObj<AMaterial>(graph2->Compile());
+        Material* monitorMaterial = NewObj<Material>(graph2->Compile());
         RegisterResource(monitorMaterial, "MonitorMaterial");
 
 
         // Instantiate material
         {
-            AMaterialInstance* materialInstance = material->Instantiate();
+            MaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank256.webp"));
+            materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/blank256.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -314,26 +314,26 @@ public:
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
-        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        Texture* skybox = Texture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");
 
-        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        AIndexedMesh* quadXY = AIndexedMesh::CreatePlaneXY(1, 1, Float2(1,-1));
+        IndexedMesh* quadXY = IndexedMesh::CreatePlaneXY(1, 1, Float2(1,-1));
         RegisterResource(quadXY, "QuadXY");
 
         ACharacter::CreateCharacterResources();
     }
     
-    void CreateScene(AWorld* world)
+    void CreateScene(World* world)
     {
         // Spawn directional light
         {
-            static TStaticResourceFinder<AActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
+            static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
 
             AActor* dirlight = world->SpawnActor2(DirLightDef);
-            ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+            DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
             if (dirlightcomponent)
             {
                 dirlightcomponent->SetCastShadow(true);
@@ -348,14 +348,14 @@ public:
 
         // Spawn ground
         {
-            static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
+            static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
             AActor* ground = world->SpawnActor2(StaticMeshDef);
-            AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
+            MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
             if (meshComp)
             {
-                static TStaticResourceFinder<AMaterialInstance> GroundMaterialInst("GroundMaterialInst"s);
-                static TStaticResourceFinder<AIndexedMesh> GroundMesh("/Default/Meshes/PlaneXZ"s);
+                static TStaticResourceFinder<MaterialInstance> GroundMaterialInst("GroundMaterialInst"s);
+                static TStaticResourceFinder<IndexedMesh> GroundMesh("/Default/Meshes/PlaneXZ"s);
 
                 MeshRenderView* meshRender = NewObj<MeshRenderView>();
                 meshRender->SetMaterial(GroundMaterialInst);
@@ -372,14 +372,14 @@ public:
 
         // Spawn monitor
         {
-            STransform spawnTransform;
+            Transform spawnTransform;
             spawnTransform.Position = Float3(0, 1.2f, -2);
             spawnTransform.Scale = Float3(2, 2, 1);
             AMonitor* monitor = world->SpawnActor2<AMonitor>(spawnTransform);
             monitor->SetCamera(videoCamera->GetCamera());
         }
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };
 
@@ -389,13 +389,13 @@ public:
 
 #include <Runtime/EntryDecl.h>
 
-static SEntryDecl ModuleDecl = {
+static EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Render to Texture",
     // Root path
     "Data",
     // Module class
-    &AModule::ClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
 
@@ -403,4 +403,4 @@ HK_ENTRY_DECL(ModuleDecl)
 // Declare meta
 //
 
-HK_CLASS_META(AModule)
+HK_CLASS_META(SampleModule)

@@ -32,15 +32,15 @@ SOFTWARE.
 
 #include <Runtime/MeshComponent.h>
 
-struct SMetaball
+struct Metaball
 {
     Float3 Position;
     float  RadiusSqr;
 };
 
-struct SGridVolume
+struct GridVolume
 {
-    struct SGridCube
+    struct GridCube
     {
         int Vertices[8];
     };
@@ -48,11 +48,11 @@ struct SGridVolume
     TVector<float>  Values;
     TVector<Float3> Normals;
 
-    TVector<Float3> const&    GetPositions() const { return Positions; }
-    TVector<SGridCube> const& GetCubes() const { return Cubes; }
-    BvAxisAlignedBox const&          GetBounds() const { return Bounds; }
+    TVector<Float3> const&   GetPositions() const { return Positions; }
+    TVector<GridCube> const& GetCubes() const { return Cubes; }
+    BvAxisAlignedBox const&  GetBounds() const { return Bounds; }
 
-    SGridVolume(int GridResolution, float Scale)
+    GridVolume(int GridResolution, float Scale)
     {
         Positions.Resize((GridResolution + 1) * (GridResolution + 1) * (GridResolution + 1));
         Normals.Resize((GridResolution + 1) * (GridResolution + 1) * (GridResolution + 1));
@@ -99,8 +99,8 @@ struct SGridVolume
 
 private:
     TVector<Float3>    Positions;
-    TVector<SGridCube> Cubes;
+    TVector<GridCube> Cubes;
     BvAxisAlignedBox          Bounds;
 };
 
-void UpdateMetaballs(AProceduralMesh* ProcMeshResource, SMetaball const* Metaballs, int MetaballCount, float Threshold, SGridVolume& Volume);
+void UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume);

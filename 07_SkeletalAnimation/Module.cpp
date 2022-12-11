@@ -42,22 +42,22 @@ SOFTWARE.
 
 #include <Assets/AssetImporter.h>
 
-class AModule final : public AGameModule
+class SampleModule final : public GameModule
 {
-    HK_CLASS(AModule, AGameModule)
+    HK_CLASS(SampleModule, GameModule)
 
 public:
     ACharacter* Player;
 
     Float3 LightDir = Float3(1, -1, -1).Normalized();
 
-    AModule()
+    SampleModule()
     {
         // Create game resources
         CreateResources();
 
         // Create game world
-        AWorld* world = AWorld::CreateWorld();
+        World* world = World::CreateWorld();
 
         // Spawn player
         Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
@@ -65,7 +65,7 @@ public:
         CreateScene(world);
 
         // Set input mappings
-        AInputMappings* inputMappings = NewObj<AInputMappings>();
+        InputMappings* inputMappings = NewObj<InputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveRight", {ID_KEYBOARD, KEY_A}, -1.0f, CONTROLLER_PLAYER_1);
@@ -117,7 +117,7 @@ public:
 
         // Add shortcuts
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
-        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &AModule::ToggleFirstPersonCamera});
+        shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
         desktop->SetShortcuts(shortcuts);
     }
 
@@ -126,14 +126,14 @@ public:
         Player->SetFirstPersonCamera(!Player->IsFirstPersonCamera());
     }
 
-    void CreateScene(AWorld* world)
+    void CreateScene(World* world)
     {
-        static TStaticResourceFinder<AActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
-        static TStaticResourceFinder<AActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
+        static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
+        static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
         AActor*                     dirlight          = world->SpawnActor2(DirLightDef);
-        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
@@ -146,16 +146,16 @@ public:
         }
 
         // Spawn ground
-        STransform spawnTransform;
+        Transform spawnTransform;
         spawnTransform.Position = Float3(0);
         spawnTransform.Rotation = Quat::Identity();
 
         AActor*         ground   = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        AMeshComponent* meshComp = ground->GetComponent<AMeshComponent>();
+        MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
         if (meshComp)
         {
-            static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<AIndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
+            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(ExampleMaterialInstance);
@@ -169,7 +169,7 @@ public:
         // Spawn model with skeletal animation
         world->SpawnActor2<ABrainStem>({{0, 0, -2}});
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 
     void CreateResources()
@@ -196,14 +196,14 @@ public:
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = NewObj<AMaterial>(graph->Compile());
+        Material* material = NewObj<Material>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Instantiate material
         {
-            AMaterialInstance* materialInstance = material->Instantiate();
+            MaterialInstance* materialInstance = material->Instantiate();
             // base color
-            materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.webp"));
+            materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/grid8.webp"));
             // metallic
             materialInstance->SetConstant(0, 0);
             // roughness
@@ -213,10 +213,10 @@ public:
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
-        ATexture* skybox = ATexture::CreateFromImage(skyboxImage);
+        Texture* skybox = Texture::CreateFromImage(skyboxImage);
         RegisterResource(skybox, "AtmosphereSkybox");
 
-        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
         ACharacter::CreateCharacterResources();
@@ -229,13 +229,13 @@ public:
 
 #include <Runtime/EntryDecl.h>
 
-static SEntryDecl ModuleDecl = {
+static EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Skeletal Animation",
     // Root path
     "Data",
     // Module class
-    &AModule::ClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
 
@@ -243,4 +243,4 @@ HK_ENTRY_DECL(ModuleDecl)
 // Declare meta
 //
 
-HK_CLASS_META(AModule)
+HK_CLASS_META(SampleModule)

@@ -40,22 +40,21 @@ class ASpectator : public AActor
     HK_ACTOR(ASpectator, AActor)
 
 protected:
-    ACameraComponent* Camera{};
+    CameraComponent* Camera{};
     Angl              Angles;
     Float3            MoveVector;
     bool              bSpeed{};
     bool              bTrace{};
 
-    TPodVector<SCollisionTraceResult> TraceResult;
-    TPodVector<STriangleHitResult>    HitResult;
-    STerrainTriangle                  HitTriangle;
+    TPodVector<CollisionTraceResult> TraceResult;
+    TPodVector<TriangleHitResult>    HitResult;
+    TerrainTriangle                  HitTriangle;
 
-    ASpectator()
-    {}
+    ASpectator() = default;
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        Camera        = CreateComponent<ACameraComponent>("Camera");
+        Camera        = CreateComponent<CameraComponent>("Camera");
         m_RootComponent = Camera;
         m_PawnCamera    = Camera;
 
@@ -89,7 +88,7 @@ protected:
         m_RootComponent->SetAngles(Angles);
     }
 
-    void SetupInputComponent(AInputComponent* Input) override
+    void SetupInputComponent(InputComponent* Input) override
     {
         bool bExecuteBindingsWhenPaused = true;
 
@@ -134,14 +133,14 @@ protected:
         }
         else
         {
-            SWorldRaycastClosestResult result;
-            SWorldRaycastFilter        filter;
+            WorldRaycastClosestResult result;
+            WorldRaycastFilter        filter;
             filter.VisibilityMask = VISIBILITY_GROUP_TERRAIN;
             if (GetWorld()->RaycastClosest(result, Camera->GetWorldPosition(), Camera->GetWorldForwardVector() * 10000, &filter))
             {
                 HitResult.Add(result.TriangleHit);
 
-                ATerrainComponent* terrainComponent = result.Object->GetOwnerActor()->GetComponent<ATerrainComponent>();
+                TerrainComponent* terrainComponent = result.Object->GetOwnerActor()->GetComponent<TerrainComponent>();
                 if (terrainComponent)
                     terrainComponent->GetTriangle(result.TriangleHit.Location, HitTriangle);
             }
@@ -204,7 +203,7 @@ protected:
         bTrace = false;
     }
 
-    void DrawDebug(ADebugRenderer* InRenderer)
+    void DrawDebug(DebugRenderer* InRenderer)
     {
         Super::DrawDebug(InRenderer);
 
@@ -217,7 +216,7 @@ protected:
         }
         else
         {
-            for (STriangleHitResult& hit : HitResult)
+            for (TriangleHitResult& hit : HitResult)
             {
                 InRenderer->SetColor(Color4(1, 1, 1, 1));
                 InRenderer->DrawBoxFilled(hit.Location, Float3(0.1f));

@@ -46,29 +46,29 @@ class APlayer : public AActor
     HK_ACTOR(APlayer, AActor)
 
 protected:
-    AMeshComponent*   Movable{};
-    ACameraComponent* Camera{};
+    MeshComponent*   Movable{};
+    CameraComponent* Camera{};
 
     APlayer()
     {}
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AIndexedMesh>      BoxMesh("Box"s);
-        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+        static TStaticResourceFinder<IndexedMesh>      BoxMesh("Box"s);
+        static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
 
-        m_RootComponent = CreateComponent<ASceneComponent>("Root");
+        m_RootComponent = CreateComponent<SceneComponent>("Root");
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
         meshRender->SetMaterial(ExampleMaterialInstance);
 
-        Movable = CreateComponent<AMeshComponent>("Movable");
+        Movable = CreateComponent<MeshComponent>("Movable");
         Movable->SetMesh(BoxMesh);
         Movable->SetRenderView(meshRender);
         Movable->SetMotionBehavior(MB_KINEMATIC);
         Movable->AttachTo(m_RootComponent);
 
-        Camera = CreateComponent<ACameraComponent>("Camera");
+        Camera = CreateComponent<CameraComponent>("Camera");
         Camera->SetPosition(2, 4, 2);
         Camera->SetAngles(-60, 45, 0);
         Camera->AttachTo(m_RootComponent);
@@ -76,7 +76,7 @@ protected:
         m_PawnCamera = Camera;
     }
 
-    void SetupInputComponent(AInputComponent* Input) override
+    void SetupInputComponent(InputComponent* Input) override
     {
         Input->BindAxis("MoveForward", this, &APlayer::MoveForward);
         Input->BindAxis("MoveRight", this, &APlayer::MoveRight);
@@ -123,7 +123,7 @@ protected:
         Movable->TurnRightFPS(Value * RotationSpeed);
     }
 
-    void DrawDebug(ADebugRenderer* Renderer) override
+    void DrawDebug(DebugRenderer* Renderer) override
     {
         Float3 pos = Movable->GetWorldPosition();
         Float3 dir = Movable->GetWorldForwardVector();
@@ -135,26 +135,26 @@ protected:
     }
 };
 
-class AModule final : public AGameModule
+class SampleModule final : public GameModule
 {
-    HK_CLASS(AModule, AGameModule)
+    HK_CLASS(SampleModule, GameModule)
 
 public:
     Float3 LightDir = Float3(1, -1, -1).Normalized();
 
-    AModule()
+    SampleModule()
     {
         // Create game resources
         CreateResources();
 
         // Create game world
-        AWorld* world = AWorld::CreateWorld();
+        World* world = World::CreateWorld();
 
         // Spawn player
         APlayer* player = world->SpawnActor2<APlayer>({Float3(0, 0.5f, 0), Quat::Identity()});
 
         // Set input mappings
-        AInputMappings* inputMappings = NewObj<AInputMappings>();
+        InputMappings* inputMappings = NewObj<InputMappings>();
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_W}, 1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_S}, -1.0f, CONTROLLER_PLAYER_1);
         inputMappings->MapAxis("MoveForward", {ID_KEYBOARD, KEY_UP}, 1.0f, CONTROLLER_PLAYER_1);
@@ -204,22 +204,22 @@ public:
     void CreateResources()
     {
         // Create mesh for ground
-        RegisterResource(AIndexedMesh::CreatePlaneXZ(256, 256, Float2(256)), "GroundMesh");
+        RegisterResource(IndexedMesh::CreatePlaneXZ(256, 256, Float2(256)), "GroundMesh");
 
         // Create box
-        RegisterResource(AIndexedMesh::CreateBox(Float3(1.0f), 1.0f), "Box");
+        RegisterResource(IndexedMesh::CreateBox(Float3(1.0f), 1.0f), "Box");
 
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
         // Create material
-        AMaterial* material = NewObj<AMaterial>(graph->Compile());
+        Material* material = NewObj<Material>(graph->Compile());
         RegisterResource(material, "ExampleMaterial");
 
         // Instantiate material
-        AMaterialInstance* materialInstance = material->Instantiate();
+        MaterialInstance* materialInstance = material->Instantiate();
         // base color
-        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/grid8.webp"));
+        materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/grid8.webp"));
         // metallic
         materialInstance->SetConstant(0, 0);
         // roughness
@@ -228,15 +228,15 @@ public:
 
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
-        AEnvironmentMap* envmap = AEnvironmentMap::CreateFromImage(skyboxImage);
+        EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
     }
 
-    void CreateScene(AWorld* world)
+    void CreateScene(World* world)
     {
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/directionallight.def"));
-        ADirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<ADirectionalLightComponent>();
+        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
+        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
             dirlightcomponent->SetCastShadow(true);
@@ -249,25 +249,25 @@ public:
         }
 
         // Spawn ground
-        STransform spawnTransform;
+        Transform spawnTransform;
         spawnTransform.Position = Float3(0);
         spawnTransform.Rotation = Quat::Identity();
         spawnTransform.Scale    = Float3(2, 1, 2);
 
-        AActor*         ground     = world->SpawnActor2(GetOrCreateResource<AActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
-        AMeshComponent* groundMesh = ground->GetComponent<AMeshComponent>();
+        AActor*         ground     = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
+        MeshComponent* groundMesh = ground->GetComponent<MeshComponent>();
         if (groundMesh)
         {
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(GetResource<AMaterialInstance>("ExampleMaterialInstance"));
+            meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
 
             // Setup mesh and material
-            groundMesh->SetMesh(GetResource<AIndexedMesh>("GroundMesh"));
+            groundMesh->SetMesh(GetResource<IndexedMesh>("GroundMesh"));
             groundMesh->SetRenderView(meshRender);
             groundMesh->SetCastShadow(false);
         }
 
-        world->SetGlobalEnvironmentMap(GetOrCreateResource<AEnvironmentMap>("Envmap"));
+        world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };
 
@@ -277,13 +277,13 @@ public:
 
 #include <Runtime/EntryDecl.h>
 
-static SEntryDecl ModuleDecl = {
+static EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Simple",
     // Root path
     "Data",
     // Module class
-    &AModule::ClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
 
@@ -292,4 +292,4 @@ HK_ENTRY_DECL(ModuleDecl)
 //
 
 HK_CLASS_META(APlayer)
-HK_CLASS_META(AModule)
+HK_CLASS_META(SampleModule)

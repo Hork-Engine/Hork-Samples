@@ -42,23 +42,22 @@ public:
     std::function<void()> SpawnFunction;
 
 protected:
-    APhysicalBody* TriggerBody{};
-    TRef<ATimer>   Timer;
+    PhysicalBody* TriggerBody{};
+    TRef<WorldTimer>   Timer;
 
-    ATrigger()
-    {}
+    ATrigger() = default;
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        TriggerBody = CreateComponent<APhysicalBody>("TriggerBody");
+        TriggerBody = CreateComponent<PhysicalBody>("TriggerBody");
         TriggerBody->SetDispatchOverlapEvents(true);
         TriggerBody->SetTrigger(true);
         TriggerBody->SetMotionBehavior(MB_STATIC);
         TriggerBody->SetCollisionGroup(CM_TRIGGER);
         TriggerBody->SetCollisionMask(CM_PAWN);
 
-        SCollisionBoxDef box;
-        ACollisionModel* collisionModel = NewObj<ACollisionModel>(&box);
+        CollisionBoxDef box;
+        CollisionModel* collisionModel = NewObj<CollisionModel>(&box);
 
         TriggerBody->SetCollisionModel(collisionModel);
 
@@ -74,10 +73,10 @@ protected:
         E_OnUpdateOverlap.Add(this, &ATrigger::OnUpdateOverlap);
     }
 
-    void OnBeginOverlap(SOverlapEvent const& Event)
+    void OnBeginOverlap(OverlapEvent const& Event)
     {
-        ASceneComponent* self = Event.SelfBody->GetOwnerComponent();
-        ASceneComponent* other = Event.OtherBody->GetOwnerComponent();
+        SceneComponent* self = Event.SelfBody->GetOwnerComponent();
+        SceneComponent* other = Event.OtherBody->GetOwnerComponent();
 
         LOG("OnBeginOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
@@ -92,17 +91,17 @@ protected:
         }
     }
 
-    void OnEndOverlap(SOverlapEvent const& Event)
+    void OnEndOverlap(OverlapEvent const& Event)
     {
-        ASceneComponent* self = Event.SelfBody->GetOwnerComponent();
-        ASceneComponent* other = Event.OtherBody->GetOwnerComponent();
+        SceneComponent* self = Event.SelfBody->GetOwnerComponent();
+        SceneComponent* other = Event.OtherBody->GetOwnerComponent();
 
         LOG("OnEndOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
         Timer->Stop();
     }
 
-    void OnUpdateOverlap(SOverlapEvent const& _Event)
+    void OnUpdateOverlap(OverlapEvent const& _Event)
     {
     }
 

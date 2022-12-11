@@ -361,13 +361,13 @@ static const int triTable[256][16] =
      {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
      {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-void UpdateMetaballs(AProceduralMesh* ProcMeshResource, SMetaball const* Metaballs, int MetaballCount, float Threshold, SGridVolume& Volume)
+void UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume)
 {
     float* values = Volume.Values.ToPtr();
     Float3* normals = Volume.Normals.ToPtr();
     Float3 const* positions = Volume.GetPositions().ToPtr();
     int numPositions = Volume.GetPositions().Size();
-    SGridVolume::SGridCube const* cubes = Volume.GetCubes().ToPtr();
+    GridVolume::GridCube const* cubes = Volume.GetCubes().ToPtr();
     int numCubes = Volume.GetCubes().Size();
 
     Volume.Values.ZeroMem();
@@ -397,15 +397,15 @@ void UpdateMetaballs(AProceduralMesh* ProcMeshResource, SMetaball const* Metabal
     meshVerts.Clear();
     meshIndices.Clear();    
 
-    SMeshVertex v{};
+    MeshVertex v{};
     v.SetTexCoord(0.5f, 0.5f);
 
-    struct SVertex
+    struct Vertex
     {
         Float3 Position;
         Float3 Normal;
     };
-    SVertex edgeVertices[12];
+    Vertex edgeVertices[12];
 
     for (int i = 0; i < numCubes; i++)
     {

@@ -78,17 +78,17 @@ public:
 
     static void CreateCharacterResources()
     {
-        static TStaticResourceFinder<AMaterial> ExampleMaterial("ExampleMaterial"s);
-        static TStaticResourceFinder<ATexture> SkyboxTexture("AtmosphereSkybox"s);
-        static TStaticResourceFinder<AMaterial> SkyboxMaterial("/Default/Materials/Skybox"s);
+        static TStaticResourceFinder<Material> ExampleMaterial("ExampleMaterial"s);
+        static TStaticResourceFinder<Texture> SkyboxTexture("AtmosphereSkybox"s);
+        static TStaticResourceFinder<Material> SkyboxMaterial("/Default/Materials/Skybox"s);
 
         // Create character capsule
-        RegisterResource(AIndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
+        RegisterResource(IndexedMesh::CreateCapsule(CHARACTER_CAPSULE_RADIUS, CHARACTER_CAPSULE_HEIGHT, 1.0f, 12, 16), "CharacterCapsule");
 
         // Create character material instance
-        AMaterialInstance* materialInstance = ExampleMaterial->Instantiate();
+        MaterialInstance* materialInstance = ExampleMaterial->Instantiate();
         // base color
-        materialInstance->SetTexture(0, GetOrCreateResource<ATexture>("/Root/blank512.webp"));
+        materialInstance->SetTexture(0, GetOrCreateResource<Texture>("/Root/blank512.webp"));
         // metallic
         materialInstance->SetConstant(0, 0);
         // roughness
@@ -96,16 +96,16 @@ public:
         RegisterResource(materialInstance, "CharacterMaterialInstance");
 
         // Create skybox material instance
-        AMaterialInstance* skyboxMaterialInst = SkyboxMaterial->Instantiate();
+        MaterialInstance* skyboxMaterialInst = SkyboxMaterial->Instantiate();
         skyboxMaterialInst->SetTexture(0, SkyboxTexture);
         RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
     }
 
 protected:
-    AMeshComponent*           CharacterMesh{};
-    APhysicalBody*            CharacterPhysics{};
-    ACameraComponent*         Camera{};
-    AMeshComponent*           SkyboxComponent{};
+    MeshComponent*           CharacterMesh{};
+    PhysicalBody*            CharacterPhysics{};
+    CameraComponent*         Camera{};
+    MeshComponent*           SkyboxComponent{};
     float                     ForwardMove{};
     float                     SideMove{};
     bool                      bWantJump{};
@@ -114,23 +114,22 @@ protected:
     bool                      bFirstPersonCamera{};
     float                     FirstPersonCameraPitch{};
 
-    ACharacter()
-    {}
+    ACharacter() = default;
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AIndexedMesh>      CapsuleMesh("CharacterCapsule"s);
-        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
+        static TStaticResourceFinder<IndexedMesh>      CapsuleMesh("CharacterCapsule"s);
+        static TStaticResourceFinder<MaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         // Create capsule collision model
-        SCollisionCapsuleDef capsule;
+        CollisionCapsuleDef capsule;
         capsule.Radius = CHARACTER_CAPSULE_RADIUS;
         capsule.Height = CHARACTER_CAPSULE_HEIGHT;
 
-        ACollisionModel* model = NewObj<ACollisionModel>(&capsule);
+        CollisionModel* model = NewObj<CollisionModel>(&capsule);
 
         // Create simulated physics body
-        CharacterPhysics = CreateComponent<APhysicalBody>("CharacterPhysics");
+        CharacterPhysics = CreateComponent<PhysicalBody>("CharacterPhysics");
         CharacterPhysics->SetMotionBehavior(MB_SIMULATED);
         CharacterPhysics->SetAngularFactor({0, 0, 0});
         CharacterPhysics->SetCollisionModel(model);
@@ -139,24 +138,24 @@ protected:
         // Create character model and attach it to physics body
         MeshRenderView* characterMeshRender = NewObj<MeshRenderView>();
         characterMeshRender->SetMaterial(CharacterMaterialInstance);
-        CharacterMesh = CreateComponent<AMeshComponent>("CharacterMesh");
+        CharacterMesh = CreateComponent<MeshComponent>("CharacterMesh");
         CharacterMesh->SetMesh(CapsuleMesh);
         CharacterMesh->SetRenderView(characterMeshRender);
         CharacterMesh->SetMotionBehavior(MB_KINEMATIC);
         CharacterMesh->AttachTo(CharacterPhysics);
 
         // Create camera and attach it to character mesh
-        Camera = CreateComponent<ACameraComponent>("Camera");
+        Camera = CreateComponent<CameraComponent>("Camera");
         Camera->SetPosition(0, 4, std::sqrt(8.0f));
         Camera->SetAngles(-60, 0, 0);
         Camera->AttachTo(CharacterMesh);
 
-        static TStaticResourceFinder<AIndexedMesh>      UnitBox("/Default/Meshes/Skybox"s);
-        static TStaticResourceFinder<AMaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
+        static TStaticResourceFinder<IndexedMesh>      UnitBox("/Default/Meshes/Skybox"s);
+        static TStaticResourceFinder<MaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
 
         MeshRenderView* skyboxMeshRender = NewObj<MeshRenderView>();
         skyboxMeshRender->SetMaterial(SkyboxMaterialInst);
-        SkyboxComponent = CreateComponent<AMeshComponent>("Skybox");
+        SkyboxComponent = CreateComponent<MeshComponent>("Skybox");
         SkyboxComponent->SetMotionBehavior(MB_KINEMATIC);
         SkyboxComponent->SetMesh(UnitBox);
         SkyboxComponent->SetRenderView(skyboxMeshRender);
@@ -174,8 +173,8 @@ protected:
 
     void TickPrePhysics(float TimeStep) override
     {
-        SCollisionTraceResult result;
-        SCollisionQueryFilter filter;
+        CollisionTraceResult result;
+        CollisionQueryFilter filter;
 
         AActor* ignoreList[] = {this};
         filter.IgnoreActors  = ignoreList;
@@ -228,7 +227,7 @@ protected:
         CharacterPhysics->ApplyCentralImpulse(overallImpulse);
     }
 
-    void SetupInputComponent(AInputComponent* Input) override
+    void SetupInputComponent(InputComponent* Input) override
     {
         Input->BindAxis("MoveForward", this, &ACharacter::MoveForward);
         Input->BindAxis("MoveRight", this, &ACharacter::MoveRight);

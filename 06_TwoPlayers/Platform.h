@@ -41,15 +41,14 @@ public:
     float PlatformY{};
     float PlatformOffset{};
 
-    APlatform()
-    {}
+    APlatform() = default;
 
-    void Initialize(SActorInitializer& Initializer)
+    void Initialize(ActorInitializer& Initializer)
     {
-        AMeshComponent* mesh = CreateComponent<AMeshComponent>("PlatformMesh");
+        MeshComponent* mesh = CreateComponent<MeshComponent>("PlatformMesh");
 
-        static TStaticResourceFinder<AMaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-        static TStaticResourceFinder<AIndexedMesh> Mesh("/Default/Meshes/Box"s);
+        static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
+        static TStaticResourceFinder<IndexedMesh> Mesh("/Default/Meshes/Box"s);
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
         meshRender->SetMaterial(ExampleMaterialInstance);

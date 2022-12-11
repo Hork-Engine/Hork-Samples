@@ -40,26 +40,25 @@ class ABrainStem : public AActor
     HK_ACTOR(ABrainStem, AActor)
 
 protected:
-    ASkinnedComponent* SkinnedComponent{};
+    SkinnedComponent* m_Mesh{};
 
-    ABrainStem()
-    {}
+    ABrainStem() = default;
 
-    void Initialize(SActorInitializer& Initializer)
+    void Initialize(ActorInitializer& Initializer)
     {
-        TStaticResourceFinder<AIndexedMesh>       Mesh("/Root/models/BrainStem/brainstem_mesh.mesh"s);
-        TStaticResourceFinder<ASkeletalAnimation> SkelAnim("/Root/models/BrainStem/brainstem_animation.animation"s);
+        TStaticResourceFinder<IndexedMesh>       Mesh("/Root/models/BrainStem/brainstem_mesh.mesh"s);
+        TStaticResourceFinder<SkeletalAnimation> SkelAnim("/Root/models/BrainStem/brainstem_animation.animation"s);
 
-        AAnimationController* controller = NewObj<AAnimationController>();
+        AnimationController* controller = NewObj<AnimationController>();
         controller->SetAnimation(SkelAnim);
         controller->SetPlayMode(ANIMATION_PLAY_WRAP);
 
-        SkinnedComponent = CreateComponent<ASkinnedComponent>("Skin");
-        SkinnedComponent->AddAnimationController(controller);
-        SkinnedComponent->SetMesh(Mesh);
-        SkinnedComponent->CopyMaterialsFromMeshResource();
+        m_Mesh = CreateComponent<SkinnedComponent>("Skin");
+        m_Mesh->AddAnimationController(controller);
+        m_Mesh->SetMesh(Mesh);
+        m_Mesh->CopyMaterialsFromMeshResource();
 
-        m_RootComponent = SkinnedComponent;
+        m_RootComponent = m_Mesh;
         Initializer.bCanEverTick = true;
     }
 
@@ -67,6 +66,6 @@ protected:
     {
         Super::Tick(_TimeStep);
 
-        SkinnedComponent->SetTimeBroadcast(GetWorld()->GetGameplayTimeMicro() * 0.000001);
+        m_Mesh->SetTimeBroadcast(GetWorld()->GetGameplayTimeMicro() * 0.000001);
     }
 };

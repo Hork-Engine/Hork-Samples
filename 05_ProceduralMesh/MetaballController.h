@@ -38,24 +38,23 @@ class AMetaballController : public AActor
     HK_ACTOR(AMetaballController, AActor)
 
 protected:
-    AProceduralMeshComponent* ProcMesh{};
-    TRef<AProceduralMesh>     ProcMeshResource;
-    SGridVolume               GridVolume{40, 2.0f};
-    TVector<SMetaball>        Metaballs{5};
+    ProceduralMeshComponent* ProcMesh{};
+    TRef<ProceduralMesh>     ProcMeshResource;
+    GridVolume               GridVolume{40, 2.0f};
+    TVector<Metaball>        Metaballs{5};
     float                     Time{};
 
-    AMetaballController()
-    {}
+    AMetaballController() = default;
 
-    void Initialize(SActorInitializer& Initializer) override
+    void Initialize(ActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<AMaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
+        static TStaticResourceFinder<MaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
         meshRender->SetMaterial(CharacterMaterialInstance);
 
-        ProcMesh = CreateComponent<AProceduralMeshComponent>("ProcMesh");
-        ProcMeshResource = NewObj<AProceduralMesh>();
+        ProcMesh = CreateComponent<ProceduralMeshComponent>("ProcMesh");
+        ProcMeshResource = NewObj<ProceduralMesh>();
         ProcMesh->SetMesh(ProcMeshResource);
         ProcMesh->SetRenderView(meshRender);
 
