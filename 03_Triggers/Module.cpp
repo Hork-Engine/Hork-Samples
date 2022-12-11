@@ -116,6 +116,7 @@ public:
         // Add shortcuts
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
+        shortcuts->AddShortcut(KEY_ESCAPE, 0, {this, &SampleModule::Quit});
         desktop->SetShortcuts(shortcuts);
 
         GEngine->GetCommandProcessor().Add("com_DrawTriggers 1\n");
@@ -124,6 +125,11 @@ public:
     void ToggleFirstPersonCamera()
     {
         Player->SetFirstPersonCamera(!Player->IsFirstPersonCamera());
+    }
+
+    void Quit()
+    {
+        GEngine->PostTerminateEvent();
     }
 
     void CreateResources()

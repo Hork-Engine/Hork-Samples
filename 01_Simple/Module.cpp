@@ -199,6 +199,16 @@ public:
 
         // Add desktop and set current
         GUIManager->AddDesktop(desktop);
+
+        // Add shortcuts
+        UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
+        shortcuts->AddShortcut(KEY_ESCAPE, 0, {this, &SampleModule::Quit});
+        desktop->SetShortcuts(shortcuts);
+    }
+
+    void Quit()
+    {
+        GEngine->PostTerminateEvent();
     }
 
     void CreateResources()

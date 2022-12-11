@@ -118,6 +118,7 @@ public:
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
         shortcuts->AddShortcut(KEY_Y, 0, {this, &SampleModule::ToggleWireframe});
+        shortcuts->AddShortcut(KEY_ESCAPE, 0, {this, &SampleModule::Quit});
         desktop->SetShortcuts(shortcuts);
     }
 
@@ -129,6 +130,11 @@ public:
     void ToggleWireframe()
     {
         RenderView->bWireframe ^= 1;
+    }
+
+    void Quit()
+    {
+        GEngine->PostTerminateEvent();
     }
 
     void CreateResources()

@@ -166,6 +166,7 @@ public:
 
         UIShortcutContainer* shortcuts = NewObj<UIShortcutContainer>();
         shortcuts->AddShortcut(KEY_ENTER, 0, {this, &SampleModule::ToggleFirstPersonCamera});
+        shortcuts->AddShortcut(KEY_ESCAPE, 0, {this, &SampleModule::Quit});
         desktop->SetShortcuts(shortcuts);        
     }
 
@@ -173,6 +174,11 @@ public:
     {
         Player1->SetFirstPersonCamera(!Player1->IsFirstPersonCamera());
         Player2->SetFirstPersonCamera(!Player2->IsFirstPersonCamera());
+    }
+
+    void Quit()
+    {
+        GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
