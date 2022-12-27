@@ -30,4 +30,6 @@ SOFTWARE.
 
 #include "Trigger.h"
 
+using namespace Hk;
+
 HK_CLASS_META(ATrigger)

@@ -35,6 +35,8 @@ SOFTWARE.
 #include <Runtime/TerrainComponent.h>
 #include <Runtime/World.h>
 
+HK_NAMESPACE_BEGIN
+
 class ASpectator : public AActor
 {
     HK_ACTOR(ASpectator, AActor)
@@ -229,3 +231,5 @@ protected:
         }
     }
 };
+
+HK_NAMESPACE_END

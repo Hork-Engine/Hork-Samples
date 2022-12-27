@@ -41,6 +41,8 @@ SOFTWARE.
 #include <Runtime/ResourceManager.h>
 #include <Runtime/WorldRenderView.h>
 
+HK_NAMESPACE_BEGIN
+
 class APlayer : public AActor
 {
     HK_ACTOR(APlayer, AActor)
@@ -282,24 +284,26 @@ public:
 };
 
 //
-// Declare game module
-//
-
-#include <Runtime/EntryDecl.h>
-
-static EntryDecl ModuleDecl = {
-    // Game title
-    "Hork Engine: Simple",
-    // Root path
-    "Data",
-    // Module class
-    &SampleModule::GetClassMeta()};
-
-HK_ENTRY_DECL(ModuleDecl)
-
-//
 // Declare meta
 //
 
 HK_CLASS_META(APlayer)
 HK_CLASS_META(SampleModule)
+
+HK_NAMESPACE_END
+
+//
+// Declare game module
+//
+
+#include <Runtime/EntryDecl.h>
+
+static Hk::EntryDecl ModuleDecl = {
+    // Game title
+    "Hork Engine: Simple",
+    // Root path
+    "Data",
+    // Module class
+    &Hk::SampleModule::GetClassMeta()};
+
+HK_ENTRY_DECL(ModuleDecl)

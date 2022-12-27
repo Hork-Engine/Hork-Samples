@@ -361,7 +361,7 @@ static const int triTable[256][16] =
      {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
      {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-void UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume)
+void Hk::UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume)
 {
     float* values = Volume.Values.ToPtr();
     Float3* normals = Volume.Normals.ToPtr();

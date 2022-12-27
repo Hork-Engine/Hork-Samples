@@ -35,6 +35,8 @@ SOFTWARE.
 #include <Runtime/Animation.h>
 #include <Runtime/ResourceManager.h>
 
+HK_NAMESPACE_BEGIN
+
 class ABrainStem : public AActor
 {
     HK_ACTOR(ABrainStem, AActor)
@@ -69,3 +71,5 @@ protected:
         m_Mesh->SetTimeBroadcast(GetWorld()->GetGameplayTimeMicro() * 0.000001);
     }
 };
+
+HK_NAMESPACE_END

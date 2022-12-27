@@ -30,4 +30,6 @@ SOFTWARE.
 
 #include "Platform.h"
 
+using namespace Hk;
+
 HK_CLASS_META(APlatform)

@@ -44,6 +44,8 @@ SOFTWARE.
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 
+HK_NAMESPACE_BEGIN
+
 class SampleModule final : public GameModule
 {
     HK_CLASS(SampleModule, GameModule)
@@ -216,20 +218,22 @@ public:
     }
 };
 
-#include <Runtime/EntryDecl.h>
-
-static EntryDecl ModuleDecl = {
-    // Game title
-    "Hork Engine: Terrain",
-    // Root path
-    "Data",
-    // Module class
-    &SampleModule::GetClassMeta()};
-
-HK_ENTRY_DECL(ModuleDecl)
-
 //
 // Declare meta
 //
 
 HK_CLASS_META(SampleModule)
+
+HK_NAMESPACE_END
+
+#include <Runtime/EntryDecl.h>
+
+static Hk::EntryDecl ModuleDecl = {
+    // Game title
+    "Hork Engine: Terrain",
+    // Root path
+    "Data",
+    // Module class
+    &Hk::SampleModule::GetClassMeta()};
+
+HK_ENTRY_DECL(ModuleDecl)

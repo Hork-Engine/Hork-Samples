@@ -33,6 +33,8 @@ SOFTWARE.
 #include <Runtime/MeshComponent.h>
 #include <Runtime/ResourceManager.h>
 
+HK_NAMESPACE_BEGIN
+
 class APlatform : public AActor
 {
     HK_ACTOR(APlatform, AActor)
@@ -79,3 +81,5 @@ public:
         m_RootComponent->SetPosition(p);
     }
 };
+
+HK_NAMESPACE_END

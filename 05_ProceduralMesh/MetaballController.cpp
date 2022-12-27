@@ -30,4 +30,6 @@ SOFTWARE.
 
 #include "MetaballController.h"
 
+using namespace Hk;
+
 HK_CLASS_META(AMetaballController)

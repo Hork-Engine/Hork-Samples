@@ -34,6 +34,8 @@ SOFTWARE.
 #include <Runtime/MeshComponent.h>
 #include <Runtime/Timer.h>
 
+HK_NAMESPACE_BEGIN
+
 class ATrigger : public AActor
 {
     HK_ACTOR(ATrigger, AActor)
@@ -110,3 +112,5 @@ protected:
         SpawnFunction();
     }
 };
+
+HK_NAMESPACE_END

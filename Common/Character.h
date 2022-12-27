@@ -34,6 +34,8 @@ SOFTWARE.
 #include <Runtime/MeshComponent.h>
 #include <Runtime/ResourceManager.h>
 
+HK_NAMESPACE_BEGIN
+
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;
 
@@ -282,3 +284,5 @@ protected:
         }
     }
 };
+
+HK_NAMESPACE_END

@@ -30,4 +30,6 @@ SOFTWARE.
 
 #include "Character.h"
 
+using namespace Hk;
+
 HK_CLASS_META(ACharacter)

@@ -33,6 +33,8 @@ SOFTWARE.
 #include <Runtime/ResourceManager.h>
 #include "Metaballs.h"
 
+HK_NAMESPACE_BEGIN
+
 class AMetaballController : public AActor
 {
     HK_ACTOR(AMetaballController, AActor)
@@ -89,3 +91,5 @@ protected:
         ProcMesh->SetBoundsOverride(ProcMeshResource->BoundingBox);
     }
 };
+
+HK_NAMESPACE_END

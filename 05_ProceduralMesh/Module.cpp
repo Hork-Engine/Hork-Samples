@@ -41,6 +41,8 @@ SOFTWARE.
 #include "../Common/Character.h"
 #include "MetaballController.h"
 
+HK_NAMESPACE_BEGIN
+
 class SampleModule final : public GameModule
 {
     HK_CLASS(SampleModule, GameModule)
@@ -228,23 +230,25 @@ public:
 };
 
 //
+// Declare meta
+//
+
+HK_CLASS_META(SampleModule)
+
+HK_NAMESPACE_END
+
+//
 // Declare game module
 //
 
 #include <Runtime/EntryDecl.h>
 
-static EntryDecl ModuleDecl = {
+static Hk::EntryDecl ModuleDecl = {
     // Game title
     "Hork Engine: Procedural Mesh",
     // Root path
     "Data",
     // Module class
-    &SampleModule::GetClassMeta()};
+    &Hk::SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
-
-//
-// Declare meta
-//
-
-HK_CLASS_META(SampleModule)

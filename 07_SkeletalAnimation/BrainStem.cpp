@@ -30,4 +30,6 @@ SOFTWARE.
 
 #include "BrainStem.h"
 
+using namespace Hk;
+
 HK_CLASS_META(ABrainStem)

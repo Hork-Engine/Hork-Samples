@@ -32,6 +32,8 @@ SOFTWARE.
 
 #include <Runtime/MeshComponent.h>
 
+HK_NAMESPACE_BEGIN
+
 struct Metaball
 {
     Float3 Position;
@@ -104,3 +106,5 @@ private:
 };
 
 void UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume);
+
+HK_NAMESPACE_END
