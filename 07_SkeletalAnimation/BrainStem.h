@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -30,24 +30,24 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/AnimationController.h>
-#include <Runtime/SkinnedComponent.h>
+#include <Runtime/World/AnimationController.h>
+#include <Runtime/World/SkinnedComponent.h>
 #include <Runtime/Animation.h>
 #include <Runtime/ResourceManager.h>
 
-HK_NAMESPACE_BEGIN
-
-class ABrainStem : public AActor
+class Actor_BrainStem : public Hk::Actor
 {
-    HK_ACTOR(ABrainStem, AActor)
+    HK_ACTOR(Actor_BrainStem, Hk::Actor)
 
 protected:
-    SkinnedComponent* m_Mesh{};
+    Hk::SkinnedComponent* m_Mesh{};
 
-    ABrainStem() = default;
+    Actor_BrainStem() = default;
 
-    void Initialize(ActorInitializer& Initializer)
+    void Initialize(Hk::ActorInitializer& Initializer)
     {
+        using namespace Hk;
+
         TStaticResourceFinder<IndexedMesh>       Mesh("/Root/models/BrainStem/brainstem_mesh.mesh"s);
         TStaticResourceFinder<SkeletalAnimation> SkelAnim("/Root/models/BrainStem/brainstem_animation.animation"s);
 
@@ -71,5 +71,3 @@ protected:
         m_Mesh->SetTimeBroadcast(GetWorld()->GetGameplayTimeMicro() * 0.000001);
     }
 };
-
-HK_NAMESPACE_END

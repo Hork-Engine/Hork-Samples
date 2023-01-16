@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -361,8 +361,10 @@ static const int triTable[256][16] =
      {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
      {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-void Hk::UpdateMetaballs(ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume)
+void UpdateMetaballs(Hk::ProceduralMesh* ProcMeshResource, Metaball const* Metaballs, int MetaballCount, float Threshold, GridVolume& Volume)
 {
+    using namespace Hk;
+
     float* values = Volume.Values.ToPtr();
     Float3* normals = Volume.Normals.ToPtr();
     Float3 const* positions = Volume.GetPositions().ToPtr();

@@ -30,6 +30,4 @@ SOFTWARE.
 
 #include "Spectator.h"
 
-using namespace Hk;
-
-HK_CLASS_META(ASpectator)
+HK_CLASS_META(Actor_Spectator)

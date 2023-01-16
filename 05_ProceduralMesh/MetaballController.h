@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -33,23 +33,23 @@ SOFTWARE.
 #include <Runtime/ResourceManager.h>
 #include "Metaballs.h"
 
-HK_NAMESPACE_BEGIN
-
-class AMetaballController : public AActor
+class Actor_MetaballController : public Hk::Actor
 {
-    HK_ACTOR(AMetaballController, AActor)
+    HK_ACTOR(Actor_MetaballController, Hk::Actor)
 
 protected:
-    ProceduralMeshComponent* ProcMesh{};
-    TRef<ProceduralMesh>     ProcMeshResource;
-    GridVolume               GridVolume{40, 2.0f};
-    TVector<Metaball>        Metaballs{5};
-    float                     Time{};
+    Hk::ProceduralMeshComponent* ProcMesh{};
+    Hk::TRef<Hk::ProceduralMesh> ProcMeshResource;
+    GridVolume GridVolume{40, 2.0f};
+    Hk::TVector<Metaball> Metaballs{5};
+    float Time{};
 
-    AMetaballController() = default;
+    Actor_MetaballController() = default;
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<MaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
         MeshRenderView* meshRender = NewObj<MeshRenderView>();
@@ -63,13 +63,15 @@ protected:
         m_RootComponent = ProcMesh;
 
         for (int i = 0; i < Metaballs.Size(); i++)
-            Metaballs[i] = {Float3(0), 0.32f + float(i)*0.04f};
+            Metaballs[i] = {Float3(0), 0.32f + float(i) * 0.04f};
 
         Initializer.bCanEverTick = true;
     }
 
     void Tick(float TimeStep) override
     {
+        using namespace Hk;
+
         Time += TimeStep;
 
         // Animate metaballs
@@ -91,5 +93,3 @@ protected:
         ProcMesh->SetBoundsOverride(ProcMeshResource->BoundingBox);
     }
 };
-
-HK_NAMESPACE_END

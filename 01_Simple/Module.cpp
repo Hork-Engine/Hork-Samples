@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -28,10 +28,10 @@ SOFTWARE.
 
 */
 
-#include <Runtime/InputComponent.h>
-#include <Runtime/MeshComponent.h>
-#include <Runtime/DirectionalLightComponent.h>
-#include <Runtime/PlayerController.h>
+#include <Runtime/World/InputComponent.h>
+#include <Runtime/World/MeshComponent.h>
+#include <Runtime/World/DirectionalLightComponent.h>
+#include <Runtime/World/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/UI/UIDesktop.h>
 #include <Runtime/UI/UIViewport.h>
@@ -41,22 +41,21 @@ SOFTWARE.
 #include <Runtime/ResourceManager.h>
 #include <Runtime/WorldRenderView.h>
 
-HK_NAMESPACE_BEGIN
-
-class APlayer : public AActor
+class Actor_Player : public Hk::Actor
 {
-    HK_ACTOR(APlayer, AActor)
+    HK_ACTOR(Actor_Player, Hk::Actor)
 
 protected:
-    MeshComponent*   Movable{};
-    CameraComponent* Camera{};
+    Hk::MeshComponent* Movable{};
+    Hk::CameraComponent* Camera{};
 
-    APlayer()
-    {}
+    Actor_Player() = default;
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
-        static TStaticResourceFinder<IndexedMesh>      BoxMesh("Box"s);
+        using namespace Hk;
+
+        static TStaticResourceFinder<IndexedMesh> BoxMesh("Box"s);
         static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
 
         m_RootComponent = CreateComponent<SceneComponent>("Root");
@@ -78,39 +77,39 @@ protected:
         m_PawnCamera = Camera;
     }
 
-    void SetupInputComponent(InputComponent* Input) override
+    void SetupInputComponent(Hk::InputComponent* Input) override
     {
-        Input->BindAxis("MoveForward", this, &APlayer::MoveForward);
-        Input->BindAxis("MoveRight", this, &APlayer::MoveRight);
-        Input->BindAxis("MoveUp", this, &APlayer::MoveUp);
-        Input->BindAxis("MoveDown", this, &APlayer::MoveDown);
-        Input->BindAxis("TurnRight", this, &APlayer::TurnRight);
+        Input->BindAxis("MoveForward", this, &Actor_Player::MoveForward);
+        Input->BindAxis("MoveRight", this, &Actor_Player::MoveRight);
+        Input->BindAxis("MoveUp", this, &Actor_Player::MoveUp);
+        Input->BindAxis("MoveDown", this, &Actor_Player::MoveDown);
+        Input->BindAxis("TurnRight", this, &Actor_Player::TurnRight);
     }
 
     void MoveForward(float Value)
     {
-        Float3 pos = m_RootComponent->GetPosition();
+        Hk::Float3 pos = m_RootComponent->GetPosition();
         pos += Movable->GetForwardVector() * Value;
         m_RootComponent->SetPosition(pos);
     }
 
     void MoveRight(float Value)
     {
-        Float3 pos = m_RootComponent->GetPosition();
+        Hk::Float3 pos = m_RootComponent->GetPosition();
         pos += Movable->GetRightVector() * Value;
         m_RootComponent->SetPosition(pos);
     }
 
     void MoveUp(float Value)
     {
-        Float3 pos = Movable->GetWorldPosition();
+        Hk::Float3 pos = Movable->GetWorldPosition();
         pos.Y += Value;
         Movable->SetWorldPosition(pos);
     }
 
     void MoveDown(float Value)
     {
-        Float3 pos = Movable->GetWorldPosition();
+        Hk::Float3 pos = Movable->GetWorldPosition();
         pos.Y -= Value;
         if (pos.Y < 0.5f)
         {
@@ -125,27 +124,29 @@ protected:
         Movable->TurnRightFPS(Value * RotationSpeed);
     }
 
-    void DrawDebug(DebugRenderer* Renderer) override
+    void DrawDebug(Hk::DebugRenderer* Renderer) override
     {
-        Float3 pos = Movable->GetWorldPosition();
-        Float3 dir = Movable->GetWorldForwardVector();
-        Float3 p1  = pos + dir * 0.5f;
-        Float3 p2  = pos + dir * 2.0f;
-        Renderer->SetColor(Color4::Blue());
+        Hk::Float3 pos = Movable->GetWorldPosition();
+        Hk::Float3 dir = Movable->GetWorldForwardVector();
+        Hk::Float3 p1 = pos + dir * 0.5f;
+        Hk::Float3 p2 = pos + dir * 2.0f;
+        Renderer->SetColor(Hk::Color4::Blue());
         Renderer->DrawLine(p1, p2);
-        Renderer->DrawCone(p2, Movable->GetWorldRotation().ToMatrix3x3() * Float3x3::RotationAroundNormal(Math::_PI, Float3(1, 0, 0)), 0.4f, Math::_PI / 6);
+        Renderer->DrawCone(p2, Movable->GetWorldRotation().ToMatrix3x3() * Hk::Float3x3::RotationAroundNormal(Hk::Math::_PI, Hk::Float3(1, 0, 0)), 0.4f, Hk::Math::_PI / 6);
     }
 };
 
-class SampleModule final : public GameModule
+class SampleModule final : public Hk::GameModule
 {
-    HK_CLASS(SampleModule, GameModule)
+    HK_CLASS(SampleModule, Hk::GameModule)
 
 public:
-    Float3 LightDir = Float3(1, -1, -1).Normalized();
+    Hk::Float3 LightDir = Hk::Float3(1, -1, -1).Normalized();
 
     SampleModule()
     {
+        using namespace Hk;
+
         // Create game resources
         CreateResources();
 
@@ -153,7 +154,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        APlayer* player = world->SpawnActor2<APlayer>({Float3(0, 0.5f, 0), Quat::Identity()});
+        Actor_Player* player = world->SpawnActor2<Actor_Player>({Float3(0, 0.5f, 0), Quat::Identity()});
 
         // Set input mappings
         InputMappings* inputMappings = NewObj<InputMappings>();
@@ -177,7 +178,7 @@ public:
         renderView->bDrawDebug           = true;
 
         // Spawn player controller
-        APlayerController* playerController = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(renderView);
@@ -210,11 +211,13 @@ public:
 
     void Quit()
     {
-        GEngine->PostTerminateEvent();
+        Hk::GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
     {
+        using namespace Hk;
+
         // Create mesh for ground
         RegisterResource(IndexedMesh::CreatePlaneXZ(256, 256, Float2(256)), "GroundMesh");
 
@@ -244,10 +247,12 @@ public:
         RegisterResource(envmap, "Envmap");
     }
 
-    void CreateScene(World* world)
+    void CreateScene(Hk::World* world)
     {
+        using namespace Hk;
+
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
+        Actor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
         DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -266,7 +271,7 @@ public:
         spawnTransform.Rotation = Quat::Identity();
         spawnTransform.Scale    = Float3(2, 1, 2);
 
-        AActor*         ground     = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
+        Actor*         ground     = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
         MeshComponent* groundMesh = ground->GetComponent<MeshComponent>();
         if (groundMesh)
         {
@@ -287,10 +292,8 @@ public:
 // Declare meta
 //
 
-HK_CLASS_META(APlayer)
+HK_CLASS_META(Actor_Player)
 HK_CLASS_META(SampleModule)
-
-HK_NAMESPACE_END
 
 //
 // Declare game module
@@ -304,6 +307,6 @@ static Hk::EntryDecl ModuleDecl = {
     // Root path
     "Data",
     // Module class
-    &Hk::SampleModule::GetClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)

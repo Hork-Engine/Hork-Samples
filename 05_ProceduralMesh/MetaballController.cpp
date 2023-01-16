@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -30,6 +30,4 @@ SOFTWARE.
 
 #include "MetaballController.h"
 
-using namespace Hk;
-
-HK_CLASS_META(AMetaballController)
+HK_CLASS_META(Actor_MetaballController)

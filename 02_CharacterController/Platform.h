@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -30,23 +30,23 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/MeshComponent.h>
+#include <Runtime/World/MeshComponent.h>
 #include <Runtime/ResourceManager.h>
 
-HK_NAMESPACE_BEGIN
-
-class APlatform : public AActor
+class Actor_Platform : public Hk::Actor
 {
-    HK_ACTOR(APlatform, AActor)
+    HK_ACTOR(Actor_Platform, Hk::Actor)
 
 public:
     float PlatformY{};
     float PlatformOffset{};
 
-    APlatform() = default;
+    Actor_Platform() = default;
 
-    void Initialize(ActorInitializer& Initializer)
+    void Initialize(Hk::ActorInitializer& Initializer)
     {
+        using namespace Hk;
+
         MeshComponent* mesh = CreateComponent<MeshComponent>("PlatformMesh");
 
         static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
@@ -72,6 +72,8 @@ public:
 
     void Tick(float TimeStep)
     {
+        using namespace Hk;
+
         const float RotationSpeed = 0.2f;
         m_RootComponent->TurnRightFPS(TimeStep * RotationSpeed);
 
@@ -81,5 +83,3 @@ public:
         m_RootComponent->SetPosition(p);
     }
 };
-
-HK_NAMESPACE_END

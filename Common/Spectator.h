@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -30,32 +30,39 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/MeshComponent.h>
-#include <Runtime/InputComponent.h>
-#include <Runtime/TerrainComponent.h>
-#include <Runtime/World.h>
+#include <Runtime/World/MeshComponent.h>
+#include <Runtime/World/InputComponent.h>
+#include <Runtime/World/TerrainComponent.h>
+#include <Runtime/World/World.h>
 
-HK_NAMESPACE_BEGIN
-
-class ASpectator : public AActor
+class Actor_Spectator : public Hk::Actor
 {
-    HK_ACTOR(ASpectator, AActor)
+    HK_ACTOR(Actor_Spectator, Hk::Actor)
+
+public:
+    void SetMoveSpeed(float moveSpeed)
+    {
+        fMoveSpeed = moveSpeed;
+    }
 
 protected:
-    CameraComponent* Camera{};
-    Angl              Angles;
-    Float3            MoveVector;
-    bool              bSpeed{};
-    bool              bTrace{};
+    Hk::CameraComponent* Camera{};
+    Hk::Angl             Angles;
+    Hk::Float3           MoveVector;
+    bool                 bSpeed{};
+    bool                 bTrace{};
+    float                fMoveSpeed{40};
 
-    TPodVector<CollisionTraceResult> TraceResult;
-    TPodVector<TriangleHitResult>    HitResult;
-    TerrainTriangle                  HitTriangle;
+    Hk::TPodVector<Hk::CollisionTraceResult> TraceResult;
+    Hk::TPodVector<Hk::TriangleHitResult> HitResult;
+    Hk::TerrainTriangle HitTriangle;
 
-    ASpectator() = default;
+    Actor_Spectator() = default;
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
+        using namespace Hk;
+
         Camera        = CreateComponent<CameraComponent>("Camera");
         m_RootComponent = Camera;
         m_PawnCamera    = Camera;
@@ -66,6 +73,8 @@ protected:
 
     void BeginPlay() override
     {
+        using namespace Hk;
+
         Super::BeginPlay();
 
         Float3 vec = m_RootComponent->GetBackVector();
@@ -90,28 +99,32 @@ protected:
         m_RootComponent->SetAngles(Angles);
     }
 
-    void SetupInputComponent(InputComponent* Input) override
+    void SetupInputComponent(Hk::InputComponent* Input) override
     {
+        using namespace Hk;
+
         bool bExecuteBindingsWhenPaused = true;
 
-        Input->BindAxis("MoveForward", this, &ASpectator::MoveForward, bExecuteBindingsWhenPaused);
-        Input->BindAxis("MoveRight", this, &ASpectator::MoveRight, bExecuteBindingsWhenPaused);
-        Input->BindAxis("MoveUp", this, &ASpectator::MoveUp, bExecuteBindingsWhenPaused);
-        Input->BindAxis("MoveDown", this, &ASpectator::MoveDown, bExecuteBindingsWhenPaused);
-        Input->BindAxis("TurnRight", this, &ASpectator::TurnRight, bExecuteBindingsWhenPaused);
-        Input->BindAxis("TurnUp", this, &ASpectator::TurnUp, bExecuteBindingsWhenPaused);
-        Input->BindAction("Speed", IA_PRESS, this, &ASpectator::SpeedPress, bExecuteBindingsWhenPaused);
-        Input->BindAction("Speed", IA_RELEASE, this, &ASpectator::SpeedRelease, bExecuteBindingsWhenPaused);
-        Input->BindAction("Trace", IA_PRESS, this, &ASpectator::TracePress, bExecuteBindingsWhenPaused);
-        Input->BindAction("Trace", IA_RELEASE, this, &ASpectator::TraceRelease, bExecuteBindingsWhenPaused);
+        Input->BindAxis("MoveForward", this, &Actor_Spectator::MoveForward, bExecuteBindingsWhenPaused);
+        Input->BindAxis("MoveRight", this, &Actor_Spectator::MoveRight, bExecuteBindingsWhenPaused);
+        Input->BindAxis("MoveUp", this, &Actor_Spectator::MoveUp, bExecuteBindingsWhenPaused);
+        Input->BindAxis("MoveDown", this, &Actor_Spectator::MoveDown, bExecuteBindingsWhenPaused);
+        Input->BindAxis("TurnRight", this, &Actor_Spectator::TurnRight, bExecuteBindingsWhenPaused);
+        Input->BindAxis("TurnUp", this, &Actor_Spectator::TurnUp, bExecuteBindingsWhenPaused);
+        Input->BindAction("Speed", IA_PRESS, this, &Actor_Spectator::SpeedPress, bExecuteBindingsWhenPaused);
+        Input->BindAction("Speed", IA_RELEASE, this, &Actor_Spectator::SpeedRelease, bExecuteBindingsWhenPaused);
+        Input->BindAction("Trace", IA_PRESS, this, &Actor_Spectator::TracePress, bExecuteBindingsWhenPaused);
+        Input->BindAction("Trace", IA_RELEASE, this, &Actor_Spectator::TraceRelease, bExecuteBindingsWhenPaused);
     }
 
     void Tick(float TimeStep) override
     {
+        using namespace Hk;
+
         Super::Tick(TimeStep);
 
-        constexpr float MOVE_SPEED      = 40; // Meters per second
-        constexpr float MOVE_HIGH_SPEED = 80;
+        const float MOVE_SPEED = fMoveSpeed; // Meters per second
+        const float MOVE_HIGH_SPEED = fMoveSpeed * 2;
 
         float lenSqr = MoveVector.LengthSqr();
         if (lenSqr > 0)
@@ -151,11 +164,15 @@ protected:
 
     void MoveForward(float Value)
     {
+        using namespace Hk;
+
         MoveVector += m_RootComponent->GetForwardVector() * Math::Sign(Value);
     }
 
     void MoveRight(float Value)
     {
+        using namespace Hk;
+
         MoveVector += m_RootComponent->GetRightVector() * Math::Sign(Value);
     }
 
@@ -173,6 +190,8 @@ protected:
 
     void TurnRight(float Value)
     {
+        using namespace Hk;
+
         Angles.Yaw -= Value;
         Angles.Yaw = Angl::Normalize180(Angles.Yaw);
         m_RootComponent->SetAngles(Angles);
@@ -180,6 +199,8 @@ protected:
 
     void TurnUp(float Value)
     {
+        using namespace Hk;
+
         Angles.Pitch += Value;
         Angles.Pitch = Math::Clamp(Angles.Pitch, -90.0f, 90.0f);
         m_RootComponent->SetAngles(Angles);
@@ -205,8 +226,10 @@ protected:
         bTrace = false;
     }
 
-    void DrawDebug(DebugRenderer* InRenderer)
+    void DrawDebug(Hk::DebugRenderer* InRenderer)
     {
+        using namespace Hk;
+
         Super::DrawDebug(InRenderer);
 
         if (bTrace)
@@ -231,5 +254,3 @@ protected:
         }
     }
 };
-
-HK_NAMESPACE_END

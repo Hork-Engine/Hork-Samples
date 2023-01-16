@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -30,22 +30,20 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/InputComponent.h>
-#include <Runtime/MeshComponent.h>
+#include <Runtime/World/InputComponent.h>
+#include <Runtime/World/MeshComponent.h>
 #include <Runtime/ResourceManager.h>
-
-HK_NAMESPACE_BEGIN
 
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;
 
-constexpr VISIBILITY_GROUP PLAYER1_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(8);
-constexpr VISIBILITY_GROUP PLAYER2_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(16);
-constexpr VISIBILITY_GROUP CAMERA_SKYBOX_VISIBILITY_GROUP = VISIBILITY_GROUP(32);
+constexpr Hk::VISIBILITY_GROUP PLAYER1_SKYBOX_VISIBILITY_GROUP = Hk::VISIBILITY_GROUP(8);
+constexpr Hk::VISIBILITY_GROUP PLAYER2_SKYBOX_VISIBILITY_GROUP = Hk::VISIBILITY_GROUP(16);
+constexpr Hk::VISIBILITY_GROUP CAMERA_SKYBOX_VISIBILITY_GROUP = Hk::VISIBILITY_GROUP(32);
 
-class ACharacter : public AActor
+class Actor_Character : public Hk::Actor
 {
-    HK_ACTOR(ACharacter, AActor)
+    HK_ACTOR(Actor_Character, Hk::Actor)
 
 public:
     void SetPlayerIndex(int PlayerIndex)
@@ -58,6 +56,8 @@ public:
 
     void SetFirstPersonCamera(bool FirstPersonCamera)
     {
+        using namespace Hk;
+
         bFirstPersonCamera = FirstPersonCamera;
 
         if (bFirstPersonCamera)
@@ -80,6 +80,8 @@ public:
 
     static void CreateCharacterResources()
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<Material> ExampleMaterial("ExampleMaterial"s);
         static TStaticResourceFinder<Texture> SkyboxTexture("AtmosphereSkybox"s);
         static TStaticResourceFinder<Material> SkyboxMaterial("/Default/Materials/Skybox"s);
@@ -104,22 +106,24 @@ public:
     }
 
 protected:
-    MeshComponent*           CharacterMesh{};
-    PhysicalBody*            CharacterPhysics{};
-    CameraComponent*         Camera{};
-    MeshComponent*           SkyboxComponent{};
+    Hk::MeshComponent*        CharacterMesh{};
+    Hk::PhysicalBody*         CharacterPhysics{};
+    Hk::CameraComponent*      Camera{};
+    Hk::MeshComponent*        SkyboxComponent{};
     float                     ForwardMove{};
     float                     SideMove{};
     bool                      bWantJump{};
-    Float3                    TotalVelocity{};
+    Hk::Float3                TotalVelocity{};
     float                     NextJumpTime{};
     bool                      bFirstPersonCamera{};
     float                     FirstPersonCameraPitch{};
 
-    ACharacter() = default;
+    Actor_Character() = default;
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<IndexedMesh>      CapsuleMesh("CharacterCapsule"s);
         static TStaticResourceFinder<MaterialInstance> CharacterMaterialInstance("CharacterMaterialInstance"s);
 
@@ -175,10 +179,12 @@ protected:
 
     void TickPrePhysics(float TimeStep) override
     {
+        using namespace Hk;
+
         CollisionTraceResult result;
         CollisionQueryFilter filter;
 
-        AActor* ignoreList[] = {this};
+        Actor* ignoreList[] = {this};
         filter.IgnoreActors  = ignoreList;
         filter.ActorsCount   = 1;
         filter.CollisionMask = CM_SOLID;
@@ -229,13 +235,13 @@ protected:
         CharacterPhysics->ApplyCentralImpulse(overallImpulse);
     }
 
-    void SetupInputComponent(InputComponent* Input) override
+    void SetupInputComponent(Hk::InputComponent* Input) override
     {
-        Input->BindAxis("MoveForward", this, &ACharacter::MoveForward);
-        Input->BindAxis("MoveRight", this, &ACharacter::MoveRight);
-        Input->BindAxis("MoveUp", this, &ACharacter::MoveUp);
-        Input->BindAxis("TurnRight", this, &ACharacter::TurnRight);
-        Input->BindAxis("TurnUp", this, &ACharacter::TurnUp);
+        Input->BindAxis("MoveForward", this, &Actor_Character::MoveForward);
+        Input->BindAxis("MoveRight", this, &Actor_Character::MoveRight);
+        Input->BindAxis("MoveUp", this, &Actor_Character::MoveUp);
+        Input->BindAxis("TurnRight", this, &Actor_Character::TurnRight);
+        Input->BindAxis("TurnUp", this, &Actor_Character::TurnUp);
     }
 
     void MoveForward(float Value)
@@ -264,6 +270,8 @@ protected:
 
     void TurnUp(float Value)
     {
+        using namespace Hk;
+
         if (bFirstPersonCamera && Value)
         {
             const float RotationSpeed = 0.01f;
@@ -284,5 +292,3 @@ protected:
         }
     }
 };
-
-HK_NAMESPACE_END

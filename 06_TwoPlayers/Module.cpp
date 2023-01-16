@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -28,8 +28,8 @@ SOFTWARE.
 
 */
 
-#include <Runtime/DirectionalLightComponent.h>
-#include <Runtime/PlayerController.h>
+#include <Runtime/World/DirectionalLightComponent.h>
+#include <Runtime/World/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/UI/UIViewport.h>
 #include <Runtime/UI/UILabel.h>
@@ -41,19 +41,19 @@ SOFTWARE.
 #include "../Common/Character.h"
 #include "Platform.h"
 
-HK_NAMESPACE_BEGIN
-
-class SampleModule final : public GameModule
+class SampleModule final : public Hk::GameModule
 {
-    HK_CLASS(SampleModule, GameModule)
+    HK_CLASS(SampleModule, Hk::GameModule)
 
 public:
-    ACharacter* Player1;
-    ACharacter* Player2;
-    Float3      LightDir = Float3(1, -1, -1).Normalized();
+    Actor_Character* Player1;
+    Actor_Character* Player2;
+    Hk::Float3 LightDir = Hk::Float3(1, -1, -1).Normalized();
 
     SampleModule()
     {
+        using namespace Hk;
+
         // Create game resources
         CreateResources();
 
@@ -61,9 +61,9 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player1 = world->SpawnActor2<ACharacter>({Float3(-2, 1, 0), Quat::Identity()});
+        Player1 = world->SpawnActor2<Actor_Character>({Float3(-2, 1, 0), Quat::Identity()});
         Player1->SetPlayerIndex(1);
-        Player2 = world->SpawnActor2<ACharacter>({Float3(2, 1, 0), Quat::Identity()});
+        Player2 = world->SpawnActor2<Actor_Character>({Float3(2, 1, 0), Quat::Identity()});
         Player2->SetPlayerIndex(2);
 
         CreateScene(world);
@@ -97,13 +97,13 @@ public:
         renderView2->VisibilityMask = ~PLAYER1_SKYBOX_VISIBILITY_GROUP;
 
         // Spawn player controller
-        APlayerController* playerController1 = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController1 = world->SpawnActor2<Actor_PlayerController>();
         playerController1->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController1->SetInputMappings(inputMappings);
         playerController1->SetRenderView(renderView1);
         playerController1->SetPawn(Player1);
 
-        APlayerController* playerController2 = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController2 = world->SpawnActor2<Actor_PlayerController>();
         playerController2->SetPlayerIndex(CONTROLLER_PLAYER_2);
         playerController2->SetInputMappings(inputMappings);
         playerController2->SetRenderView(renderView2);
@@ -180,11 +180,15 @@ public:
 
     void Quit()
     {
+        using namespace Hk;
+
         GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
     {
+        using namespace Hk;
+
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -222,11 +226,13 @@ public:
         EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        ACharacter::CreateCharacterResources();
+        Actor_Character::CreateCharacterResources();
     }
 
-    void CreateScene(World* world)
+    void CreateScene(Hk::World* world)
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
         static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
         static TStaticResourceFinder<IndexedMesh> UnitBox("/Default/Meshes/Box"s);
@@ -235,7 +241,7 @@ public:
         static TStaticResourceFinder<IndexedMesh> GroundMesh("/Default/Meshes/PlaneXZ"s);
 
         // Spawn directional light
-        AActor* dirlight = world->SpawnActor2(DirLightDef);
+        Actor* dirlight = world->SpawnActor2(DirLightDef);
         DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -249,7 +255,7 @@ public:
         }
 
         // Spawn ground
-        AActor* ground = world->SpawnActor2(StaticMeshDef);
+        Actor* ground = world->SpawnActor2(StaticMeshDef);
         MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -263,7 +269,7 @@ public:
         }
 
         // Spawn wall
-        AActor* staticWall = world->SpawnActor2(StaticMeshDef, {{0, 1, -3}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
+        Actor* staticWall = world->SpawnActor2(StaticMeshDef, {{0, 1, -3}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
         meshComp = staticWall->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -276,7 +282,7 @@ public:
         }
 
         // Spawn small box with simulated physics
-        AActor* box = world->SpawnActor2(StaticMeshDef, {{3, 5, 3}, {1, 0, 0, 0}, {0.5f, 0.5f, 0.5f}});
+        Actor* box = world->SpawnActor2(StaticMeshDef, {{3, 5, 3}, {1, 0, 0, 0}, {0.5f, 0.5f, 0.5f}});
         meshComp = box->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -297,7 +303,7 @@ public:
         spawnTransform.Rotation.FromAngles(0, 0, Math::_PI / 4);
         spawnTransform.Scale = Float3(2, 1, 6);
         spawnTransform.Position = Float3(-4, 2, 2);
-        AActor* floor = world->SpawnActor2(StaticMeshDef, spawnTransform);
+        Actor* floor = world->SpawnActor2(StaticMeshDef, spawnTransform);
         meshComp = floor->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -312,7 +318,7 @@ public:
         spawnTransform.Rotation.FromAngles(0, -Math::_PI / 8, -Math::_PI / 4);
         spawnTransform.Scale = Float3(6, 0.3f, 6);
         spawnTransform.Position = Float3(4, 0, 2);
-        AActor* floor2 = world->SpawnActor2(StaticMeshDef, spawnTransform);
+        Actor* floor2 = world->SpawnActor2(StaticMeshDef, spawnTransform);
         meshComp = floor2->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -327,7 +333,7 @@ public:
         spawnTransform.Rotation.SetIdentity(); //.FromAngles(0, -Math::_PI / 8, -Math::_PI / 4);
         spawnTransform.Scale = Float3(2, 0.3f, 2);
         spawnTransform.Position = Float3(0, 0.5f, -1);
-        world->SpawnActor2<APlatform>(spawnTransform);
+        world->SpawnActor2<Actor_Platform>(spawnTransform);
 
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
@@ -338,8 +344,6 @@ public:
 //
 
 HK_CLASS_META(SampleModule)
-
-HK_NAMESPACE_END
 
 //
 // Declare game module
@@ -353,6 +357,6 @@ static Hk::EntryDecl ModuleDecl = {
     // Root path
     "Data",
     // Module class
-    &Hk::SampleModule::GetClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)

@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -28,8 +28,8 @@ SOFTWARE.
 
 */
 
-#include <Runtime/DirectionalLightComponent.h>
-#include <Runtime/PlayerController.h>
+#include <Runtime/World/DirectionalLightComponent.h>
+#include <Runtime/World/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/UI/UIManager.h>
 #include <Runtime/UI/UIViewport.h>
@@ -40,17 +40,17 @@ SOFTWARE.
 
 #include "../Common/Character.h"
 
-HK_NAMESPACE_BEGIN
-
-class AMonitor : public AActor
+class Actor_Monitor : public Hk::Actor
 {
-    HK_ACTOR(AMonitor, AActor)
+    HK_ACTOR(Actor_Monitor, Hk::Actor)
 
 public:
-    AMonitor() = default;
+    Actor_Monitor() = default;
 
-    void Initialize(ActorInitializer& Initializer)
+    void Initialize(Hk::ActorInitializer& Initializer)
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<Material> MonitorMaterial("MonitorMaterial"s);
         static TStaticResourceFinder<IndexedMesh> Mesh("QuadXY"s);
 
@@ -74,36 +74,40 @@ public:
         Initializer.bCanEverTick = true;
     }
 
-    void SetCamera(CameraComponent* camera)
+    void SetCamera(Hk::CameraComponent* camera)
     {
         m_pRenderView->SetCamera(camera);
     }
 
     void Tick(float timeStep)
     {
+        using namespace Hk;
+
         GEngine->GetFrameLoop()->RegisterView(m_pRenderView);
     }
 
 private:
-    TRef<WorldRenderView> m_pRenderView;
+    Hk::TRef<Hk::WorldRenderView> m_pRenderView;
 };
 
-HK_CLASS_META(AMonitor)
+HK_CLASS_META(Actor_Monitor)
 
-class AVideoCamera : public AActor
+class Actor_VideoCamera : public Hk::Actor
 {
-    HK_ACTOR(AVideoCamera, AActor)
+    HK_ACTOR(Actor_VideoCamera, Hk::Actor)
 
 public:
-    AVideoCamera() = default;
+    Actor_VideoCamera() = default;
 
-    CameraComponent* GetCamera()
+    Hk::CameraComponent* GetCamera()
     {
         return m_CameraComponent;
     }
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
+        using namespace Hk;
+
         m_CameraComponent = CreateComponent<CameraComponent>("camera");
 
         static TStaticResourceFinder<IndexedMesh> UnitBox("/Default/Meshes/Skybox"s);
@@ -127,13 +131,17 @@ public:
 
     void Tick(float timeStep) override
     {
+        using namespace Hk;
+
         float roll = Math::Sin(GetWorld()->GetGameplayTimeMicro() * 0.000001f)*7.0f;
 
         m_CameraComponent->SetAngles(0, 0, roll);
     }
 
-    void DrawDebug(DebugRenderer* renderer) override
+    void DrawDebug(Hk::DebugRenderer* renderer) override
     {
+        using namespace Hk;
+
         Float3 vectorTR;
         Float3 vectorTL;
         Float3 vectorBR;
@@ -190,22 +198,24 @@ public:
     }
 
 private:
-    CameraComponent* m_CameraComponent{};
+    Hk::CameraComponent* m_CameraComponent{};
 };
 
-HK_CLASS_META(AVideoCamera)
+HK_CLASS_META(Actor_VideoCamera)
 
 
-class SampleModule final : public GameModule
+class SampleModule final : public Hk::GameModule
 {
-    HK_CLASS(SampleModule, GameModule)
+    HK_CLASS(SampleModule, Hk::GameModule)
 
 public:
-    ACharacter* Player;
-    Float3      LightDir = Float3(1, -1, -1).Normalized();
+    Actor_Character* Player;
+    Hk::Float3 LightDir = Hk::Float3(1, -1, -1).Normalized();
 
     SampleModule()
     {
+        using namespace Hk;
+
         WorldRenderView* renderView = NewObj<WorldRenderView>();
         renderView->bDrawDebug = true;
         renderView->bClearBackground = true;
@@ -219,7 +229,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
         Player->SetPlayerIndex(1);
 
         CreateScene(world);
@@ -240,7 +250,7 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Spawn player controller
-        APlayerController* playerController = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(renderView);
@@ -288,11 +298,15 @@ public:
 
     void Quit()
     {
+        using namespace Hk;
+
         GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
     {
+        using namespace Hk;
+
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -331,16 +345,18 @@ public:
         IndexedMesh* quadXY = IndexedMesh::CreatePlaneXY(1, 1, Float2(1,-1));
         RegisterResource(quadXY, "QuadXY");
 
-        ACharacter::CreateCharacterResources();
+        Actor_Character::CreateCharacterResources();
     }
     
-    void CreateScene(World* world)
+    void CreateScene(Hk::World* world)
     {
+        using namespace Hk;
+
         // Spawn directional light
         {
             static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
 
-            AActor* dirlight = world->SpawnActor2(DirLightDef);
+            Actor* dirlight = world->SpawnActor2(DirLightDef);
             DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
             if (dirlightcomponent)
             {
@@ -358,7 +374,7 @@ public:
         {
             static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
-            AActor* ground = world->SpawnActor2(StaticMeshDef);
+            Actor* ground = world->SpawnActor2(StaticMeshDef);
             MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
             if (meshComp)
             {
@@ -376,14 +392,14 @@ public:
         }
 
         // Spawn camera
-        AVideoCamera* videoCamera = world->SpawnActor2<AVideoCamera>({{0, 1, 3}});
+        Actor_VideoCamera* videoCamera = world->SpawnActor2<Actor_VideoCamera>({{0, 1, 3}});
 
         // Spawn monitor
         {
             Transform spawnTransform;
             spawnTransform.Position = Float3(0, 1.2f, -2);
             spawnTransform.Scale = Float3(2, 2, 1);
-            AMonitor* monitor = world->SpawnActor2<AMonitor>(spawnTransform);
+            Actor_Monitor* monitor = world->SpawnActor2<Actor_Monitor>(spawnTransform);
             monitor->SetCamera(videoCamera->GetCamera());
         }
 
@@ -397,8 +413,6 @@ public:
 
 HK_CLASS_META(SampleModule)
 
-HK_NAMESPACE_END
-
 //
 // Declare game module
 //
@@ -411,6 +425,6 @@ static Hk::EntryDecl ModuleDecl = {
     // Root path
     "Data",
     // Module class
-    &Hk::SampleModule::GetClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)

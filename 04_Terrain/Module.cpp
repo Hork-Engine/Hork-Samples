@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -28,8 +28,8 @@ SOFTWARE.
 
 */
 
-#include <Runtime/DirectionalLightComponent.h>
-#include <Runtime/PlayerController.h>
+#include <Runtime/World/DirectionalLightComponent.h>
+#include <Runtime/World/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/UI/UIManager.h>
 #include <Runtime/UI/UIViewport.h>
@@ -44,18 +44,18 @@ SOFTWARE.
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 
-HK_NAMESPACE_BEGIN
-
-class SampleModule final : public GameModule
+class SampleModule final : public Hk::GameModule
 {
-    HK_CLASS(SampleModule, GameModule)
+    HK_CLASS(SampleModule, Hk::GameModule)
 
 public:
-    WorldRenderView* RenderView;
-    Float3 LightDir = Float3(1, -1, -1).Normalized();
+    Hk::WorldRenderView* RenderView;
+    Hk::Float3 LightDir = Hk::Float3(1, -1, -1).Normalized();
 
     SampleModule()
     {
+        using namespace Hk;
+
         CreateResources();
 
         InputMappings* inputMappings = NewObj<InputMappings>();
@@ -81,12 +81,12 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn specator
-        ASpectator* spectator = world->SpawnActor2<ASpectator>({Float3(0, 2, 0), Quat::Identity()});
+        Actor_Spectator* spectator = world->SpawnActor2<Actor_Spectator>({Float3(0, 2, 0), Quat::Identity()});
 
         CreateScene(world);
 
         // Spawn player controller
-        APlayerController* playerController = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(RenderView);
@@ -137,11 +137,15 @@ public:
 
     void Quit()
     {
+        using namespace Hk;
+
         GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
     {
+        using namespace Hk;
+
         ImageStorage skyboxImage = GEngine->GetRenderBackend()->GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, LightDir);
 
         Texture* skybox = Texture::CreateFromImage(skyboxImage);
@@ -157,10 +161,12 @@ public:
         RegisterResource(skyboxMaterialInst, "SkyboxMaterialInst");
     }
 
-    void CreateScene(World* world)
+    void CreateScene(Hk::World* world)
     {
+        using namespace Hk;
+
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
+        Actor* dirlight = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
         DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -174,7 +180,7 @@ public:
         }
 
         // Spawn terrain
-        AActor*            terrain          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/terrain.def"));
+        Actor* terrain = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/terrain.def"));
         TerrainComponent* terrainComponent = terrain->GetComponent<TerrainComponent>();
         if (terrainComponent)
         {
@@ -198,7 +204,7 @@ public:
         // Spawn skybox
         Transform t;
         t.SetScale(4000);
-        AActor*         skybox        = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), t);
+        Actor* skybox        = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), t);
         MeshComponent* meshComponent = skybox->GetComponent<MeshComponent>();
         if (meshComponent)
         {
@@ -224,8 +230,6 @@ public:
 
 HK_CLASS_META(SampleModule)
 
-HK_NAMESPACE_END
-
 #include <Runtime/EntryDecl.h>
 
 static Hk::EntryDecl ModuleDecl = {
@@ -234,6 +238,6 @@ static Hk::EntryDecl ModuleDecl = {
     // Root path
     "Data",
     // Module class
-    &Hk::SampleModule::GetClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)

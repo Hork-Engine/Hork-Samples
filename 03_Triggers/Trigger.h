@@ -30,27 +30,27 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/InputComponent.h>
-#include <Runtime/MeshComponent.h>
-#include <Runtime/Timer.h>
+#include <Runtime/World/InputComponent.h>
+#include <Runtime/World/MeshComponent.h>
+#include <Runtime/World/Timer.h>
 
-HK_NAMESPACE_BEGIN
-
-class ATrigger : public AActor
+class Actor_Trigger : public Hk::Actor
 {
-    HK_ACTOR(ATrigger, AActor)
+    HK_ACTOR(Actor_Trigger, Actor)
 
 public:
     std::function<void()> SpawnFunction;
 
 protected:
-    PhysicalBody* TriggerBody{};
-    TRef<WorldTimer>   Timer;
+    Hk::PhysicalBody* TriggerBody{};
+    Hk::TRef<Hk::WorldTimer> Timer;
 
-    ATrigger() = default;
+    Actor_Trigger() = default;
 
-    void Initialize(ActorInitializer& Initializer) override
+    void Initialize(Hk::ActorInitializer& Initializer) override
     {
+        using namespace Hk;
+
         TriggerBody = CreateComponent<PhysicalBody>("TriggerBody");
         TriggerBody->SetDispatchOverlapEvents(true);
         TriggerBody->SetTrigger(true);
@@ -70,13 +70,15 @@ protected:
     {
         Super::BeginPlay();
 
-        E_OnBeginOverlap.Add(this, &ATrigger::OnBeginOverlap);
-        E_OnEndOverlap.Add(this, &ATrigger::OnEndOverlap);
-        E_OnUpdateOverlap.Add(this, &ATrigger::OnUpdateOverlap);
+        E_OnBeginOverlap.Add(this, &Actor_Trigger::OnBeginOverlap);
+        E_OnEndOverlap.Add(this, &Actor_Trigger::OnEndOverlap);
+        E_OnUpdateOverlap.Add(this, &Actor_Trigger::OnUpdateOverlap);
     }
 
-    void OnBeginOverlap(OverlapEvent const& Event)
+    void OnBeginOverlap(Hk::OverlapEvent const& Event)
     {
+        using namespace Hk;
+
         SceneComponent* self = Event.SelfBody->GetOwnerComponent();
         SceneComponent* other = Event.OtherBody->GetOwnerComponent();
 
@@ -84,7 +86,7 @@ protected:
 
         if (!Timer)
         {
-            Timer             = AddTimer({this, &ATrigger::OnTimer});
+            Timer = AddTimer({this, &Actor_Trigger::OnTimer});
             Timer->SleepDelay = 0.5f;
         }
         else
@@ -93,8 +95,10 @@ protected:
         }
     }
 
-    void OnEndOverlap(OverlapEvent const& Event)
+    void OnEndOverlap(Hk::OverlapEvent const& Event)
     {
+        using namespace Hk;
+
         SceneComponent* self = Event.SelfBody->GetOwnerComponent();
         SceneComponent* other = Event.OtherBody->GetOwnerComponent();
 
@@ -103,14 +107,11 @@ protected:
         Timer->Stop();
     }
 
-    void OnUpdateOverlap(OverlapEvent const& _Event)
-    {
-    }
+    void OnUpdateOverlap(Hk::OverlapEvent const& _Event)
+    {}
 
     void OnTimer()
     {
         SpawnFunction();
     }
 };
-
-HK_NAMESPACE_END

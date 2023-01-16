@@ -4,7 +4,7 @@ Hork Engine Source Code
 
 MIT License
 
-Copyright (C) 2017-2022 Alexander Samusev.
+Copyright (C) 2017-2023 Alexander Samusev.
 
 This file is part of the Hork Engine Source Code.
 
@@ -28,8 +28,8 @@ SOFTWARE.
 
 */
 
-#include <Runtime/DirectionalLightComponent.h>
-#include <Runtime/PlayerController.h>
+#include <Runtime/World/DirectionalLightComponent.h>
+#include <Runtime/World/PlayerController.h>
 #include <Runtime/MaterialGraph.h>
 #include <Runtime/UI/UIManager.h>
 #include <Runtime/UI/UIViewport.h>
@@ -41,19 +41,19 @@ SOFTWARE.
 #include "../Common/Character.h"
 #include "MetaballController.h"
 
-HK_NAMESPACE_BEGIN
-
-class SampleModule final : public GameModule
+class SampleModule final : public Hk::GameModule
 {
-    HK_CLASS(SampleModule, GameModule)
+    HK_CLASS(SampleModule, Hk::GameModule)
 
 public:
-    ACharacter*      Player;
-    WorldRenderView* RenderView;
-    Float3           LightDir = Float3(1, -1, -1).Normalized();
+    Actor_Character* Player;
+    Hk::WorldRenderView* RenderView;
+    Hk::Float3 LightDir = Hk::Float3(1, -1, -1).Normalized();
 
     SampleModule()
     {
+        using namespace Hk;
+
         // Create game resources
         CreateResources();
 
@@ -61,7 +61,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<ACharacter>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
 
         CreateScene(world);
 
@@ -85,7 +85,7 @@ public:
         RenderView->bDrawDebug = true;
 
         // Spawn player controller
-        APlayerController* playerController = world->SpawnActor2<APlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(RenderView);
@@ -136,11 +136,15 @@ public:
 
     void Quit()
     {
+        using namespace Hk;
+
         GEngine->PostTerminateEvent();
     }
 
     void CreateResources()
     {
+        using namespace Hk;
+
         // Create material
         MGMaterialGraph* graph = MGMaterialGraph::LoadFromFile(GEngine->GetResourceManager()->OpenResource("/Root/materials/sample_material_graph.mgraph").ReadInterface());
 
@@ -178,16 +182,18 @@ public:
         EnvironmentMap* envmap = EnvironmentMap::CreateFromImage(skyboxImage);
         RegisterResource(envmap, "Envmap");
 
-        ACharacter::CreateCharacterResources();
+        Actor_Character::CreateCharacterResources();
     }
 
-    void CreateScene(World* world)
+    void CreateScene(Hk::World* world)
     {
+        using namespace Hk;
+
         static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
         static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
 
         // Spawn directional light
-        AActor*                     dirlight          = world->SpawnActor2(DirLightDef);
+        Actor*                     dirlight          = world->SpawnActor2(DirLightDef);
         DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
         if (dirlightcomponent)
         {
@@ -206,7 +212,7 @@ public:
         spawnTransform.Rotation = Quat::Identity();
         spawnTransform.Scale    = Float3(2, 1, 2);
 
-        AActor*         ground   = world->SpawnActor2(StaticMeshDef, spawnTransform);
+        Actor*         ground   = world->SpawnActor2(StaticMeshDef, spawnTransform);
         MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
         if (meshComp)
         {
@@ -223,7 +229,7 @@ public:
         }
 
         // Spawn metaballs
-        world->SpawnActor2<AMetaballController>({{0, 2, 0}, {1, 0, 0, 0}, {1.0f, 1.0f, 1.0f}});
+        world->SpawnActor2<Actor_MetaballController>({{0, 2, 0}, {1, 0, 0, 0}, {1.0f, 1.0f, 1.0f}});
 
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
@@ -234,8 +240,6 @@ public:
 //
 
 HK_CLASS_META(SampleModule)
-
-HK_NAMESPACE_END
 
 //
 // Declare game module
@@ -249,6 +253,6 @@ static Hk::EntryDecl ModuleDecl = {
     // Root path
     "Data",
     // Module class
-    &Hk::SampleModule::GetClassMeta()};
+    &SampleModule::GetClassMeta()};
 
 HK_ENTRY_DECL(ModuleDecl)
