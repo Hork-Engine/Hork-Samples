@@ -166,10 +166,9 @@ public:
         using namespace Hk;
 
         // Spawn directional light
-        Actor* dirlight = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
-        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
-        if (dirlightcomponent)
         {
+            Actor* dirlight = world->SpawnActor2();
+            DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
@@ -177,19 +176,22 @@ public:
             dirlightcomponent->SetShadowCascadeResolution(2048);
             dirlightcomponent->SetShadowCascadeOffset(0.0f);
             dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
+            dirlight->SetRootComponent(dirlightcomponent);
         }
 
         // Spawn terrain
-        Actor* terrain = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/terrain.def"));
-        TerrainComponent* terrainComponent = terrain->GetComponent<TerrainComponent>();
-        if (terrainComponent)
         {
+            Actor* terrain = world->SpawnActor2();
+            TerrainComponent* terrainComponent = terrain->CreateComponent<TerrainComponent>("Terrain");
+
             // Generate heightmap
             size_t res = 4097;
             TVector<float> heightmap(res * res);
             float* data = heightmap.ToPtr();
-            for (int y = 0; y < res; y++) {
-                for (int x = 0; x < res; x++) {
+            for (int y = 0; y < res; y++)
+            {
+                for (int x = 0; x < res; x++)
+                {
                     data[y * res + x] = stb_perlin_fbm_noise3((float)x / res * 3, (float)y / res * 3, 0, 2.3f, 0.5f, 4) * 400 - 300;
                 }
             }
@@ -202,24 +204,20 @@ public:
         }
 
         // Spawn skybox
-        Transform t;
-        t.SetScale(4000);
-        Actor* skybox        = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), t);
-        MeshComponent* meshComponent = skybox->GetComponent<MeshComponent>();
-        if (meshComponent)
         {
-            static TStaticResourceFinder<IndexedMesh> SkyMesh("/Default/Meshes/Skybox"s);
-            //static TStaticResourceFinder<IndexedMesh>      SkyMesh("/Default/Meshes/SkydomeHemisphere"s);
-            //static TStaticResourceFinder<IndexedMesh>      SkyMesh("/Default/Meshes/Skydome"s);
-            static TStaticResourceFinder<MaterialInstance> SkyboxMaterialInst("SkyboxMaterialInst"s);
+            Actor* skybox = world->SpawnActor2();
+            MeshComponent* meshComponent = skybox->CreateComponent<MeshComponent>("Skybox");
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(SkyboxMaterialInst);
+            meshRender->SetMaterial(GetResource<MaterialInstance>("SkyboxMaterialInst"));
 
-            meshComponent->SetMesh(SkyMesh);
+            meshComponent->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/Skybox"));
             meshComponent->SetRenderView(meshRender);
+
+            meshComponent->SetScale(4000);
         }
 
+        // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };

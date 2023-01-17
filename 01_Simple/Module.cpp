@@ -252,10 +252,9 @@ public:
         using namespace Hk;
 
         // Spawn directional light
-        Actor*                     dirlight          = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/directionallight.def"));
-        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
-        if (dirlightcomponent)
         {
+            Actor* dirlight = world->SpawnActor2();
+            DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
@@ -263,27 +262,26 @@ public:
             dirlightcomponent->SetShadowCascadeResolution(2048);
             dirlightcomponent->SetShadowCascadeOffset(0.0f);
             dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
+            dirlight->SetRootComponent(dirlightcomponent);
         }
 
         // Spawn ground
-        Transform spawnTransform;
-        spawnTransform.Position = Float3(0);
-        spawnTransform.Rotation = Quat::Identity();
-        spawnTransform.Scale    = Float3(2, 1, 2);
-
-        Actor*         ground     = world->SpawnActor2(GetOrCreateResource<ActorDefinition>("/Embedded/Actors/staticmesh.def"), spawnTransform);
-        MeshComponent* groundMesh = ground->GetComponent<MeshComponent>();
-        if (groundMesh)
         {
+            Actor* ground = world->SpawnActor2();
+
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
 
-            // Setup mesh and material
+            MeshComponent* groundMesh = ground->CreateComponent<MeshComponent>("Ground");
             groundMesh->SetMesh(GetResource<IndexedMesh>("GroundMesh"));
             groundMesh->SetRenderView(meshRender);
             groundMesh->SetCastShadow(false);
+            groundMesh->SetScale({2, 1, 2});
+
+            ground->SetRootComponent(groundMesh);
         }
 
+        // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };

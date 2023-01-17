@@ -140,14 +140,10 @@ public:
     {
         using namespace Hk;
 
-        static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
-        static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
-
         // Spawn directional light
-        Actor* dirlight = world->SpawnActor2(DirLightDef);
-        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
-        if (dirlightcomponent)
         {
+            Actor* dirlight = world->SpawnActor2();
+            DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
@@ -155,32 +151,28 @@ public:
             dirlightcomponent->SetShadowCascadeResolution(2048);
             dirlightcomponent->SetShadowCascadeOffset(0.0f);
             dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
+            dirlight->SetRootComponent(dirlightcomponent);
         }
 
         // Spawn ground
-        Transform spawnTransform;
-        spawnTransform.Position = Float3(0);
-        spawnTransform.Rotation = Quat::Identity();
-
-        Actor* ground = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
-        if (meshComp)
         {
-            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
+            Actor* ground = world->SpawnActor2();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(ExampleMaterialInstance);
+            meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
 
-            // Setup mesh and material
-            meshComp->SetMesh(GroundMesh);
-            meshComp->SetRenderView(meshRender);
-            meshComp->SetCastShadow(false);
+            MeshComponent* groundMesh = ground->CreateComponent<MeshComponent>("Ground");
+            groundMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/PlaneXZ"));
+            groundMesh->SetRenderView(meshRender);
+            groundMesh->SetCastShadow(false);
+
+            ground->SetRootComponent(groundMesh);
         }
 
         // Spawn model with skeletal animation
         world->SpawnActor2<Actor_BrainStem>({{0, 0, -2}});
 
+        // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 

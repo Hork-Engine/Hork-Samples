@@ -184,14 +184,10 @@ public:
     {
         using namespace Hk;
 
-        static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
-        static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
-
         // Spawn directional light
-        Actor*                     dirlight          = world->SpawnActor2(DirLightDef);
-        DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
-        if (dirlightcomponent)
         {
+            Actor* dirlight = world->SpawnActor2();
+            DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
             dirlightcomponent->SetIlluminance(20000.0f);
@@ -199,105 +195,108 @@ public:
             dirlightcomponent->SetShadowCascadeResolution(2048);
             dirlightcomponent->SetShadowCascadeOffset(0.0f);
             dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
+            dirlight->SetRootComponent(dirlightcomponent);
         }
 
         // Spawn ground
-        Actor*         ground   = world->SpawnActor2(StaticMeshDef);
-        MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
-        if (meshComp)
         {
-            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/PlaneXZ"s);
+            Actor* ground = world->SpawnActor2();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(ExampleMaterialInstance);
+            meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
 
-            // Setup mesh and material
-            meshComp->SetMesh(GroundMesh);
-            meshComp->SetRenderView(meshRender);
-            meshComp->SetCastShadow(false);
+            MeshComponent* groundMesh = ground->CreateComponent<MeshComponent>("Ground");
+            groundMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/PlaneXZ"));
+            groundMesh->SetRenderView(meshRender);
+            groundMesh->SetCastShadow(false);
+
+            ground->SetRootComponent(groundMesh);
         }
 
-        // Spawn wall
-        Actor* staticWall = world->SpawnActor2(StaticMeshDef, {{0, 1, -3}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
-        meshComp           = staticWall->GetComponent<MeshComponent>();
-        if (meshComp)
+        // Spawn walls
         {
-            static TStaticResourceFinder<MaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      UnitBox("/Default/Meshes/Box"s);
+            Actor* wall = world->SpawnActor2();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(WallMaterialInstance);
+            meshRender->SetMaterial(GetResource<MaterialInstance>("WallMaterialInstance"));
 
-            // Set mesh and material resources for mesh component
-            meshComp->SetMesh(UnitBox);
-            meshComp->SetRenderView(meshRender);
+            MeshComponent* wallMesh = wall->CreateComponent<MeshComponent>("Wall");
+            wallMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/Box"));
+            wallMesh->SetRenderView(meshRender);
+            wallMesh->SetCastShadow(true);
+            wallMesh->SetTransform({{0, 1, -3}, {1, 0, 0, 0}, {10.0f, 2.0f, 0.5f}});
+
+            wall->SetRootComponent(wallMesh);
+        }
+        {
+            Transform spawnTransform;
+            spawnTransform.Rotation.FromAngles(0, 0, Math::_PI / 4);
+            spawnTransform.Scale = Float3(2, 1, 6);
+            spawnTransform.Position = Float3(-4, 2, 2);
+
+            Actor* wall = world->SpawnActor2();
+
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
+
+            MeshComponent* wallMesh = wall->CreateComponent<MeshComponent>("Wall");
+            wallMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/Box"));
+            wallMesh->SetRenderView(meshRender);
+            wallMesh->SetCastShadow(true);
+            wallMesh->SetTransform(spawnTransform);
+
+            wall->SetRootComponent(wallMesh);
+        }
+        {
+            Transform spawnTransform;
+            spawnTransform.Rotation.FromAngles(0, -Math::_PI / 8, -Math::_PI / 4);
+            spawnTransform.Scale = Float3(6, 0.3f, 6);
+            spawnTransform.Position = Float3(4, 0, 2);
+
+            Actor* wall = world->SpawnActor2();
+
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
+
+            MeshComponent* wallMesh = wall->CreateComponent<MeshComponent>("Wall");
+            wallMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/Box"));
+            wallMesh->SetRenderView(meshRender);
+            wallMesh->SetCastShadow(true);
+            wallMesh->SetTransform(spawnTransform);
+
+            wall->SetRootComponent(wallMesh);
         }
 
         // Spawn small box with simulated physics
-        Actor* box = world->SpawnActor2(StaticMeshDef, {{3, 5, 3}, {1, 0, 0, 0}, {0.5f, 0.5f, 0.5f}});
-        meshComp    = box->GetComponent<MeshComponent>();
-        if (meshComp)
         {
-            static TStaticResourceFinder<MaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      UnitBox("/Default/Meshes/Box"s);
+            Actor* box = world->SpawnActor2();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(WallMaterialInstance);
+            meshRender->SetMaterial(GetResource<MaterialInstance>("WallMaterialInstance"));
 
-            // Set mesh and material resources for mesh component
-            meshComp->SetMesh(UnitBox);
-            meshComp->SetRenderView(meshRender);
-
+            MeshComponent* boxMesh = box->CreateComponent<MeshComponent>("Box");
+            boxMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/Box"));
+            boxMesh->SetRenderView(meshRender);
+            boxMesh->SetCastShadow(true);
+            boxMesh->SetTransform({{3, 5, 3}, {1, 0, 0, 0}, {0.5f, 0.5f, 0.5f}});
             // Setup physics
-            meshComp->SetMass(1.0f);
-            meshComp->SetMotionBehavior(MB_SIMULATED);
-            meshComp->SetCollisionGroup(CM_WORLD_DYNAMIC);
+            boxMesh->SetMass(1.0f);
+            boxMesh->SetMotionBehavior(MB_SIMULATED);
+            boxMesh->SetCollisionGroup(CM_WORLD_DYNAMIC);
+
+            box->SetRootComponent(boxMesh);
         }
 
-        Transform spawnTransform;
-        spawnTransform.Rotation.FromAngles(0,0,Math::_PI/4);
-        spawnTransform.Scale    = Float3(2, 1, 6);
-        spawnTransform.Position = Float3(-4,2,2);
-        Actor*         floor   = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        meshComp      = floor->GetComponent<MeshComponent>();
-        if (meshComp)
+        // Spawn platform
         {
-            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
-
-            MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(ExampleMaterialInstance);
-
-            // Setup mesh and material
-            meshComp->SetMesh(GroundMesh);
-            meshComp->SetRenderView(meshRender);
+            Transform spawnTransform;
+            spawnTransform.Rotation.SetIdentity();
+            spawnTransform.Scale = Float3(2, 0.3f, 2);
+            spawnTransform.Position = Float3(0, 0.5f, -1);
+            world->SpawnActor2<Actor_Platform>(spawnTransform);
         }
-
-        spawnTransform.Rotation.FromAngles(0, -Math::_PI / 8, -Math::_PI / 4);
-        spawnTransform.Scale    = Float3(6, 0.3f, 6);
-        spawnTransform.Position = Float3(4, 0, 2);
-        Actor* floor2           = world->SpawnActor2(StaticMeshDef, spawnTransform);
-        meshComp                = floor2->GetComponent<MeshComponent>();
-        if (meshComp)
-        {
-            static TStaticResourceFinder<MaterialInstance> ExampleMaterialInstance("ExampleMaterialInstance"s);
-            static TStaticResourceFinder<IndexedMesh>      GroundMesh("/Default/Meshes/Box"s);
-
-            MeshRenderView* meshRender = NewObj<MeshRenderView>();
-            meshRender->SetMaterial(ExampleMaterialInstance);
-
-            // Setup mesh and material
-            meshComp->SetMesh(GroundMesh);
-            meshComp->SetRenderView(meshRender);
-        }
-
-
-        spawnTransform.Rotation.SetIdentity();
-        spawnTransform.Scale    = Float3(2, 0.3f, 2);
-        spawnTransform.Position = Float3(0, 0.5f, -1);
-        world->SpawnActor2<Actor_Platform>(spawnTransform);
-
+        
+        // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };

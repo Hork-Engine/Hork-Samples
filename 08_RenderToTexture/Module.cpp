@@ -354,41 +354,31 @@ public:
 
         // Spawn directional light
         {
-            static TStaticResourceFinder<ActorDefinition> DirLightDef("/Embedded/Actors/directionallight.def"s);
-
-            Actor* dirlight = world->SpawnActor2(DirLightDef);
-            DirectionalLightComponent* dirlightcomponent = dirlight->GetComponent<DirectionalLightComponent>();
-            if (dirlightcomponent)
-            {
-                dirlightcomponent->SetCastShadow(true);
-                dirlightcomponent->SetDirection(LightDir);
-                dirlightcomponent->SetIlluminance(20000.0f);
-                dirlightcomponent->SetShadowMaxDistance(40);
-                dirlightcomponent->SetShadowCascadeResolution(2048);
-                dirlightcomponent->SetShadowCascadeOffset(0.0f);
-                dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
-            }
+            Actor* dirlight = world->SpawnActor2();
+            DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
+            dirlightcomponent->SetCastShadow(true);
+            dirlightcomponent->SetDirection(LightDir);
+            dirlightcomponent->SetIlluminance(20000.0f);
+            dirlightcomponent->SetShadowMaxDistance(40);
+            dirlightcomponent->SetShadowCascadeResolution(2048);
+            dirlightcomponent->SetShadowCascadeOffset(0.0f);
+            dirlightcomponent->SetShadowCascadeSplitLambda(0.8f);
+            dirlight->SetRootComponent(dirlightcomponent);
         }
 
         // Spawn ground
         {
-            static TStaticResourceFinder<ActorDefinition> StaticMeshDef("/Embedded/Actors/staticmesh.def"s);
+            Actor* ground = world->SpawnActor2();
 
-            Actor* ground = world->SpawnActor2(StaticMeshDef);
-            MeshComponent* meshComp = ground->GetComponent<MeshComponent>();
-            if (meshComp)
-            {
-                static TStaticResourceFinder<MaterialInstance> GroundMaterialInst("GroundMaterialInst"s);
-                static TStaticResourceFinder<IndexedMesh> GroundMesh("/Default/Meshes/PlaneXZ"s);
+            MeshRenderView* meshRender = NewObj<MeshRenderView>();
+            meshRender->SetMaterial(GetResource<MaterialInstance>("GroundMaterialInst"));
 
-                MeshRenderView* meshRender = NewObj<MeshRenderView>();
-                meshRender->SetMaterial(GroundMaterialInst);
+            MeshComponent* groundMesh = ground->CreateComponent<MeshComponent>("Ground");
+            groundMesh->SetMesh(GetOrCreateResource<IndexedMesh>("/Default/Meshes/PlaneXZ"));
+            groundMesh->SetRenderView(meshRender);
+            groundMesh->SetCastShadow(false);
 
-                // Setup mesh and material
-                meshComp->SetMesh(GroundMesh);
-                meshComp->SetRenderView(meshRender);
-                meshComp->SetCastShadow(false);
-            }
+            ground->SetRootComponent(groundMesh);
         }
 
         // Spawn camera
@@ -403,6 +393,7 @@ public:
             monitor->SetCamera(videoCamera->GetCamera());
         }
 
+        // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
     }
 };
