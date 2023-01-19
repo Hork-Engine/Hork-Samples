@@ -30,88 +30,91 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/InputComponent.h>
 #include <Runtime/World/MeshComponent.h>
-#include <Runtime/World/Timer.h>
 
-class Actor_Trigger : public Hk::Actor
+class Actor_Emitter : public Hk::Actor
 {
-    HK_ACTOR(Actor_Trigger, Actor)
+    HK_ACTOR(Actor_Emitter, Actor)
 
 public:
     std::function<void()> SpawnFunction;
+    float SpawnInterval = 0.5f;
 
 protected:
-    Hk::PhysicalBody* TriggerBody{};
-    Hk::TRef<Hk::WorldTimer> Timer;
+    Hk::PhysicalBody* m_Trigger{};
+    float m_NextThinkTime{};
+    bool m_bOverlap{};
 
-    Actor_Trigger() = default;
+    Actor_Emitter() = default;
 
     void Initialize(Hk::ActorInitializer& Initializer) override
     {
         using namespace Hk;
 
-        TriggerBody = CreateComponent<PhysicalBody>("TriggerBody");
-        TriggerBody->SetDispatchOverlapEvents(true);
-        TriggerBody->SetTrigger(true);
-        TriggerBody->SetMotionBehavior(MB_STATIC);
-        TriggerBody->SetCollisionGroup(CM_TRIGGER);
-        TriggerBody->SetCollisionMask(CM_PAWN);
+        m_Trigger = CreateComponent<PhysicalBody>("Trigger");
+        m_Trigger->SetDispatchOverlapEvents(true);
+        m_Trigger->SetTrigger(true);
+        m_Trigger->SetMotionBehavior(MB_STATIC);
+        m_Trigger->SetCollisionGroup(CM_TRIGGER);
+        m_Trigger->SetCollisionMask(CM_PAWN);
 
         CollisionBoxDef box;
         CollisionModel* collisionModel = NewObj<CollisionModel>(&box);
 
-        TriggerBody->SetCollisionModel(collisionModel);
+        m_Trigger->SetCollisionModel(collisionModel);
 
-        m_RootComponent = TriggerBody;
+        m_RootComponent = m_Trigger;
+
+        Initializer.bCanEverTick = true;
     }
 
     void BeginPlay()
     {
         Super::BeginPlay();
 
-        E_OnBeginOverlap.Add(this, &Actor_Trigger::OnBeginOverlap);
-        E_OnEndOverlap.Add(this, &Actor_Trigger::OnEndOverlap);
-        E_OnUpdateOverlap.Add(this, &Actor_Trigger::OnUpdateOverlap);
+        E_OnBeginOverlap.Add(this, &Actor_Emitter::OnBeginOverlap);
+        E_OnEndOverlap.Add(this, &Actor_Emitter::OnEndOverlap);
+        E_OnUpdateOverlap.Add(this, &Actor_Emitter::OnUpdateOverlap);
     }
 
-    void OnBeginOverlap(Hk::OverlapEvent const& Event)
+    void OnBeginOverlap(Hk::OverlapEvent const& event)
     {
         using namespace Hk;
 
-        SceneComponent* self = Event.SelfBody->GetOwnerComponent();
-        SceneComponent* other = Event.OtherBody->GetOwnerComponent();
+        SceneComponent* self = event.SelfBody->GetOwnerComponent();
+        SceneComponent* other = event.OtherBody->GetOwnerComponent();
 
         LOG("OnBeginOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
-        if (!Timer)
-        {
-            Timer = AddTimer({this, &Actor_Trigger::OnTimer});
-            Timer->SleepDelay = 0.5f;
-        }
-        else
-        {
-            Timer->Restart();
-        }
+        m_bOverlap = true;
+        m_NextThinkTime = SpawnInterval;
     }
 
-    void OnEndOverlap(Hk::OverlapEvent const& Event)
+    void OnEndOverlap(Hk::OverlapEvent const& event)
     {
         using namespace Hk;
 
-        SceneComponent* self = Event.SelfBody->GetOwnerComponent();
-        SceneComponent* other = Event.OtherBody->GetOwnerComponent();
+        SceneComponent* self = event.SelfBody->GetOwnerComponent();
+        SceneComponent* other = event.OtherBody->GetOwnerComponent();
 
         LOG("OnEndOverlap: self {} other {}\n", self->GetObjectName(), other->GetObjectName());
 
-        Timer->Stop();
+        m_bOverlap = false;
     }
 
-    void OnUpdateOverlap(Hk::OverlapEvent const& _Event)
+    void OnUpdateOverlap(Hk::OverlapEvent const& event)
     {}
 
-    void OnTimer()
+    void Tick(float timeStep) override
     {
-        SpawnFunction();
+        if (m_bOverlap)
+        {
+            m_NextThinkTime -= timeStep;
+            if (m_NextThinkTime <= 0)
+            {
+                m_NextThinkTime = SpawnInterval;
+                SpawnFunction();
+            }
+        }
     }
 };

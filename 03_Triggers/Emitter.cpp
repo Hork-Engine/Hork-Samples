@@ -28,6 +28,6 @@ SOFTWARE.
 
 */
 
-#include "Trigger.h"
+#include "Emitter.h"
 
-HK_CLASS_META(Actor_Trigger)
+HK_CLASS_META(Actor_Emitter)

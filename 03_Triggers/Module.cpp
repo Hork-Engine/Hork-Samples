@@ -39,7 +39,7 @@ SOFTWARE.
 #include <Runtime/WorldRenderView.h>
 
 #include "../Common/Character.h"
-#include "Trigger.h"
+#include "Emitter.h"
 #include "Door.h"
 
 class SampleModule final : public Hk::GameModule
@@ -230,10 +230,10 @@ public:
             wall->SetRootComponent(wallMesh);
         }
 
-        // Spawn trigger
+        // Spawn emitter
         {
-            Actor_Trigger* trigger = world->SpawnActor2<Actor_Trigger>({{0, 1, -2}, {1, 0, 0, 0}, {1.5f, 2, 1.5f}});
-            trigger->SpawnFunction = [world]()
+            Actor_Emitter* emitter = world->SpawnActor2<Actor_Emitter>({{0, 1, -2}, {1, 0, 0, 0}, {1.5f, 2, 1.5f}});
+            emitter->SpawnFunction = [world]()
             {
                 // Find resources
                 static TStaticResourceFinder<MaterialInstance> WallMaterialInstance("WallMaterialInstance"s);
@@ -260,8 +260,10 @@ public:
 
                 box->SetRootComponent(meshComp);
             };
+            emitter->SpawnInterval = 0.5f;
         }
 
+        // Spawn doors
         CreateDoor(world, {{-3, 1, 0}});
         CreateDoor(world, {{3, 1, 0}, Angl(0, 45, 0).ToQuat()});
 

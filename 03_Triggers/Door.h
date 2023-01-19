@@ -134,7 +134,7 @@ protected:
         E_OnUpdateOverlap.Add(this, &Actor_Door::OnUpdateOverlap);
     }
 
-    void OnBeginOverlap(Hk::OverlapEvent const& Event)
+    void OnBeginOverlap(Hk::OverlapEvent const& event)
     {
         using namespace Hk;
 
@@ -142,7 +142,7 @@ protected:
             m_DoorState = STATE_OPENING;
     }
 
-    void OnUpdateOverlap(Hk::OverlapEvent const& _Event)
+    void OnUpdateOverlap(Hk::OverlapEvent const& event)
     {
         if (m_DoorState == STATE_CLOSED)
             m_DoorState = STATE_OPENING;
