@@ -40,6 +40,7 @@ SOFTWARE.
 
 #include "../Common/Character.h"
 #include "Trigger.h"
+#include "Door.h"
 
 class SampleModule final : public Hk::GameModule
 {
@@ -261,8 +262,33 @@ public:
             };
         }
 
+        CreateDoor(world, {{-3, 1, 0}});
+        CreateDoor(world, {{3, 1, 0}, Angl(0, 45, 0).ToQuat()});
+
         // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
+    }
+
+    void CreateDoor(Hk::World* world, Hk::Transform const& spawnTransform)
+    {
+        using namespace Hk;
+
+        Actor_Door* actor = world->SpawnActor2<Actor_Door>(spawnTransform);
+
+        Float3 doorExtents = Float3(1, 2, 0.2f);
+
+        IndexedMesh* mesh = IndexedMesh::CreateBox(doorExtents, 1.0f);
+        CollisionBoxDef box;
+        box.HalfExtents = doorExtents * 0.5f;
+        mesh->SetCollisionModel(NewObj<CollisionModel>(&box));
+        mesh->SetMaterialInstance(0, GetResource<MaterialInstance>("WallMaterialInstance"));
+
+        actor->AddDoorMesh(mesh, Float3(0.5f, 0.0f, 0.0f), Float3(1, 0, 0));
+        actor->AddDoorMesh(mesh, Float3(-0.5f, 0.0f, 0.0f), Float3(-1, 0, 0));
+        actor->SetMaxOpenDistance(1);
+        actor->SetOpenSpeed(2);
+        actor->SetCloseSpeed(0.5f);
+        actor->SetTriggerBox(BvAxisAlignedBox({-1, -1, -1}, {1, 1, 1}));
     }
 };
 
