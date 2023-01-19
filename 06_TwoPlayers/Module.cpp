@@ -61,9 +61,9 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player1 = world->SpawnActor2<Actor_Character>({Float3(-2, 1, 0), Quat::Identity()});
+        Player1 = world->SpawnActor<Actor_Character>({Float3(-2, 1, 0), Quat::Identity()});
         Player1->SetPlayerIndex(1);
-        Player2 = world->SpawnActor2<Actor_Character>({Float3(2, 1, 0), Quat::Identity()});
+        Player2 = world->SpawnActor<Actor_Character>({Float3(2, 1, 0), Quat::Identity()});
         Player2->SetPlayerIndex(2);
 
         CreateScene(world);
@@ -97,13 +97,13 @@ public:
         renderView2->VisibilityMask = ~PLAYER1_SKYBOX_VISIBILITY_GROUP;
 
         // Spawn player controller
-        Actor_PlayerController* playerController1 = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController1 = world->SpawnActor<Actor_PlayerController>();
         playerController1->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController1->SetInputMappings(inputMappings);
         playerController1->SetRenderView(renderView1);
         playerController1->SetPawn(Player1);
 
-        Actor_PlayerController* playerController2 = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController2 = world->SpawnActor<Actor_PlayerController>();
         playerController2->SetPlayerIndex(CONTROLLER_PLAYER_2);
         playerController2->SetInputMappings(inputMappings);
         playerController2->SetRenderView(renderView2);
@@ -235,7 +235,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -249,7 +249,7 @@ public:
 
         // Spawn ground
         {
-            Actor* ground = world->SpawnActor2();
+            Actor* ground = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -264,7 +264,7 @@ public:
 
         // Spawn walls
         {
-            Actor* wall = world->SpawnActor2();
+            Actor* wall = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("WallMaterialInstance"));
@@ -283,7 +283,7 @@ public:
             spawnTransform.Scale = Float3(2, 1, 6);
             spawnTransform.Position = Float3(-4, 2, 2);
 
-            Actor* wall = world->SpawnActor2();
+            Actor* wall = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -302,7 +302,7 @@ public:
             spawnTransform.Scale = Float3(6, 0.3f, 6);
             spawnTransform.Position = Float3(4, 0, 2);
 
-            Actor* wall = world->SpawnActor2();
+            Actor* wall = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -318,7 +318,7 @@ public:
 
         // Spawn small box with simulated physics
         {
-            Actor* box = world->SpawnActor2();
+            Actor* box = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("WallMaterialInstance"));
@@ -342,7 +342,7 @@ public:
             spawnTransform.Rotation.SetIdentity();
             spawnTransform.Scale = Float3(2, 0.3f, 2);
             spawnTransform.Position = Float3(0, 0.5f, -1);
-            world->SpawnActor2<Actor_Platform>(spawnTransform);
+            world->SpawnActor<Actor_Platform>(spawnTransform);
         }
 
         // Setup world environment

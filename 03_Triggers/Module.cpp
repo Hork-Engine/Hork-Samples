@@ -61,7 +61,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
 
         CreateScene(world);
 
@@ -85,7 +85,7 @@ public:
         renderView->bDrawDebug = true;
 
         // Spawn player controller
-        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(renderView);
@@ -187,7 +187,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -201,7 +201,7 @@ public:
 
         // Spawn ground
         {
-            Actor* ground = world->SpawnActor2();
+            Actor* ground = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -216,7 +216,7 @@ public:
 
         // Spawn walls
         {
-            Actor* wall = world->SpawnActor2();
+            Actor* wall = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("WallMaterialInstance"));
@@ -232,7 +232,7 @@ public:
 
         // Spawn emitter
         {
-            Actor_Emitter* emitter = world->SpawnActor2<Actor_Emitter>({{0, 1, -2}, {1, 0, 0, 0}, {1.5f, 2, 1.5f}});
+            Actor_Emitter* emitter = world->SpawnActor<Actor_Emitter>({{0, 1, -2}, {1, 0, 0, 0}, {1.5f, 2, 1.5f}});
             emitter->SpawnFunction = [world]()
             {
                 // Find resources
@@ -240,7 +240,7 @@ public:
                 static TStaticResourceFinder<IndexedMesh> UnitBox("/Default/Meshes/Box"s);
                 static TStaticResourceFinder<IndexedMesh> UnitSphere("/Default/Meshes/Sphere"s);
 
-                Actor* box = world->SpawnActor2();
+                Actor* box = world->SpawnActor();
 
                 MeshComponent* meshComp = box->CreateComponent<MeshComponent>("Box");
                 meshComp->SetTransform({{0, 10, -5}, Angl(45, 45, 45).ToQuat(), {0.5f, 0.5f, 0.5f}});                    
@@ -275,7 +275,7 @@ public:
     {
         using namespace Hk;
 
-        Actor_Door* actor = world->SpawnActor2<Actor_Door>(spawnTransform);
+        Actor_Door* actor = world->SpawnActor<Actor_Door>(spawnTransform);
 
         Float3 doorExtents = Float3(1, 2, 0.2f);
 

@@ -81,12 +81,12 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn specator
-        Actor_Spectator* spectator = world->SpawnActor2<Actor_Spectator>({Float3(0, 2, 0), Quat::Identity()});
+        Actor_Spectator* spectator = world->SpawnActor<Actor_Spectator>({Float3(0, 2, 0), Quat::Identity()});
 
         CreateScene(world);
 
         // Spawn player controller
-        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(RenderView);
@@ -167,7 +167,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -181,7 +181,7 @@ public:
 
         // Spawn terrain
         {
-            Actor* terrain = world->SpawnActor2();
+            Actor* terrain = world->SpawnActor();
             TerrainComponent* terrainComponent = terrain->CreateComponent<TerrainComponent>("Terrain");
 
             // Generate heightmap
@@ -205,7 +205,7 @@ public:
 
         // Spawn skybox
         {
-            Actor* skybox = world->SpawnActor2();
+            Actor* skybox = world->SpawnActor();
             MeshComponent* meshComponent = skybox->CreateComponent<MeshComponent>("Skybox");
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();

@@ -229,7 +229,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
         Player->SetPlayerIndex(1);
 
         CreateScene(world);
@@ -250,7 +250,7 @@ public:
         inputMappings->MapAction("Pause", {ID_KEYBOARD, KEY_PAUSE}, 0, CONTROLLER_PLAYER_1);
 
         // Spawn player controller
-        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(renderView);
@@ -354,7 +354,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -368,7 +368,7 @@ public:
 
         // Spawn ground
         {
-            Actor* ground = world->SpawnActor2();
+            Actor* ground = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("GroundMaterialInst"));
@@ -382,14 +382,14 @@ public:
         }
 
         // Spawn camera
-        Actor_VideoCamera* videoCamera = world->SpawnActor2<Actor_VideoCamera>({{0, 1, 3}});
+        Actor_VideoCamera* videoCamera = world->SpawnActor<Actor_VideoCamera>({{0, 1, 3}});
 
         // Spawn monitor
         {
             Transform spawnTransform;
             spawnTransform.Position = Float3(0, 1.2f, -2);
             spawnTransform.Scale = Float3(2, 2, 1);
-            Actor_Monitor* monitor = world->SpawnActor2<Actor_Monitor>(spawnTransform);
+            Actor_Monitor* monitor = world->SpawnActor<Actor_Monitor>(spawnTransform);
             monitor->SetCamera(videoCamera->GetCamera());
         }
 

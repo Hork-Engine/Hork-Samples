@@ -61,7 +61,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
 
         CreateScene(world);
 
@@ -85,7 +85,7 @@ public:
         RenderView->bDrawDebug = true;
 
         // Spawn player controller
-        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(RenderView);
@@ -191,7 +191,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -205,7 +205,7 @@ public:
 
         // Spawn ground
         {
-            Actor* ground = world->SpawnActor2();
+            Actor* ground = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -219,7 +219,7 @@ public:
         }
 
         // Spawn metaballs
-        world->SpawnActor2<Actor_MetaballController>({{0, 2, 0}, {1, 0, 0, 0}, {1.0f, 1.0f, 1.0f}});
+        world->SpawnActor<Actor_MetaballController>({{0, 2, 0}, {1, 0, 0, 0}, {1.0f, 1.0f, 1.0f}});
 
         // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));

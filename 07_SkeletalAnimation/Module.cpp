@@ -62,7 +62,7 @@ public:
         World* world = World::CreateWorld();
 
         // Spawn player
-        Player = world->SpawnActor2<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
+        Player = world->SpawnActor<Actor_Character>({Float3(0, 1, 0), Quat::Identity()});
 
         CreateScene(world);
 
@@ -86,7 +86,7 @@ public:
         renderView->bDrawDebug = true;
 
         // Spawn player controller
-        Actor_PlayerController* playerController = world->SpawnActor2<Actor_PlayerController>();
+        Actor_PlayerController* playerController = world->SpawnActor<Actor_PlayerController>();
         playerController->SetPlayerIndex(CONTROLLER_PLAYER_1);
         playerController->SetInputMappings(inputMappings);
         playerController->SetRenderView(renderView);
@@ -142,7 +142,7 @@ public:
 
         // Spawn directional light
         {
-            Actor* dirlight = world->SpawnActor2();
+            Actor* dirlight = world->SpawnActor();
             DirectionalLightComponent* dirlightcomponent = dirlight->CreateComponent<DirectionalLightComponent>("DirectionalLight");
             dirlightcomponent->SetCastShadow(true);
             dirlightcomponent->SetDirection(LightDir);
@@ -156,7 +156,7 @@ public:
 
         // Spawn ground
         {
-            Actor* ground = world->SpawnActor2();
+            Actor* ground = world->SpawnActor();
 
             MeshRenderView* meshRender = NewObj<MeshRenderView>();
             meshRender->SetMaterial(GetResource<MaterialInstance>("ExampleMaterialInstance"));
@@ -170,7 +170,7 @@ public:
         }
 
         // Spawn model with skeletal animation
-        world->SpawnActor2<Actor_BrainStem>({{0, 0, -2}});
+        world->SpawnActor<Actor_BrainStem>({{0, 0, -2}});
 
         // Setup world environment
         world->SetGlobalEnvironmentMap(GetOrCreateResource<EnvironmentMap>("Envmap"));
