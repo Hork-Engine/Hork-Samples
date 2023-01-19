@@ -30,7 +30,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/MeshComponent.h>
+#include <Runtime/World/PhysicalBody.h>
 
 class Actor_Emitter : public Hk::Actor
 {
