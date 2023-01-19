@@ -117,8 +117,6 @@ protected:
         m_Trigger = CreateComponent<PhysicalBody>("DoorTrigger");
         m_Trigger->SetMotionBehavior(MB_STATIC);
         m_Trigger->SetTrigger(true);
-        m_Trigger->SetTransform({{0, 0, 0}, Quat::Identity(), {1.0f, 1.0f, 2.0f}});
-
         m_Trigger->SetCollisionGroup(CM_TRIGGER);
         m_Trigger->SetCollisionMask(CM_PAWN);
         m_Trigger->SetDispatchOverlapEvents(true);
