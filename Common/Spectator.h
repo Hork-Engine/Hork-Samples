@@ -30,10 +30,10 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/MeshComponent.h>
-#include <Runtime/World/InputComponent.h>
-#include <Runtime/World/TerrainComponent.h>
-#include <Runtime/World/World.h>
+#include <Engine/Runtime/World/MeshComponent.h>
+#include <Engine/Runtime/World/InputComponent.h>
+#include <Engine/Runtime/World/TerrainComponent.h>
+#include <Engine/Runtime/World/World.h>
 
 class Actor_Spectator : public Hk::Actor
 {

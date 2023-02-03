@@ -30,9 +30,9 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/InputComponent.h>
-#include <Runtime/World/MeshComponent.h>
-#include <Runtime/ResourceManager.h>
+#include <Engine/Runtime/World/InputComponent.h>
+#include <Engine/Runtime/World/MeshComponent.h>
+#include <Engine/Runtime/ResourceManager.h>
 
 constexpr float CHARACTER_CAPSULE_RADIUS = 0.35f;
 constexpr float CHARACTER_CAPSULE_HEIGHT = 1.0f;

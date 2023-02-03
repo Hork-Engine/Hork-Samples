@@ -28,19 +28,19 @@ SOFTWARE.
 
 */
 
-#include <Runtime/World/DirectionalLightComponent.h>
-#include <Runtime/World/PlayerController.h>
-#include <Runtime/MaterialGraph.h>
-#include <Runtime/UI/UIManager.h>
-#include <Runtime/UI/UIViewport.h>
-#include <Runtime/UI/UILabel.h>
-#include <Runtime/Engine.h>
-#include <Runtime/EnvironmentMap.h>
+#include <Engine/Runtime/World/DirectionalLightComponent.h>
+#include <Engine/Runtime/World/PlayerController.h>
+#include <Engine/Runtime/MaterialGraph.h>
+#include <Engine/Runtime/UI/UIManager.h>
+#include <Engine/Runtime/UI/UIViewport.h>
+#include <Engine/Runtime/UI/UILabel.h>
+#include <Engine/Runtime/Engine.h>
+#include <Engine/Runtime/EnvironmentMap.h>
 
 #include "../Common/Character.h"
 #include "BrainStem.h"
 
-#include <Assets/AssetImporter.h>
+#include <Engine/Assets/AssetImporter.h>
 
 class SampleModule final : public Hk::GameModule
 {
@@ -239,7 +239,7 @@ HK_CLASS_META(SampleModule)
 // Declare game module
 //
 
-#include <Runtime/EntryDecl.h>
+#include <Engine/Runtime/EntryDecl.h>
 
 static Hk::EntryDecl ModuleDecl = {
     // Game title

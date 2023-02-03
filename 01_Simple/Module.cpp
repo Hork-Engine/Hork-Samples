@@ -28,18 +28,18 @@ SOFTWARE.
 
 */
 
-#include <Runtime/World/InputComponent.h>
-#include <Runtime/World/MeshComponent.h>
-#include <Runtime/World/DirectionalLightComponent.h>
-#include <Runtime/World/PlayerController.h>
-#include <Runtime/MaterialGraph.h>
-#include <Runtime/UI/UIDesktop.h>
-#include <Runtime/UI/UIViewport.h>
-#include <Runtime/UI/UIWindow.h>
-#include <Runtime/Engine.h>
-#include <Runtime/EnvironmentMap.h>
-#include <Runtime/ResourceManager.h>
-#include <Runtime/WorldRenderView.h>
+#include <Engine/Runtime/World/InputComponent.h>
+#include <Engine/Runtime/World/MeshComponent.h>
+#include <Engine/Runtime/World/DirectionalLightComponent.h>
+#include <Engine/Runtime/World/PlayerController.h>
+#include <Engine/Runtime/MaterialGraph.h>
+#include <Engine/Runtime/UI/UIDesktop.h>
+#include <Engine/Runtime/UI/UIViewport.h>
+#include <Engine/Runtime/UI/UIWindow.h>
+#include <Engine/Runtime/Engine.h>
+#include <Engine/Runtime/EnvironmentMap.h>
+#include <Engine/Runtime/ResourceManager.h>
+#include <Engine/Runtime/WorldRenderView.h>
 
 class Actor_Player : public Hk::Actor
 {
@@ -297,7 +297,7 @@ HK_CLASS_META(SampleModule)
 // Declare game module
 //
 
-#include <Runtime/EntryDecl.h>
+#include <Engine/Runtime/EntryDecl.h>
 
 static Hk::EntryDecl ModuleDecl = {
     // Game title

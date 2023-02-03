@@ -1,34 +1,18 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(Hork_Samples)
+project(Hork-Samples)
 
-if (NOT DEFINED HK_PROJECT_BUILD_PATH)
-    if (UNIX)
-        set(HK_PROJECT_BUILD_PATH "$ENV{HOME}/Hork-Samples-Build")
-    endif()
-    if (WIN32)
-        set(HK_PROJECT_BUILD_PATH "C:/Hork-Samples-Build")
-    endif()
-endif()
+include(Hork-Source/hork_config.cmake)
+
+add_subdirectory(Hork-Source)
+
+include_directories(Hork-Source)
+include_directories(${CMAKE_BINARY_DIR}/include/ThirdParty)
 
 set(HK_ASSET_DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Data")
 set(HK_ASSET_DATA_INSTALL_PATH "${HK_PROJECT_BUILD_PATH}/Data")
 
-if (UNIX)
-add_custom_target(InstallDataPath ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${HK_ASSET_DATA_PATH} ${HK_ASSET_DATA_INSTALL_PATH})
-endif()
-if (WIN32)
-file(TO_NATIVE_PATH "${HK_ASSET_DATA_INSTALL_PATH}" HK_ASSET_DATA_INSTALL_PATH_NATIVE)
-file(TO_NATIVE_PATH "${HK_ASSET_DATA_PATH}" HK_ASSET_DATA_PATH_NATIVE)
-add_custom_target(InstallDataPath ALL cmd.exe /c mklink /J "${HK_ASSET_DATA_INSTALL_PATH_NATIVE}" "${HK_ASSET_DATA_PATH_NATIVE}")
-endif()
-
-include(Hork-Source/Source/hork_config.cmake)
-include_directories(Hork-Source/Source)
-include_directories(Hork-Source/Source/ThirdParty/fmt/include)
-include_directories(Hork-Source/Source/ThirdParty/EASTL/include)
-include_directories(Hork-Source/Source/ThirdParty/EASTL/EABase/include/Common)
-add_subdirectory(Hork-Source/Source)
+make_link(${HK_ASSET_DATA_PATH} ${HK_ASSET_DATA_INSTALL_PATH})
 
 add_subdirectory(01_Simple)
 add_subdirectory(02_CharacterController)

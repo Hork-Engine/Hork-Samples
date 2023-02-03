@@ -30,8 +30,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/MeshComponent.h>
-#include <Runtime/ResourceManager.h>
+#include <Engine/Runtime/World/MeshComponent.h>
+#include <Engine/Runtime/ResourceManager.h>
 
 class Actor_Platform : public Hk::Actor
 {

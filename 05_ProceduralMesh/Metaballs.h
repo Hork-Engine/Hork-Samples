@@ -30,7 +30,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <Runtime/World/MeshComponent.h>
+#include <Engine/Runtime/World/MeshComponent.h>
 
 struct Metaball
 {
