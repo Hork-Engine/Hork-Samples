@@ -40,7 +40,7 @@ class Actor_MetaballController : public Hk::Actor
 protected:
     Hk::ProceduralMeshComponent* ProcMesh{};
     Hk::TRef<Hk::ProceduralMesh> ProcMeshResource;
-    GridVolume GridVolume{40, 2.0f};
+    GridVolume Volume{40, 2.0f};
     Hk::TVector<Metaball> Metaballs{5};
     float Time{};
 
@@ -86,7 +86,7 @@ protected:
         Metaballs[4].Position.X = 1.4f * Math::Cos(Time / 4) - 0.04f * sin(Time / 6);
         Metaballs[4].Position.Z = -0.4f * Math::Sin(Time / 5) - 0.04f * Math::Sin(Time / 4);
 
-        UpdateMetaballs(ProcMeshResource, Metaballs.ToPtr(), Metaballs.Size(), 3, GridVolume);
+        UpdateMetaballs(ProcMeshResource, Metaballs.ToPtr(), Metaballs.Size(), 3, Volume);
 
         // Update bounding box. NOTE: In future versions it should happen automatically.
         ProcMesh->ForceOverrideBounds(true);
