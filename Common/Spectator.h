@@ -53,8 +53,8 @@ protected:
     bool                 bTrace{};
     float                fMoveSpeed{40};
 
-    Hk::TPodVector<Hk::CollisionTraceResult> TraceResult;
-    Hk::TPodVector<Hk::TriangleHitResult> HitResult;
+    Hk::TVector<Hk::CollisionTraceResult> TraceResult;
+    Hk::TVector<Hk::TriangleHitResult> HitResult;
     Hk::TerrainTriangle HitTriangle;
 
     Actor_Spectator() = default;
