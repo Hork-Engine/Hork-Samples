@@ -1,0 +1,115 @@
+/*
+
+Hork Engine Source Code
+
+MIT License
+
+Copyright (C) 2017-2024 Alexander Samusev.
+
+This file is part of the Hork Engine Source Code.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
+#include "MapGeometry.h"
+
+#include <Engine/World/World.h>
+#include <Engine/World/Modules/Render/Components/MeshComponent.h>
+#include <Engine/World/Modules/Physics/CollisionModel.h>
+#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Engine/GameApplication/GameApplication.h>
+
+HK_NAMESPACE_BEGIN
+
+void CreateSceneFromMap(World* world, StringView mapFilename)
+{
+    auto& resourceMgr = GameApplication::GetResourceManager();
+    auto& materialMgr = GameApplication::GetMaterialManager();
+
+    if (auto file = resourceMgr.OpenFile(mapFilename))
+    {
+        MapParser parser;
+        parser.Parse(file.AsString().CStr());
+
+        MapGeometry geometry;
+        geometry.Build(parser);
+
+        auto& surfaces = geometry.GetSurfaces();
+        auto& vertices = geometry.GetVertices();
+        auto& indices = geometry.GetIndices();
+        auto& clipVertices = geometry.GetClipVertices();
+        auto& clipHull = geometry.GetClipHulls();
+        auto& entities = geometry.GetEntities();
+
+        for (int i = 0; i < entities.Size(); ++i)
+        {
+            auto& entity = entities[i];
+
+            GameObjectDesc desc;
+            GameObject* object;
+            world->CreateObject(desc, object);
+
+            for (int surfaceNum = 0; surfaceNum < entity.SurfaceCount; ++surfaceNum)
+            {
+                int surfaceIndex = entity.FirstSurface + surfaceNum;
+                auto& surface = surfaces[surfaceIndex];
+                auto surfaceHandle = GameApplication::GetResourceManager().CreateResource<MeshResource>("surface_" + Core::ToString(surfaceIndex));
+
+                MeshResource* resource = GameApplication::GetResourceManager().TryGet(surfaceHandle);
+                HK_ASSERT(resource);
+
+                BvAxisAlignedBox bounds;
+                bounds.Clear();
+                for (int v = 0; v < surface.VertexCount; ++v)
+                    bounds.AddPoint(vertices[surface.FirstVert + v].Position);
+
+                resource->Allocate(surface.VertexCount, surface.IndexCount, 1, false, false);
+                resource->WriteVertexData(&vertices[surface.FirstVert], surface.VertexCount, 0);
+                resource->WriteIndexData(&indices[surface.FirstIndex], surface.IndexCount, 0);
+                resource->SetBoundingBox(bounds);
+                resource->GetSubparts()[0].BoundingBox = bounds;
+
+                StaticMeshComponent* mesh;
+                object->CreateComponent(mesh);
+                mesh->m_Resource = surfaceHandle;
+                mesh->m_Surfaces.EmplaceBack().Materials.Add(materialMgr.Get("grid8"));
+            }
+
+            for (int hullNum = 0; hullNum < entity.ClipHullCount; ++hullNum)
+            {
+                auto& chull = clipHull[entity.FirstClipHull + hullNum];
+
+                CollisionConvexHullDef hull;
+                hull.pVertices = &clipVertices[chull.FirstVert];
+                hull.VertexCount = chull.VertexCount;
+
+                CollisionModelCreateInfo ci;
+                ci.pConvexHulls = &hull;
+                ci.ConvexHullCount = 1;
+
+                StaticBodyComponent* body;
+                object->CreateComponent(body);
+                body->m_CollisionModel = CollisionModel::Create(ci);
+            }
+        }
+    }
+}
+
+HK_NAMESPACE_END

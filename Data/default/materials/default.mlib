@@ -1,0 +1,93 @@
+white
+{
+	Material "/Root/default/materials/default.mat"
+	Textures
+	[
+		"/Root/white.png"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"1"
+	]
+}
+
+grid8
+{
+	Material "/Root/default/materials/default.mat"
+	Textures
+	[
+		"/Root/grid8.webp"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"1"
+	]
+}
+
+blank256
+{
+	Material "/Root/default/materials/default.mat"
+	Textures
+	[
+		"/Root/blank256.webp"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"1"
+	]
+}
+
+blank512
+{
+	Material "/Root/default/materials/default.mat"
+	Textures
+	[
+		"/Root/blank512.webp"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"0.1"
+	]
+}
+
+red512
+{
+	Material "/Root/default/materials/default.mat"
+	Textures
+	[
+		"/Root/red512.png"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"0.1"
+	]
+}
+
+skybox
+{
+	Material "/Root/default/materials/skybox.mat"
+	Textures
+	[
+		"internal_skybox"
+	]
+}
