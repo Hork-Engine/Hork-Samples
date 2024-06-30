@@ -28,14 +28,13 @@ SOFTWARE.
 
 */
 
-// TODO: Add to this example HUD, Health/Damage, Frags, Sounds, Skybox
+// TODO: Add to this example: HUD, Health/Damage, Frags, Sounds, Skybox
 
 #include "../Common/MapParser/Utils.h"
 
 #include "../Common/Components/PlayerInputComponent.h"
 #include "../Common/Components/JumpadComponent.h"
 #include "../Common/Components/TeleporterComponent.h"
-#include "../Common/Components/LifeSpanComponent.h"
 #include "../Common/Components/ElevatorComponent.h"
 
 #include "Application.h"
@@ -43,6 +42,7 @@ SOFTWARE.
 #include <Engine/UI/UIViewport.h>
 #include <Engine/UI/UIGrid.h>
 #include <Engine/UI/UILabel.h>
+#include <Engine/UI/UIImage.h>
 
 #include <Engine/World/Modules/Input/InputInterface.h>
 
@@ -74,6 +74,8 @@ void ExampleApplication::Initialize()
     UIDesktop* desktop = UINew(UIDesktop);
     GUIManager->AddDesktop(desktop);
 
+    m_Desktop = desktop;
+
     // Add shortcuts
     UIShortcutContainer* shortcuts = UINew(UIShortcutContainer);
     shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &ExampleApplication::Pause});
@@ -84,9 +86,7 @@ void ExampleApplication::Initialize()
 
     // Create ciewport
 #ifdef SPLIT_SCREEN
-    UIGrid* splitView;
-    UIViewport* viewports[2];
-    desktop->AddWidget(UINewAssign(splitView, UIGrid, 0, 0)
+    desktop->AddWidget(UINewAssign(m_SplitView, UIGrid, 0, 0)
         .AddRow(1)
         .AddColumn(0.5f)
         .AddColumn(0.5f)
@@ -95,7 +95,7 @@ void ExampleApplication::Initialize()
         .WithHSpacing(0)
         .WithVSpacing(0)
         .WithPadding(0)
-        .AddWidget(UINewAssign(viewports[0], UIViewport)
+        .AddWidget(UINewAssign(m_Viewports[0], UIViewport)
             .WithGridOffset(UIGridOffset()
                 .WithColumnIndex(0)
                 .WithRowIndex(0))
@@ -107,7 +107,7 @@ void ExampleApplication::Initialize()
                 .WithAlignment(TEXT_ALIGNMENT_HCENTER))
             .WithAutoWidth(true)
             .WithAutoHeight(true)])
-        .AddWidget(UINewAssign(viewports[1], UIViewport)
+        .AddWidget(UINewAssign(m_Viewports[1], UIViewport)
             .WithGridOffset(UIGridOffset()
                 .WithColumnIndex(1)
                 .WithRowIndex(0))
@@ -120,8 +120,8 @@ void ExampleApplication::Initialize()
             .WithAutoWidth(true)
             .WithAutoHeight(true)]));
 
-    desktop->SetFullscreenWidget(splitView);
-    desktop->SetFocusWidget(viewports[0]);
+    desktop->SetFullscreenWidget(m_SplitView);
+    desktop->SetFocusWidget(m_Viewports[0]);
 #else
     UIViewport* mainViewport;
     desktop->AddWidget(UINewAssign(mainViewport, UIViewport)
@@ -148,7 +148,6 @@ void ExampleApplication::Initialize()
     inputMappings->MapAxis(PlayerController::_2, "FreelookHorizontal", VirtualAxis::MouseHorizontal, 1.0f);
     inputMappings->MapAxis(PlayerController::_2, "FreelookVertical",   VirtualAxis::MouseVertical, 1.0f);
     
-    inputMappings->MapAxis(PlayerController::_2, "Run",         VirtualKey::LeftShift, 1.0f);
     inputMappings->MapAction(PlayerController::_2, "Attack",    VirtualKey::MouseLeftBtn, {});
     inputMappings->MapAction(PlayerController::_2, "Attack",    VirtualKey::LeftControl, {});
 
@@ -189,8 +188,8 @@ void ExampleApplication::Initialize()
         m_WorldRenderView[i]->BackgroundColor = Color4(0.2f,0.2f,0.3f,1);
         m_WorldRenderView[i]->bDrawDebug = true;
     }
-    viewports[0]->SetWorldRenderView(m_WorldRenderView[0]);
-    viewports[1]->SetWorldRenderView(m_WorldRenderView[1]);
+    m_Viewports[0]->SetWorldRenderView(m_WorldRenderView[0]);
+    m_Viewports[1]->SetWorldRenderView(m_WorldRenderView[1]);
 #else
     m_WorldRenderView[0] = MakeRef<WorldRenderView>();
     m_WorldRenderView[0]->SetWorld(m_World);
@@ -230,11 +229,41 @@ void ExampleApplication::Initialize()
     input.BindInput(player->GetComponentHandle<PlayerInputComponent>(), PlayerController::_2);    
 
     input.BindInput(player2->GetComponentHandle<PlayerInputComponent>(), PlayerController::_1);
+
+    auto& stateMachine = GetStateMachine();
+
+    stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
+    stateMachine.Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, {});
+
+    stateMachine.MakeCurrent("State_Loading");
+
+    GetCommandProcessor().Add("com_ShowStat 1\n");
+    GetCommandProcessor().Add("com_ShowFPS 1\n");
+    GetCommandProcessor().Add("com_MaxFPS 0\n");
 }
 
 void ExampleApplication::Deinitialize()
 {
     DestroyWorld(m_World);
+}
+
+void ExampleApplication::OnStartLoading()
+{
+    ShowLoadingScreen(true);
+}
+
+void ExampleApplication::OnUpdateLoading(float timeStep)
+{
+    auto& resourceMngr = GameApplication::GetResourceManager();
+    if (resourceMngr.IsAreaReady(m_Resources)) // TODO: Get resource from black board
+    {
+        GetStateMachine().MakeCurrent("State_Play");
+    }
+}
+
+void ExampleApplication::OnStartPlay()
+{
+    ShowLoadingScreen(false);
 }
 
 void ExampleApplication::Pause()
@@ -253,6 +282,45 @@ void ExampleApplication::ToggleWireframe()
 #ifdef SPLIT_SCREEN
     m_WorldRenderView[1]->bWireframe = !m_WorldRenderView[1]->bWireframe;
 #endif
+}
+
+void ExampleApplication::ShowLoadingScreen(bool show)
+{
+    auto& resourceMngr = GetResourceManager();
+
+    if (show)
+    {
+        if (!m_LoadingScreen)
+        {
+            m_Desktop->AddWidget(UINewAssign(m_LoadingScreen, UIImage)
+                .WithStretchedX(true)
+                .WithStretchedY(true)
+                .WithPadding({0,0,0,0}));
+
+            auto textureHandle = resourceMngr.CreateResourceFromFile<TextureResource>("/Root/loading.png");
+            auto texture = resourceMngr.TryGet(textureHandle);
+            texture->Upload();
+
+            m_LoadingScreen->WithTexture(textureHandle);
+            m_LoadingScreen->WithTextureSize(texture->GetWidth(), texture->GetHeight());
+        }
+
+        m_Desktop->SetFullscreenWidget(m_LoadingScreen);
+        m_Desktop->SetFocusWidget(m_LoadingScreen);
+    }
+    else
+    {
+        if (m_LoadingScreen)
+        {
+            m_Desktop->RemoveWidget(m_LoadingScreen);
+            m_LoadingScreen = nullptr;
+
+            resourceMngr.PurgeResourceData(m_LoadingTexture);
+            m_LoadingTexture = {};
+        }
+        m_Desktop->SetFullscreenWidget(m_SplitView);
+        m_Desktop->SetFocusWidget(m_Viewports[0]);
+    }
 }
 
 void ExampleApplication::CreateResources()
@@ -283,8 +351,10 @@ void ExampleApplication::CreateResources()
     };
 
     // Load resources asynchronously
-    ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
-    resourceManager.LoadArea(resources);
+    m_Resources = resourceManager.CreateResourceArea(sceneResources);
+    resourceManager.LoadArea(m_Resources);
+
+    //resourceManager.MainThread_WaitResourceArea(m_Resources);
 }
 
 void ExampleApplication::CreateScene()
@@ -298,13 +368,6 @@ void ExampleApplication::CreateScene()
     Quat playerSpawnRotation = Quat::Identity();
     Float3 playerSpawnPosition2 = Float3(0,8.25f,-28);
     Quat playerSpawnRotation2 = Quat::RotationAroundNormal(Math::_PI, Float3(0,1,0));
-
-    CollisionModelCreateInfo boxModel;
-    CollisionBoxDef boxDef;
-    boxDef.HalfExtents = Float3(0.5f);
-    boxModel.pBoxes = &boxDef;
-    boxModel.BoxCount = 1;
-    auto collisionBox = CollisionModel::Create(boxModel);
 
     // Light
     {
@@ -339,8 +402,9 @@ void ExampleApplication::CreateScene()
 
         DynamicBodyComponent* dynamicBody;
         object->CreateComponent(dynamicBody);
-        dynamicBody->m_CollisionModel = collisionBox;
         dynamicBody->SetKinematic(true);
+
+        object->CreateComponent<BoxCollider>();
 
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
@@ -391,8 +455,8 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, object);
         TriggerComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionLayer = CollisionLayer::Teleporter;
-        phys->m_CollisionModel = collisionBox;
+        phys->CollisionLayer = CollisionLayer::Teleporter;
+        object->CreateComponent<BoxCollider>();
         TeleporterComponent* teleport;
         object->CreateComponent(teleport);
         teleport->TeleportPoints[0] = {playerSpawnPosition, playerSpawnRotation};
@@ -408,8 +472,8 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, object);
         TriggerComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionModel = collisionBox;
-        phys->m_CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+        phys->CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+        object->CreateComponent<BoxCollider>();
         JumpadComponent* jumpad;
         object->CreateComponent(jumpad);
         jumpad->ThrowVelocity = Float3(0, 20, 0);
@@ -436,8 +500,8 @@ void ExampleApplication::CreateScene()
             m_World->CreateObject(desc, object);
             DynamicBodyComponent* phys;
             object->CreateComponent(phys);
-            phys->m_CollisionModel = collisionBox;
             phys->Mass = 30;
+            object->CreateComponent<BoxCollider>();
             DynamicMeshComponent* mesh;
             object->CreateComponent(mesh);
             mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -469,16 +533,10 @@ void ExampleApplication::CreateElevator(Float3 const& position)
     desc.IsDynamic = true;
     m_World->CreateObject(desc, object);
 
-    CollisionModelCreateInfo boxModel;
-    CollisionBoxDef boxDef;
-    boxDef.HalfExtents = Float3(0.5f);
-    boxModel.pBoxes = &boxDef;
-    boxModel.BoxCount = 1;
-
     DynamicBodyComponent* dynamicBody;
     object->CreateComponent(dynamicBody);
-    dynamicBody->m_CollisionModel = CollisionModel::Create(boxModel);
     dynamicBody->SetKinematic(true);
+    object->CreateComponent<BoxCollider>();
 
     DynamicMeshComponent* mesh;
     object->CreateComponent(mesh);
@@ -498,8 +556,8 @@ void ExampleApplication::CreateElevator(Float3 const& position)
     m_World->CreateObject(desc, triggerObject);
     TriggerComponent* trigger;
     triggerObject->CreateComponent(trigger);
-    trigger->m_CollisionModel = dynamicBody->m_CollisionModel;
-    trigger->m_CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+    trigger->CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+    triggerObject->CreateComponent<BoxCollider>();
 
     ElevatorActivatorComponent* activator;
     triggerObject->CreateComponent(activator);
@@ -524,7 +582,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
 
         CharacterControllerComponent* characterController;
         player->CreateComponent(characterController);
-        characterController->m_CollisionLayer = CollisionLayer::Character;
+        characterController->CollisionLayer = CollisionLayer::Character;
         characterController->HeightStanding = HeightStanding;
         characterController->RadiusStanding = RadiusStanding;
     }

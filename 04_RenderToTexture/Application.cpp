@@ -265,13 +265,6 @@ private:
         auto& resourceMgr = GameApplication::GetResourceManager();
         auto& materialMgr = GameApplication::GetMaterialManager();
 
-        Ref<CollisionModel> sphereModel;
-        CollisionModelCreateInfo modelCreateInfo;
-        CollisionSphereDef sphereDef;
-        modelCreateInfo.pSpheres = &sphereDef;
-        modelCreateInfo.SphereCount = 1;
-        sphereModel = CollisionModel::Create(modelCreateInfo);
-
         GameObjectDesc desc;
         desc.Position = position;
         desc.Scale = Float3(0.2f);
@@ -280,10 +273,10 @@ private:
         GetWorld()->CreateObject(desc, object);
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionLayer = CollisionLayer::Bullets;
-        phys->m_CollisionModel = sphereModel;
+        phys->CollisionLayer = CollisionLayer::Bullets;
         phys->UseCCD = true;
         phys->AddImpulse(direction);
+        object->CreateComponent<SphereCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/sphere.mesh");
@@ -297,7 +290,7 @@ private:
 };
 
 ExampleApplication::ExampleApplication(ArgumentPack const& args) :
-    GameApplication(args, "Hork Engine: Third Person")
+    GameApplication(args, "Hork Engine: Render To Texture")
 {}
 
 ExampleApplication::~ExampleApplication()
@@ -446,6 +439,9 @@ void ExampleApplication::CreateResources()
     // Load resources asynchronously
     ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
     resourceManager.LoadArea(resources);
+
+    // Wait for the resources to load
+    resourceManager.MainThread_WaitResourceArea(resources);
 }
 
 void ExampleApplication::CreateScene()
@@ -458,21 +454,14 @@ void ExampleApplication::CreateScene()
     Float3 playerSpawnPosition = Float3(12,0,0);
     Quat playerSpawnRotation = Quat::RotationY(Math::_HALF_PI);
 
-    CollisionModelCreateInfo boxModel;
-    CollisionBoxDef boxDef;
-    boxDef.HalfExtents = Float3(0.5f);
-    boxModel.pBoxes = &boxDef;
-    boxModel.BoxCount = 1;
-    auto collisionBox = CollisionModel::Create(boxModel);
-
-    //
-    
+   
 #if 1
-    m_OffscreenRenderView = MakeRef<WorldRenderView>();
-    m_OffscreenRenderView->SetViewport(512, 512);
-    m_OffscreenRenderView->SetWorld(m_World);
-    m_OffscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
-    m_OffscreenRenderView->bClearBackground = true;
+    auto offscreenRenderView = MakeRef<WorldRenderView>();
+    offscreenRenderView->SetViewport(512, 512);
+    offscreenRenderView->SetWorld(m_World);
+    offscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
+    offscreenRenderView->bClearBackground = true;
+    offscreenRenderView->AcquireRenderTarget();
     
     {
         GameObjectDesc desc;
@@ -482,7 +471,7 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, monitor);
         RenderToTextureComponent* renderToTextureComp;
         monitor->CreateComponent(renderToTextureComp);
-        renderToTextureComp->RenderView = m_OffscreenRenderView;
+        renderToTextureComp->RenderView = offscreenRenderView;
         StaticMeshComponent* face;
         monitor->CreateComponent(face);
 
@@ -509,7 +498,7 @@ void ExampleApplication::CreateScene()
         MaterialInstance* matInst = matlib->CreateMaterial("render_to_tex_material");
         //matInst->m_Material = resourceMgr.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat");
         matInst->m_Material = resourceMgr.GetResource<MaterialResource>("/Root/default/materials/default.mat");
-        matInst->SetTexture(0, m_OffscreenRenderView->GetTextureHandle());
+        matInst->SetTexture(0, offscreenRenderView->GetTextureHandle());
         matInst->SetConstant(0,0.0f);
         matInst->SetConstant(1,1.0f);
         face->m_Surfaces.EmplaceBack().Materials.Add(matInst);
@@ -522,9 +511,9 @@ void ExampleApplication::CreateScene()
         CameraComponent* cameraComponent;
         auto cameraHandle = renderCamera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(75);
-        m_OffscreenRenderView->SetCamera(cameraHandle);
+        offscreenRenderView->SetCamera(cameraHandle);
         renderCamera->CreateComponent<CameraAnimationComponent>();
-        m_OffscreenRenderView->SetCamera(cameraHandle);
+        offscreenRenderView->SetCamera(cameraHandle);
     }
 #endif
 
@@ -569,8 +558,8 @@ void ExampleApplication::CreateScene()
             m_World->CreateObject(desc, object);
             DynamicBodyComponent* phys;
             object->CreateComponent(phys);
-            phys->m_CollisionModel = collisionBox;
             phys->Mass = 30;
+            object->CreateComponent<BoxCollider>();
             DynamicMeshComponent* mesh;
             object->CreateComponent(mesh);
             mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -591,8 +580,8 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, doorTrigger);
         TriggerComponent* trigger;
         doorTrigger->CreateComponent(trigger);
-        trigger->m_CollisionModel = collisionBox;
-        trigger->m_CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+        trigger->CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
+        doorTrigger->CreateComponent<BoxCollider>();
         doorTrigger->CreateComponent(doorActivator);
     }
     {
@@ -604,8 +593,8 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, object);
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionModel = collisionBox;
         phys->SetKinematic(true);
+        object->CreateComponent<BoxCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -631,8 +620,8 @@ void ExampleApplication::CreateScene()
         m_World->CreateObject(desc, object);
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionModel = collisionBox;
         phys->SetKinematic(true);
+        object->CreateComponent<BoxCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -659,8 +648,8 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     auto& resourceMgr = GetResourceManager();
     auto& materialMgr = GetMaterialManager();
 
-    const float      HeightStanding = 1.35f;
-    const float      RadiusStanding = 0.3f;
+    const float HeightStanding = 1.35f;
+    const float RadiusStanding = 0.3f;
 
     // Create character controller
     GameObject* player;
@@ -672,7 +661,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
 
         CharacterControllerComponent* characterController;
         player->CreateComponent(characterController);
-        characterController->m_CollisionLayer = CollisionLayer::Character;
+        characterController->CollisionLayer = CollisionLayer::Character;
         characterController->HeightStanding = HeightStanding;
         characterController->RadiusStanding = RadiusStanding;
     }

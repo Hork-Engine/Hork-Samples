@@ -171,7 +171,57 @@ void MapGeometry::ExtractSurfaces(Vector<FaceInfo> const& faceInfos, Vector<MapP
     if (surface)
         Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, surface->VertexCount, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
 }
+#if 0
+void ConvexHullVerticesFromPlanes2(PlaneF const* planes, int planeCount, Vector<Float3>& vertices)
+{
+    ConvexHull hull;
+    ConvexHull front;
 
+    auto firstVert = vertices.Size();
+
+    for (int i = 0; i < planeCount; ++i)
+    {
+        hull.FromPlane(planes[i]);
+        for (int clipFaceNum = 0; clipFaceNum < planeCount; ++clipFaceNum)
+        {
+            if (clipFaceNum != i)
+            {
+                hull.Clip(-planes[clipFaceNum], 0.001f, front);
+                hull = std::move(front);
+
+                HK_ASSERT(front.NumPoints() == 0);
+            }
+        }
+
+        if (hull.NumPoints() < 3)
+            continue;
+
+        int vertexCount = hull.NumPoints();
+
+        
+        
+
+        for (int v = 0; v < vertexCount; ++v)
+        {
+            if (planes[i].Normal.Y > 0.9999f)
+                hull[v].Y = hull[0].Y;
+
+            bool exists = false;
+            for (int t = firstVert ; t < vertices.Size(); ++t)
+            {
+                if (vertices[t].CompareEps(hull[v], 0.001f))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists)
+                vertices.Add(hull[v]);
+        }
+    }
+}
+#endif
 void MapGeometry::ExtractClipHull(MapParser::Brush const& brush, Vector<MapParser::BrushFace> const& faces)
 {
     SmallVector<PlaneF, 32> clipPlanes;

@@ -101,7 +101,7 @@ public:
     }
 };
 
-class ExampleApplication : public GameApplication
+class ExampleApplication final : public GameApplication
 {
     World*                      m_World{};
     Ref<WorldRenderView>        m_WorldRenderView;
@@ -217,6 +217,9 @@ public:
         // Load resources asynchronously
         ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
         resourceManager.LoadArea(resources);
+
+        // Wait for the resources to load
+        resourceManager.MainThread_WaitResourceArea(resources);
     }
 
     GameObject* CreatePlayer(Float3 const& position, Quat const& rotation)

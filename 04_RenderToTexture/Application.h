@@ -37,7 +37,7 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication : public GameApplication
+class ExampleApplication final : public GameApplication
 {
 public:
     ExampleApplication(ArgumentPack const& args);
@@ -64,7 +64,6 @@ private:
     Vector<SpawnPoint> m_PlayerSpawnPoints;
 
     Ref<WorldRenderView> m_WorldRenderView;
-    Ref<WorldRenderView> m_OffscreenRenderView;
 };
 
 HK_NAMESPACE_END

@@ -32,7 +32,7 @@ SOFTWARE.
 
 using namespace Hk;
 
-class SimpleApplication : public Hk::GameApplication
+class SimpleApplication final : public Hk::GameApplication
 {
 public:
     SimpleApplication(ArgumentPack const& args) :
@@ -41,10 +41,12 @@ public:
 
     void Initialize()
     {
+        // Your initialization code here
     }
 
     void Deinitialize()
     {
+        // Cleanup
     }
 };
 

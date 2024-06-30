@@ -37,7 +37,11 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication : public GameApplication
+class UIGrid;
+class UIViewport;
+class UIImage;
+
+class ExampleApplication final : public GameApplication
 {
 public:
     ExampleApplication(ArgumentPack const& args);
@@ -54,6 +58,18 @@ private:
     void Pause();
     void Quit();
     void ToggleWireframe();
+    void ShowLoadingScreen(bool show);
+
+    void OnStartLoading();
+    void OnUpdateLoading(float timeStep);
+    void OnStartPlay();
+
+    UIDesktop* m_Desktop;
+    UIGrid* m_SplitView;
+    UIViewport* m_Viewports[2];
+    UIImage* m_LoadingScreen;
+    ResourceAreaID m_Resources;
+    TextureHandle m_LoadingTexture;
 
     World* m_World{};
 

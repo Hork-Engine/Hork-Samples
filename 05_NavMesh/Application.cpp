@@ -28,15 +28,8 @@ SOFTWARE.
 
 */
 
-// TODO: Add to this example: Skeletal Animation, Sounds
-
 #include "../Common/MapParser/Utils.h"
 
-#include "../Common/Components/PlayerInputComponent.h"
-#include "../Common/Components/JumpadComponent.h"
-#include "../Common/Components/TeleporterComponent.h"
-#include "../Common/Components/LifeSpanComponent.h"
-#include "../Common/Components/ElevatorComponent.h"
 #include "../Common/Components/DoorComponent.h"
 #include "../Common/Components/DoorActivatorComponent.h"
 
@@ -52,12 +45,12 @@ SOFTWARE.
 #include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
 #include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
 
-#include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
+#include <Engine/World/Modules/NavMesh/NavMeshInterface.h>
+#include <Engine/World/Modules/NavMesh/Components/NavMeshObstacleComponent.h>
+#include <Engine/World/Modules/NavMesh/Components/NavMeshAreaComponent.h>
+#include <Engine/World/Modules/NavMesh/Components/OffMeshLinkComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-
-#include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
-#include <Engine/World/Modules/Animation/NodeMotion.h>
 
 #include <Engine/World/Modules/Audio/AudioInterface.h>
 
@@ -65,154 +58,186 @@ using namespace Hk;
 
 class ThirdPersonInputComponent : public Component
 {
-    float m_MoveForward = 0;
-    float m_MoveRight = 0;
-    bool m_Jump = false;
-
 public:
     static constexpr ComponentMode Mode = ComponentMode::Static;
 
     GameObjectHandle ViewPoint;
-    //Handle32<CameraComponent> Camera;
 
+private:
+    PhysBodyID m_DragObject;
+    Vector<Float3> m_Path;
+    Vector<Float3> m_DebugPath;
+
+public:
     void BindInput(InputBindings& input)
     {
-        input.BindAxis("MoveForward", this, &ThirdPersonInputComponent::MoveForward);
-        input.BindAxis("MoveRight", this, &ThirdPersonInputComponent::MoveRight);
-
-        input.BindAction("Attack", this, &ThirdPersonInputComponent::Attack, InputEvent::OnPress);
-
-        input.BindAxis("TurnRight", this, &ThirdPersonInputComponent::TurnRight);
-        input.BindAxis("TurnUp", this, &ThirdPersonInputComponent::TurnUp);
-
-        input.BindAxis("FreelookHorizontal", this, &ThirdPersonInputComponent::FreelookHorizontal);
-        input.BindAxis("FreelookVertical", this, &ThirdPersonInputComponent::FreelookVertical);
-
-        input.BindAxis("MoveUp", this, &ThirdPersonInputComponent::MoveUp);
+        input.BindAction("Pick", this, &ThirdPersonInputComponent::OnPick, InputEvent::OnPress);
+        input.BindAction("Drag", this, &ThirdPersonInputComponent::OnDragBegin, InputEvent::OnPress);
+        input.BindAction("Drag", this, &ThirdPersonInputComponent::OnDragEnd, InputEvent::OnRelease);
     }
-
-    void MoveForward(float amount)
-    {
-        m_MoveForward = amount;
-    }
-
-    void MoveRight(float amount)
-    {
-        m_MoveRight = amount;
-    }
-
-    void TurnRight(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep, Float3::AxisY());
-    }
-
-    void TurnUp(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(amount * GetWorld()->GetTick().FrameTimeStep, viewPoint->GetRightVector());
-    }
-
-    void FreelookHorizontal(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(-amount, Float3::AxisY());
-    }
-
-    void FreelookVertical(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(amount, viewPoint->GetRightVector());
-    }
-
-    void Attack()
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-        {
-            Float3 p = GetOwner()->GetWorldPosition();
-            Float3 dir = viewPoint->GetWorldDirection();
-            const float EyeHeight = 1.7f;
-            const float Impulse = 100;
-            p.Y += EyeHeight;
-            p += dir;
-            SpawnBall(p, dir * Impulse);
-        }
-    }
-
-    void MoveUp(float amount)
-    {
-        m_Jump = amount != 0.0f;
-    }
-
-    //GameObject* GetCamera()
-    //{
-    //    auto& cameraManager = GetWorld()->GetComponentManager<CameraComponent>();
-    //    if (auto* cameraComponent = cameraManager.GetComponent(Camera))
-    //        return cameraComponent->GetOwner();
-    //    return nullptr;
-    //}
 
     void Update()
     {
+        Float3 rayStart, rayDir;
+        if (m_DragObject.IsValid() && GetRay(rayStart, rayDir))
+        {
+            ShapeCastResult result;
+            ShapeCastFilter filter;
+
+            filter.BroadphaseLayers.AddLayer(BroadphaseLayer::Static);
+
+            auto& physics = GetWorld()->GetInterface<PhysicsInterface>();
+
+            if (physics.CastBoxClosest(rayStart, rayDir, Float3(0.5f * 1.5f), Quat::Identity(), result, filter))
+            {
+                if (auto body = physics.TryGetComponent<DynamicBodyComponent>(m_DragObject))
+                {
+                    //body->MoveKinematic(rayStart + rayDir * result.Fraction);
+                    body->SetWorldPosition(rayStart + rayDir * result.Fraction);
+                }
+            }
+        }
+
         if (auto controller = GetOwner()->GetComponent<CharacterControllerComponent>())
         {
             if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
             {
-                Float3 right = viewPoint->GetWorldRightVector();
-                right.Y = 0;
-                right.NormalizeSelf();
-
-                Float3 forward = viewPoint->GetWorldForwardVector();
-                forward.Y = 0;
-                forward.NormalizeSelf();
-
-                Float3 dir = (right * m_MoveRight + forward * m_MoveForward);
-
-                if (dir.LengthSqr() > 1)
+                Float3 p = FetchPathPoint(GetOwner()->GetWorldPosition());
+                if (p.DistSqr(GetOwner()->GetWorldPosition()) > 0.01f)
                 {
+                    Float3 dir = p - GetOwner()->GetWorldPosition();
+                    dir.Y = 0;
+
                     dir.NormalizeSelf();
+
+                    controller->MoveSpeed = 8;
+                    controller->MovementDirection = dir;
                 }
-
-                controller->MoveSpeed = 8;
-                controller->MovementDirection = dir;
+                else
+                    controller->MovementDirection.Clear();
             }
-
-            controller->Jump = m_Jump;
         }
     }
 
-private:
-    void SpawnBall(Float3 const& position, Float3 const& direction)
+    void DrawDebug(DebugRenderer& renderer)
     {
-        auto& resourceMgr = GameApplication::GetResourceManager();
-        auto& materialMgr = GameApplication::GetMaterialManager();
-
-        GameObjectDesc desc;
-        desc.Position = position;
-        desc.Scale = Float3(0.2f);
-        desc.IsDynamic = true;
-        GameObject* object;
-        GetWorld()->CreateObject(desc, object);
-        DynamicBodyComponent* phys;
-        object->CreateComponent(phys);
-        phys->CollisionLayer = CollisionLayer::Bullets;
-        phys->UseCCD = true;
-        phys->AddImpulse(direction);
-        object->CreateComponent<SphereCollider>();
-        DynamicMeshComponent* mesh;
-        object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/sphere.mesh");
-        mesh->m_CastShadow = true;
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("blank512"));
-        LifeSpanComponent* lifespan;
-        object->CreateComponent(lifespan);
-        lifespan->Time = 5;
+        renderer.SetDepthTest(false);
+        renderer.SetColor(Color4::Blue());
+        renderer.DrawLine(m_DebugPath);
     }
+
+private:
+    bool GetRay(Float3& rayStart, Float3& rayDir)
+    {
+        if (auto cameraObject = GetOwner()->FindChildrenRecursive(StringID("Camera")))
+            if (auto cameraComponent = cameraObject->GetComponent<CameraComponent>())
+                return cameraComponent->ScreenPointToRay(GUIManager->CursorPosition, rayStart, rayDir);
+        return false;
+    }
+    
+    void OnPick()
+    {
+        //static bool build = true;
+        //if (build)
+        //{
+        //    {
+        //        auto& navmesh = GetWorld()->GetInterface<NavMeshInterface>();
+
+        //        navmesh.NavigationVolumes.EmplaceBack(Float3(-128), Float3(128));
+
+        //        navmesh.WalkableClimb = 0.4f;
+        //        navmesh.CellHeight = 0.2f;
+
+        //        navmesh.SetAreaCost(NAV_MESH_AREA_GROUND, 1);
+        //        navmesh.SetAreaCost(NAV_MESH_AREA_WATER, 4);
+
+        //        navmesh.Create();
+
+        //        navmesh.BuildOnNextFrame();
+        //    }
+        //    build = false;
+        //}
+        
+        Float3 rayStart, rayDir;
+        if (GetRay(rayStart, rayDir))
+        {
+            RayCastResult result;
+            RayCastFilter filter;
+
+            filter.BroadphaseLayers.AddLayer(BroadphaseLayer::Static);
+
+            if (GetWorld()->GetInterface<PhysicsInterface>().CastRayClosest(rayStart, rayDir, result, filter))
+            {
+                Float3 destination = rayStart + rayDir * result.Fraction;
+
+                Float3 extents(1);
+                m_Path.Clear();
+
+                auto& navigation = GetWorld()->GetInterface<NavMeshInterface>();
+
+                navigation.FindPath(GetOwner()->GetWorldPosition(), destination, extents, m_Path);
+
+                m_DebugPath = m_Path;
+            }
+        }
+    }
+
+    void OnDragBegin()
+    {
+        Float3 rayStart, rayDir;
+        if (GetRay(rayStart, rayDir))
+        {
+            RayCastResult result;
+            RayCastFilter filter;
+
+            filter.BroadphaseLayers.AddLayer(BroadphaseLayer::Dynamic);
+
+            auto& physics = GetWorld()->GetInterface<PhysicsInterface>();
+
+            if (physics.CastRayClosest(rayStart, rayDir, result, filter))
+            {
+                if (auto body = physics.TryGetComponent<DynamicBodyComponent>(result.BodyID))
+                {
+                    if (!body->IsKinematic())
+                    {
+                        m_DragObject = result.BodyID;
+                        //body->SetKinematic(true);
+                        body->SetGravityFactor(0);
+                    }
+                }
+            }
+        }
+    }
+
+    void OnDragEnd()
+    {
+        if (m_DragObject.IsValid())
+        {
+            auto& physics = GetWorld()->GetInterface<PhysicsInterface>();
+            if (auto body = physics.TryGetComponent<DynamicBodyComponent>(m_DragObject))
+            //    body->SetKinematic(false);
+                    body->SetGravityFactor(1);
+            m_DragObject = {};
+        }
+    }
+
+    Float3 FetchPathPoint(Float3 const& position)
+    {
+        if (m_Path.IsEmpty())
+            return position;
+
+        if (m_Path[0].DistSqr(position) < 0.1f)
+        {
+            m_Path.Remove(0);
+            if (m_Path.IsEmpty())
+                return position;
+        }
+        return m_Path[0];
+    }    
 };
 
 ExampleApplication::ExampleApplication(ArgumentPack const& args) :
-    GameApplication(args, "Hork Engine: Third Person")
+    GameApplication(args, "Hork Engine: Nav Mesh")
 {}
 
 ExampleApplication::~ExampleApplication()
@@ -239,34 +264,13 @@ void ExampleApplication::Initialize()
     desktop->SetFullscreenWidget(mainViewport);
     desktop->SetFocusWidget(mainViewport);
 
-    // Hide mouse cursor
-    GUIManager->bCursorVisible = false;
+    // Show mouse cursor
+    GUIManager->bCursorVisible = true;
 
     // Set input mappings
     Ref<InputMappings> inputMappings = MakeRef<InputMappings>();
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::W, 100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::S, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Up, 100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Down, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::A, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::D, 100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveUp",      VirtualKey::Space, 1.0f);
-    inputMappings->MapAxis(PlayerController::_1, "TurnRight",   VirtualKey::Left, -200.0f);
-    inputMappings->MapAxis(PlayerController::_1, "TurnRight",   VirtualKey::Right, 200.0f);
-
-    inputMappings->MapAxis(PlayerController::_1, "FreelookHorizontal", VirtualAxis::MouseHorizontal, 1.0f);
-    inputMappings->MapAxis(PlayerController::_1, "FreelookVertical",   VirtualAxis::MouseVertical, 1.0f);
-    
-    inputMappings->MapAction(PlayerController::_1, "Attack",    VirtualKey::MouseLeftBtn, {});
-    inputMappings->MapAction(PlayerController::_1, "Attack",    VirtualKey::LeftControl, {});
-
-    inputMappings->MapGamepadAction(PlayerController::_1,   "Attack",       GamepadKey::X);
-    inputMappings->MapGamepadAction(PlayerController::_1,   "Attack",       GamepadAxis::TriggerRight);
-    inputMappings->MapGamepadAxis(PlayerController::_1,     "MoveForward",  GamepadAxis::LeftY, 1);
-    inputMappings->MapGamepadAxis(PlayerController::_1,     "MoveRight",    GamepadAxis::LeftX, 1);
-    inputMappings->MapGamepadAxis(PlayerController::_1,     "MoveUp",       GamepadKey::A, 1);
-    inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnRight",    GamepadAxis::RightX, 200.0f);
-    inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnUp",       GamepadAxis::RightY, 200.0f);
+    inputMappings->MapAction(PlayerController::_1, "Pick", VirtualKey::MouseLeftBtn, {});
+    inputMappings->MapAction(PlayerController::_1, "Drag", VirtualKey::MouseRightBtn, {});
 
     GetInputSystem().SetInputMappings(inputMappings);
 
@@ -307,6 +311,10 @@ void ExampleApplication::Initialize()
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
     input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
+
+    GetCommandProcessor().Add("com_DrawNavMesh 1\n");
+    //GetCommandProcessor().Add("com_DrawNavMeshAreas 1\n");    
+    GetCommandProcessor().Add("com_DrawOffMeshLinks 1\n");
 }
 
 void ExampleApplication::Deinitialize()
@@ -350,11 +358,13 @@ void ExampleApplication::CreateResources()
         resourceManager.GetResource<MeshResource>("/Root/default/sphere.mesh"),
         resourceManager.GetResource<MeshResource>("/Root/default/capsule.mesh"),
         resourceManager.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+        resourceManager.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat"),        
         resourceManager.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceManager.GetResource<TextureResource>("/Root/blank256.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/blank512.webp")
+        resourceManager.GetResource<TextureResource>("/Root/blank512.webp"),
+        resourceManager.GetResource<MeshResource>("/Root/default/quad_xy.mesh")
     };
-
+    
     // Load resources asynchronously
     ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
     resourceManager.LoadArea(resources);
@@ -368,10 +378,10 @@ void ExampleApplication::CreateScene()
     auto& resourceMgr = GameApplication::GetResourceManager();
     auto& materialMgr = GameApplication::GetMaterialManager();
 
-    CreateSceneFromMap(m_World, "/Root/sample3.map");
+    CreateSceneFromMap(m_World, "/Root/sample5.map");
 
-    Float3 playerSpawnPosition = Float3(12,0,0);
-    Quat playerSpawnRotation = Quat::RotationY(Math::_HALF_PI);
+    Float3 playerSpawnPosition = Float3(-1344/32.0f,0,0);
+    Quat playerSpawnRotation = Quat::RotationY(-Math::_HALF_PI);
 
     // Light
     {
@@ -389,39 +399,48 @@ void ExampleApplication::CreateScene()
         dirlight->SetIlluminance(20000.0f);
         dirlight->SetShadowMaxDistance(50);
         dirlight->SetShadowCascadeResolution(2048);
-        dirlight->SetShadowCascadeOffset(0.0f);
+        dirlight->SetShadowCascadeOffset(-10.0f);
         dirlight->SetShadowCascadeSplitLambda(0.8f);
     }
 
     // Boxes
     {
         Float3 positions[] = {
-            Float3( -21, 0, 27 ),
-            Float3( -18, 0, 28 ),
-            Float3( -23.5, 0, 26.5 ),
-            Float3( -21, 3, 27 ) };
+            Float3(-32, 0.75, -7),
+            Float3(-29, 0.75, -6),
+            Float3(-34.5, 0.75, -7.5),
+            Float3(-32, 1.25, -7),
+            Float3(-37, 0.75, -19)};
 
-        float yaws[] = { 0, 15, 10, 10 };
+        float yaws[] = { 0, 15, 10, 10, 45 };
 
         for (int i = 0; i < HK_ARRAY_SIZE(positions); i++)
         {
+            const float boxScale = 1.5f;
             GameObjectDesc desc;
-            desc.Position = positions[i] + Float3(22-33, 0, -28-6);
+            desc.Position = positions[i];
             desc.Rotation.FromAngles(0, Math::Radians(yaws[i]), 0);
-            desc.Scale = Float3(1.5f);
+            desc.Scale = Float3(boxScale);
             desc.IsDynamic = true;
             GameObject* object;
             m_World->CreateObject(desc, object);
             DynamicBodyComponent* phys;
             object->CreateComponent(phys);
             phys->Mass = 30;
-            object->CreateComponent<BoxCollider>();
+            BoxCollider* collider;
+            object->CreateComponent(collider);
             DynamicMeshComponent* mesh;
             object->CreateComponent(mesh);
             mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
             mesh->m_CastShadow = true;
             auto& surface = mesh->m_Surfaces.EmplaceBack();
             surface.Materials.Add(materialMgr.Get("blank256"));
+
+            NavMeshObstacleComponent* obstacle;
+            object->CreateComponent(obstacle);
+            obstacle->SetShape(NavMeshObstacleShape::Box);
+            float boxDiagonal = Math::Sqrt(Math::Square(0.5f) + Math::Square(0.5f));
+            obstacle->SetHalfExtents(Float3(boxDiagonal * boxScale));
         }
     }
 
@@ -437,7 +456,8 @@ void ExampleApplication::CreateScene()
         TriggerComponent* trigger;
         doorTrigger->CreateComponent(trigger);
         trigger->CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
-        doorTrigger->CreateComponent<BoxCollider>();
+        BoxCollider* collider;
+        doorTrigger->CreateComponent(collider);
         doorTrigger->CreateComponent(doorActivator);
     }
     {
@@ -450,7 +470,8 @@ void ExampleApplication::CreateScene()
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
         phys->SetKinematic(true);
-        object->CreateComponent<BoxCollider>();
+        BoxCollider* collider;
+        object->CreateComponent(collider);
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -477,7 +498,8 @@ void ExampleApplication::CreateScene()
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
         phys->SetKinematic(true);
-        object->CreateComponent<BoxCollider>();
+        BoxCollider* collider;
+        object->CreateComponent(collider);
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
@@ -496,6 +518,62 @@ void ExampleApplication::CreateScene()
     }
 
     m_PlayerSpawnPoints.Add({playerSpawnPosition, playerSpawnRotation});
+
+    {
+        auto& navigation = m_World->GetInterface<NavMeshInterface>();
+
+        navigation.NavigationVolumes.EmplaceBack(Float3(-128), Float3(128));
+
+        navigation.WalkableClimb = 0.4f;
+        navigation.CellHeight = 0.2f;
+
+        navigation.SetAreaCost(NAV_MESH_AREA_GROUND, 1);
+        navigation.SetAreaCost(NAV_MESH_AREA_WATER, 4);
+        //navigation.SetAreaCost(NAV_MESH_AREA_WATER, 1);
+
+        navigation.Create();
+
+        navigation.BuildOnNextFrame();
+    }
+
+    {
+        GameObjectDesc desc;
+        desc.Position = Float3(-35, 3.75f, -31);
+        GameObject* object;
+        m_World->CreateObject(desc, object);
+
+        GameObjectDesc desc2;
+        desc2.Position = Float3(-35, 0, -27);
+        GameObject* dest;
+        m_World->CreateObject(desc2, dest);
+
+        OffMeshLinkComponent* link;
+        object->CreateComponent(link);
+        link->SetDestination(dest->GetHandle());
+        link->SetAreaType(NAV_MESH_AREA_GROUND);
+        //link->SetFlags(1);//NAV_MESH_FLAGS_WALK);
+    }
+
+    {
+        GameObjectDesc desc;
+        GameObject* object;
+        m_World->CreateObject(desc, object);
+        NavMeshAreaComponent* area;
+        object->CreateComponent(area);
+        area->SetShape(NavMeshAreaShape::Box);
+
+        Float3 pos(-32, 0.5f, 0);
+        Float3 size(9, 4, 7);
+        object->SetWorldPosition(pos);
+        area->SetHalfExtents(size * 0.5f);
+        area->SetAreaType(NAV_MESH_AREA_WATER);
+
+        //Float2 vertices[3];
+        //vertices[0] = Float2(-3,-3);
+        //vertices[1] = Float2( 3,-3);
+        //vertices[2] = Float2( 3, 3);
+        //area->SetVolumeContour(vertices);
+    }
 }
 
 
@@ -544,10 +622,12 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         GameObjectDesc desc;
         desc.Name.FromString("ViewPoint");
         desc.Parent = player->GetHandle();
-        desc.Position = Float3(0,1.7f,0);
-        desc.Rotation = rotation;
+        desc.Position = Float3(0,0,0);
+        desc.Rotation.FromAngles(Math::Radians(-60), Math::Radians(-45), 0);
         desc.IsDynamic = true;
         m_World->CreateObject(desc, viewPoint);
+
+        
     }
 
     // Create view camera
@@ -556,16 +636,15 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         GameObjectDesc desc;
         desc.Name.FromString("Camera");
         desc.Parent = viewPoint->GetHandle();
+        desc.Position.Z = 30;
         desc.IsDynamic = true;
         m_World->CreateObject(desc, camera);
 
         CameraComponent* cameraComponent;
-        camera->CreateComponent(cameraComponent);
-        cameraComponent->SetFovY(75);
+        auto cameraHandle = camera->CreateComponent(cameraComponent);
+        cameraComponent->SetFovY(45);
 
-        SpringArmComponent* sprintArm;
-        camera->CreateComponent(sprintArm);
-        sprintArm->DesiredDistance = 5;
+
         
         camera->CreateComponent<AudioListenerComponent>();
     }

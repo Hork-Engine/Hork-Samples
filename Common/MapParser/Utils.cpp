@@ -32,7 +32,6 @@ SOFTWARE.
 
 #include <Engine/World/World.h>
 #include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Physics/CollisionModel.h>
 #include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
 #include <Engine/GameApplication/GameApplication.h>
 
@@ -92,21 +91,37 @@ void CreateSceneFromMap(World* world, StringView mapFilename)
                 mesh->m_Surfaces.EmplaceBack().Materials.Add(materialMgr.Get("grid8"));
             }
 
+            //#define SINGLE_OBJECT
+
+#ifdef SINGLE_OBJECT
+            if (entity.ClipHullCount > 0)
+            {
+                StaticBodyComponent* body;
+                object->CreateComponent(body);
+            }
+#endif
+
             for (int hullNum = 0; hullNum < entity.ClipHullCount; ++hullNum)
             {
                 auto& chull = clipHull[entity.FirstClipHull + hullNum];
 
-                CollisionConvexHullDef hull;
-                hull.pVertices = &clipVertices[chull.FirstVert];
-                hull.VertexCount = chull.VertexCount;
-
-                CollisionModelCreateInfo ci;
-                ci.pConvexHulls = &hull;
-                ci.ConvexHullCount = 1;
-
+#ifdef SINGLE_OBJECT
+                MeshCollider* collider;
+                object->CreateComponent(collider);
+#else
+                GameObjectDesc collisionObjectDesc;
+                collisionObjectDesc.Parent = object->GetHandle();
+                GameObject* collisionObject;
+                world->CreateObject(desc, collisionObject);
                 StaticBodyComponent* body;
-                object->CreateComponent(body);
-                body->m_CollisionModel = CollisionModel::Create(ci);
+                collisionObject->CreateComponent(body);
+                MeshCollider* collider;
+                collisionObject->CreateComponent(collider);
+#endif
+                collider->Data = MakeRef<MeshCollisionData>();
+                collider->Data->CreateConvexHull(ArrayView(&clipVertices[chull.FirstVert], chull.VertexCount));
+
+                LOG("Break\n");
             }
         }
     }

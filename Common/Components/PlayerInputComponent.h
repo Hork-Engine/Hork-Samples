@@ -32,7 +32,6 @@ SOFTWARE.
 
 #include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
 #include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Physics/CollisionModel.h>
 #include <Engine/World/Modules/Render/Components/CameraComponent.h>
 #include <Engine/World/Modules/Render/Components/MeshComponent.h>
 #include <Engine/World/Modules/Input/InputBindings.h>
@@ -171,13 +170,6 @@ private:
         auto& resourceMgr = GameApplication::GetResourceManager();
         auto& materialMgr = GameApplication::GetMaterialManager();
 
-        Ref<CollisionModel> sphereModel;
-        CollisionModelCreateInfo modelCreateInfo;
-        CollisionSphereDef sphereDef;
-        modelCreateInfo.pSpheres = &sphereDef;
-        modelCreateInfo.SphereCount = 1;
-        sphereModel = CollisionModel::Create(modelCreateInfo);
-
         GameObjectDesc desc;
         desc.Position = position;
         desc.Scale = Float3(0.2f);
@@ -186,10 +178,12 @@ private:
         GetWorld()->CreateObject(desc, object);
         DynamicBodyComponent* phys;
         object->CreateComponent(phys);
-        phys->m_CollisionLayer = CollisionLayer::Bullets;
-        phys->m_CollisionModel = sphereModel;
+        phys->CollisionLayer = CollisionLayer::Bullets;
         phys->UseCCD = true;
         phys->AddImpulse(direction);
+        SphereCollider* collider;
+        object->CreateComponent(collider);
+        collider->Radius = 0.5f;
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/sphere.mesh");
@@ -201,6 +195,6 @@ private:
             surface.Materials.Add(materialMgr.Get("red512"));
         LifeSpanComponent* lifespan;
         object->CreateComponent(lifespan);
-        lifespan->Time = 5;
+        lifespan->Time = 2;
     }
 };
