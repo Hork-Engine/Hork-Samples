@@ -475,21 +475,17 @@ void ExampleApplication::CreateScene()
         StaticMeshComponent* face;
         monitor->CreateComponent(face);
 
-        auto surfaceHandle = GameApplication::GetResourceManager().CreateResource<MeshResource>("monitor_surface");
+        RawMesh rawMesh;
+        rawMesh.CreatePlaneXY(4.0f, 4.0f, Float2(1,-1));
+
+        MeshResourceBuilder builder;
+        UniqueRef<MeshResource> quadMesh = builder.Build(rawMesh);
+        if (quadMesh)
+            quadMesh->Upload();
+        auto surfaceHandle = GameApplication::GetResourceManager().CreateResourceWithData<MeshResource>("monitor_surface", std::move(quadMesh));
 
         MeshResource* resource = GameApplication::GetResourceManager().TryGet(surfaceHandle);
         HK_ASSERT(resource);
-
-        VertexBufferCPU<MeshVertex> vertices;
-        IndexBufferCPU<uint32_t> indices;
-        BvAxisAlignedBox bounds;
-        CreatePlaneMeshXY(vertices, indices, bounds, 4.0f, 4.0f, Float2(1,-1));
-        
-        resource->Allocate(vertices.Size(), indices.Size(), 1, false, false);
-        resource->WriteVertexData(vertices.ToPtr(), vertices.Size(), 0);
-        resource->WriteIndexData(indices.ToPtr(), indices.Size(), 0);
-        resource->SetBoundingBox(bounds);
-        resource->GetSubparts()[0].BoundingBox = bounds;
 
         face->m_Resource = surfaceHandle;
         

@@ -299,10 +299,13 @@ void ExampleApplication::ShowLoadingScreen(bool show)
 
             auto textureHandle = resourceMngr.CreateResourceFromFile<TextureResource>("/Root/loading.png");
             auto texture = resourceMngr.TryGet(textureHandle);
-            texture->Upload();
+            if (texture)
+            {
+                texture->Upload();
 
-            m_LoadingScreen->WithTexture(textureHandle);
-            m_LoadingScreen->WithTextureSize(texture->GetWidth(), texture->GetHeight());
+                m_LoadingScreen->WithTexture(textureHandle);
+                m_LoadingScreen->WithTextureSize(texture->GetWidth(), texture->GetHeight());
+            }
         }
 
         m_Desktop->SetFullscreenWidget(m_LoadingScreen);
@@ -411,6 +414,7 @@ void ExampleApplication::CreateScene()
         mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
         auto& surface = mesh->m_Surfaces.EmplaceBack();
         surface.Materials.Add(materialMgr.Get("grid8"));
+        mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
 
         uint32_t nodeID = 0;
 

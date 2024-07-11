@@ -123,7 +123,7 @@ void MapGeometry::ExtractSurfaces(Vector<FaceInfo> const& faceInfos, Vector<MapP
         if (!surface || surface->Material != face.Material)
         {
             if (surface)
-                Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, surface->VertexCount, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
+                Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
 
             surface = &m_Surfaces.EmplaceBack();
 
@@ -169,7 +169,7 @@ void MapGeometry::ExtractSurfaces(Vector<FaceInfo> const& faceInfos, Vector<MapP
     }
 
     if (surface)
-        Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, surface->VertexCount, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
+        Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
 }
 #if 0
 void ConvexHullVerticesFromPlanes2(PlaneF const* planes, int planeCount, Vector<Float3>& vertices)

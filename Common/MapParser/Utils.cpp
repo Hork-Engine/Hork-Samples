@@ -79,16 +79,24 @@ void CreateSceneFromMap(World* world, StringView mapFilename)
                 for (int v = 0; v < surface.VertexCount; ++v)
                     bounds.AddPoint(vertices[surface.FirstVert + v].Position);
 
-                resource->Allocate(surface.VertexCount, surface.IndexCount, 1, false, false);
+                MeshAllocateDesc alloc;
+                alloc.SurfaceCount = 1;
+                alloc.VertexCount = surface.VertexCount;
+                alloc.IndexCount = surface.IndexCount;
+
+                resource->Allocate(alloc);
                 resource->WriteVertexData(&vertices[surface.FirstVert], surface.VertexCount, 0);
                 resource->WriteIndexData(&indices[surface.FirstIndex], surface.IndexCount, 0);
                 resource->SetBoundingBox(bounds);
-                resource->GetSubparts()[0].BoundingBox = bounds;
+
+                MeshSurface& meshSurface = resource->LockSurface(0);
+                meshSurface.BoundingBox = bounds;
 
                 StaticMeshComponent* mesh;
                 object->CreateComponent(mesh);
                 mesh->m_Resource = surfaceHandle;
                 mesh->m_Surfaces.EmplaceBack().Materials.Add(materialMgr.Get("grid8"));
+                mesh->SetLocalBoundingBox(bounds);
             }
 
             //#define SINGLE_OBJECT
@@ -120,8 +128,6 @@ void CreateSceneFromMap(World* world, StringView mapFilename)
 #endif
                 collider->Data = MakeRef<MeshCollisionData>();
                 collider->Data->CreateConvexHull(ArrayView(&clipVertices[chull.FirstVert], chull.VertexCount));
-
-                LOG("Break\n");
             }
         }
     }
