@@ -167,8 +167,8 @@ public:
 private:
     void SpawnBall(Float3 const& position, Float3 const& direction)
     {
-        auto& resourceMgr = GameApplication::GetResourceManager();
-        auto& materialMgr = GameApplication::GetMaterialManager();
+        auto& resourceMngr = GameApplication::GetResourceManager();
+        auto& materialMngr = GameApplication::GetMaterialManager();
 
         GameObjectDesc desc;
         desc.Position = position;
@@ -186,13 +186,8 @@ private:
         collider->Radius = 0.5f;
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/sphere.mesh");
-        mesh->m_CastShadow = true;
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        if (Team == PlayerTeam::Blue)
-            surface.Materials.Add(materialMgr.Get("blank512"));
-        else
-            surface.Materials.Add(materialMgr.Get("red512"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet(Team == PlayerTeam::Blue ? "blank512" : "red512"));
         LifeSpanComponent* lifespan;
         object->CreateComponent(lifespan);
         lifespan->Time = 2;

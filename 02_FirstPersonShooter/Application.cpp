@@ -328,42 +328,34 @@ void ExampleApplication::ShowLoadingScreen(bool show)
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceManager = GetResourceManager();
+    auto& resourceMngr = GetResourceManager();
+    auto& materialMngr = GetMaterialManager();
 
-    // Open material library
-    if (auto file = resourceManager.OpenFile("/Root/default/materials/default.mlib"))
-    {
-        // Read material library
-        auto library = MakeRef<MaterialLibrary>();
-        library->Read(file, &resourceManager);
-
-        // Register library in material manager
-        GetMaterialManager().AddMaterialLibrary(library);
-    }
+    materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
     // List of resources used in scene
     ResourceID sceneResources[] = {
-        resourceManager.GetResource<MeshResource>("/Root/default/box.mesh"),
-        resourceManager.GetResource<MeshResource>("/Root/default/sphere.mesh"),
-        resourceManager.GetResource<MeshResource>("/Root/default/capsule.mesh"),
-        resourceManager.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
-        resourceManager.GetResource<TextureResource>("/Root/grid8.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/blank256.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/blank512.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/red512.png")
+        resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
+        resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
+        resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+        resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
+        resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
+        resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),
+        resourceMngr.GetResource<TextureResource>("/Root/red512.png")
     };
 
     // Load resources asynchronously
-    m_Resources = resourceManager.CreateResourceArea(sceneResources);
-    resourceManager.LoadArea(m_Resources);
+    m_Resources = resourceMngr.CreateResourceArea(sceneResources);
+    resourceMngr.LoadArea(m_Resources);
 
-    //resourceManager.MainThread_WaitResourceArea(m_Resources);
+    //resourceMngr.MainThread_WaitResourceArea(m_Resources);
 }
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMgr = GameApplication::GetResourceManager();
-    auto& materialMgr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::GetResourceManager();
+    auto& materialMngr = GameApplication::GetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample2.map");
 
@@ -411,9 +403,8 @@ void ExampleApplication::CreateScene()
 
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("grid8"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("grid8"));
         mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
 
         uint32_t nodeID = 0;
@@ -508,10 +499,8 @@ void ExampleApplication::CreateScene()
             object->CreateComponent<BoxCollider>();
             DynamicMeshComponent* mesh;
             object->CreateComponent(mesh);
-            mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-            mesh->m_CastShadow = true;
-            auto& surface = mesh->m_Surfaces.EmplaceBack();
-            surface.Materials.Add(materialMgr.Get("blank256"));
+            mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+            mesh->SetMaterial(materialMngr.TryGet("blank256"));
         }
     }
 
@@ -526,8 +515,8 @@ void ExampleApplication::CreateScene()
 
 void ExampleApplication::CreateElevator(Float3 const& position)
 {
-    auto& resourceMgr = GetResourceManager();
-    auto& materialMgr = GetMaterialManager();
+    auto& resourceMngr = GetResourceManager();
+    auto& materialMngr = GetMaterialManager();
 
     GameObject* object;
 
@@ -544,9 +533,8 @@ void ExampleApplication::CreateElevator(Float3 const& position)
 
     DynamicMeshComponent* mesh;
     object->CreateComponent(mesh);
-    mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-    auto& surface = mesh->m_Surfaces.EmplaceBack();
-    surface.Materials.Add(materialMgr.Get("grid8"));
+    mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+    mesh->SetMaterial(materialMngr.TryGet("grid8"));
 
     ElevatorComponent* elevatorComp;
     auto elevatorHandle = object->CreateComponent(elevatorComp);
@@ -570,8 +558,8 @@ void ExampleApplication::CreateElevator(Float3 const& position)
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation, PlayerTeam team)
 {
-    auto& resourceMgr = GetResourceManager();
-    auto& materialMgr = GetMaterialManager();
+    auto& resourceMngr = GetResourceManager();
+    auto& materialMngr = GetMaterialManager();
 
     const float      HeightStanding = 1.35f;
     const float      RadiusStanding = 0.3f;
@@ -603,12 +591,8 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         DynamicMeshComponent* mesh;
         model->CreateComponent(mesh);
 
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/capsule.mesh");
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        if (team == PlayerTeam::Blue)
-            surface.Materials.Add(materialMgr.Get("blank512"));
-        else
-            surface.Materials.Add(materialMgr.Get("red512"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet(team == PlayerTeam::Blue ? "blank512" : "red512"));
     }
 
     // Create view camera

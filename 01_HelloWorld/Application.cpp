@@ -193,33 +193,25 @@ public:
 
     void CreateResources()
     {
-        auto& resourceManager = GetResourceManager();
+        auto& resourceMngr = GetResourceManager();
+        auto& materialMngr = GetMaterialManager();
 
-        // Open material library
-        if (auto file = resourceManager.OpenFile("/Root/default/materials/default.mlib"))
-        {
-            // Read material library
-            auto library = MakeRef<MaterialLibrary>();
-            library->Read(file, &resourceManager);
-
-            // Register library in material manager
-            GetMaterialManager().AddMaterialLibrary(library);
-        }
+        materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
         // List of resources used in scene
         ResourceID sceneResources[] = {
-            resourceManager.GetResource<MeshResource>("/Root/default/box.mesh"),
-            resourceManager.GetResource<MeshResource>("/Root/default/plane_xz.mesh"),
-            resourceManager.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
-            resourceManager.GetResource<TextureResource>("/Root/grid8.webp")
+            resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
+            resourceMngr.GetResource<MeshResource>("/Root/default/plane_xz.mesh"),
+            resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+            resourceMngr.GetResource<TextureResource>("/Root/grid8.webp")
         };
 
         // Load resources asynchronously
-        ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
-        resourceManager.LoadArea(resources);
+        ResourceAreaID resources = resourceMngr.CreateResourceArea(sceneResources);
+        resourceMngr.LoadArea(resources);
 
         // Wait for the resources to load
-        resourceManager.MainThread_WaitResourceArea(resources);
+        resourceMngr.MainThread_WaitResourceArea(resources);
     }
 
     GameObject* CreatePlayer(Float3 const& position, Quat const& rotation)
@@ -257,8 +249,8 @@ public:
 
             DynamicMeshComponent* mesh;
             model->CreateComponent(mesh);
-            mesh->m_Resource = playerMesh;
-            mesh->m_Surfaces.EmplaceBack().Materials.Add(GetMaterialManager().Get("grid8"));
+            mesh->SetMesh(playerMesh);
+            mesh->SetMaterial(GetMaterialManager().TryGet("grid8"));
         }
 
         return player;
@@ -310,9 +302,9 @@ public:
             DynamicMeshComponent* groundModel;
             ground->CreateComponent(groundModel);
 
-            groundModel->m_Resource = groundMesh;
-            groundModel->m_Surfaces.EmplaceBack().Materials.Add(GetMaterialManager().Get("grid8"));
-            groundModel->m_CastShadow = false;
+            groundModel->SetMesh(groundMesh);
+            groundModel->SetMaterial(GetMaterialManager().TryGet("grid8"));
+            groundModel->SetCastShadow(false);
         }
     }
 

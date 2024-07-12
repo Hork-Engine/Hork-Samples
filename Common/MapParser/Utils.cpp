@@ -39,10 +39,10 @@ HK_NAMESPACE_BEGIN
 
 void CreateSceneFromMap(World* world, StringView mapFilename)
 {
-    auto& resourceMgr = GameApplication::GetResourceManager();
-    auto& materialMgr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::GetResourceManager();
+    auto& materialMngr = GameApplication::GetMaterialManager();
 
-    if (auto file = resourceMgr.OpenFile(mapFilename))
+    if (auto file = resourceMngr.OpenFile(mapFilename))
     {
         MapParser parser;
         parser.Parse(file.AsString().CStr());
@@ -94,8 +94,8 @@ void CreateSceneFromMap(World* world, StringView mapFilename)
 
                 StaticMeshComponent* mesh;
                 object->CreateComponent(mesh);
-                mesh->m_Resource = surfaceHandle;
-                mesh->m_Surfaces.EmplaceBack().Materials.Add(materialMgr.Get("grid8"));
+                mesh->SetMesh(surfaceHandle);
+                mesh->SetMaterial(materialMngr.TryGet("grid8"));
                 mesh->SetLocalBoundingBox(bounds);
             }
 

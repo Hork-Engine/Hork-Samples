@@ -262,8 +262,8 @@ public:
 private:
     void SpawnBall(Float3 const& position, Float3 const& direction)
     {
-        auto& resourceMgr = GameApplication::GetResourceManager();
-        auto& materialMgr = GameApplication::GetMaterialManager();
+        auto& resourceMngr = GameApplication::GetResourceManager();
+        auto& materialMngr = GameApplication::GetMaterialManager();
 
         GameObjectDesc desc;
         desc.Position = position;
@@ -279,10 +279,8 @@ private:
         object->CreateComponent<SphereCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/sphere.mesh");
-        mesh->m_CastShadow = true;
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("blank512"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("blank512"));
         LifeSpanComponent* lifespan;
         object->CreateComponent(lifespan);
         lifespan->Time = 5;
@@ -410,44 +408,36 @@ void ExampleApplication::ToggleWireframe()
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceManager = GetResourceManager();
+    auto& resourceMngr = GetResourceManager();
+    auto& materialMngr = GetMaterialManager();
 
-    // Open material library
-    if (auto file = resourceManager.OpenFile("/Root/default/materials/default.mlib"))
-    {
-        // Read material library
-        auto library = MakeRef<MaterialLibrary>();
-        library->Read(file, &resourceManager);
-
-        // Register library in material manager
-        GetMaterialManager().AddMaterialLibrary(library);
-    }
+    materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
     // List of resources used in scene
     ResourceID sceneResources[] = {
-        resourceManager.GetResource<MeshResource>("/Root/default/box.mesh"),
-        resourceManager.GetResource<MeshResource>("/Root/default/sphere.mesh"),
-        resourceManager.GetResource<MeshResource>("/Root/default/capsule.mesh"),
-        resourceManager.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
-        resourceManager.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat"),        
-        resourceManager.GetResource<TextureResource>("/Root/grid8.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/blank256.webp"),
-        resourceManager.GetResource<TextureResource>("/Root/blank512.webp"),
-        resourceManager.GetResource<MeshResource>("/Root/default/quad_xy.mesh")
+        resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
+        resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
+        resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat"),        
+        resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
+        resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
+        resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),
+        resourceMngr.GetResource<MeshResource>("/Root/default/quad_xy.mesh")
     };
     
     // Load resources asynchronously
-    ResourceAreaID resources = resourceManager.CreateResourceArea(sceneResources);
-    resourceManager.LoadArea(resources);
+    ResourceAreaID resources = resourceMngr.CreateResourceArea(sceneResources);
+    resourceMngr.LoadArea(resources);
 
     // Wait for the resources to load
-    resourceManager.MainThread_WaitResourceArea(resources);
+    resourceMngr.MainThread_WaitResourceArea(resources);
 }
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMgr = GameApplication::GetResourceManager();
-    auto& materialMgr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::GetResourceManager();
+    auto& materialMngr = GameApplication::GetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample3.map");
 
@@ -487,17 +477,15 @@ void ExampleApplication::CreateScene()
         MeshResource* resource = GameApplication::GetResourceManager().TryGet(surfaceHandle);
         HK_ASSERT(resource);
 
-        face->m_Resource = surfaceHandle;
+        face->SetMesh(surfaceHandle);
         
-        Ref<MaterialLibrary> matlib = MakeRef<MaterialLibrary>();
-        materialMgr.AddMaterialLibrary(matlib);
-        MaterialInstance* matInst = matlib->CreateMaterial("render_to_tex_material");
-        //matInst->m_Material = resourceMgr.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat");
-        matInst->m_Material = resourceMgr.GetResource<MaterialResource>("/Root/default/materials/default.mat");
-        matInst->SetTexture(0, offscreenRenderView->GetTextureHandle());
-        matInst->SetConstant(0,0.0f);
-        matInst->SetConstant(1,1.0f);
-        face->m_Surfaces.EmplaceBack().Materials.Add(matInst);
+        Ref<MaterialLibrary> matlib = materialMngr.CreateLibrary();
+        Material* material = matlib->CreateMaterial("render_to_tex_material");
+        material->SetResource(resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"));
+        material->SetTexture(0, offscreenRenderView->GetTextureHandle());
+        material->SetConstant(0,0.0f);
+        material->SetConstant(1,1.0f);
+        face->SetMaterial(material);
     }
     {
         GameObjectDesc desc;
@@ -558,10 +546,8 @@ void ExampleApplication::CreateScene()
             object->CreateComponent<BoxCollider>();
             DynamicMeshComponent* mesh;
             object->CreateComponent(mesh);
-            mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-            mesh->m_CastShadow = true;
-            auto& surface = mesh->m_Surfaces.EmplaceBack();
-            surface.Materials.Add(materialMgr.Get("blank256"));
+            mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+            mesh->SetMaterial(materialMngr.TryGet("blank256"));
         }
     }
 
@@ -593,10 +579,8 @@ void ExampleApplication::CreateScene()
         object->CreateComponent<BoxCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-        mesh->m_CastShadow = true;
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("grid8"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("grid8"));
 
         DoorComponent* doorComponent;
         object->CreateComponent(doorComponent);
@@ -620,10 +604,8 @@ void ExampleApplication::CreateScene()
         object->CreateComponent<BoxCollider>();
         DynamicMeshComponent* mesh;
         object->CreateComponent(mesh);
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/box.mesh");
-        mesh->m_CastShadow = true;
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("grid8"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("grid8"));
 
         DoorComponent* doorComponent;
         object->CreateComponent(doorComponent);
@@ -641,8 +623,8 @@ void ExampleApplication::CreateScene()
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
-    auto& resourceMgr = GetResourceManager();
-    auto& materialMgr = GetMaterialManager();
+    auto& resourceMngr = GetResourceManager();
+    auto& materialMngr = GetMaterialManager();
 
     const float HeightStanding = 1.35f;
     const float RadiusStanding = 0.3f;
@@ -674,9 +656,8 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         DynamicMeshComponent* mesh;
         model->CreateComponent(mesh);
 
-        mesh->m_Resource = resourceMgr.GetResource<MeshResource>("/Root/default/capsule.mesh");
-        auto& surface = mesh->m_Surfaces.EmplaceBack();
-        surface.Materials.Add(materialMgr.Get("blank512"));
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("blank512"));
     }
 
     GameObject* viewPoint;
