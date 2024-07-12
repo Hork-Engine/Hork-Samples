@@ -84,7 +84,7 @@ void ExampleApplication::Initialize()
     shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
     desktop->SetShortcuts(shortcuts);
 
-    // Create ciewport
+    // Create viewport
 #ifdef SPLIT_SCREEN
     desktop->AddWidget(UINewAssign(m_SplitView, UIGrid, 0, 0)
         .AddRow(1)

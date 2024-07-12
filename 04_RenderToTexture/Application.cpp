@@ -308,7 +308,7 @@ void ExampleApplication::Initialize()
     shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
     desktop->SetShortcuts(shortcuts);
 
-    // Create ciewport
+    // Create viewport
     UIViewport* mainViewport;
     desktop->AddWidget(UINewAssign(mainViewport, UIViewport)
         .WithPadding({0,0,0,0}));
