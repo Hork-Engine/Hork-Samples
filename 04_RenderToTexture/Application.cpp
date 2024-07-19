@@ -474,9 +474,6 @@ void ExampleApplication::CreateScene()
             quadMesh->Upload();
         auto surfaceHandle = GameApplication::GetResourceManager().CreateResourceWithData<MeshResource>("monitor_surface", std::move(quadMesh));
 
-        MeshResource* resource = GameApplication::GetResourceManager().TryGet(surfaceHandle);
-        HK_ASSERT(resource);
-
         face->SetMesh(surfaceHandle);
         
         Ref<MaterialLibrary> matlib = materialMngr.CreateLibrary();
