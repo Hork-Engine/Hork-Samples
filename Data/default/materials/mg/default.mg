@@ -1,6 +1,6 @@
 version "1"
 MaterialType "PBR"
-bAllowScreenSpaceReflections "false"
+AllowScreenSpaceReflections "false"
 $Color "base_color"
 $Metallic "metallic"
 $Roughness "roughness"
@@ -26,13 +26,13 @@ nodes
 	{
 		type "UniformAddress"
 		id "metallic"
-		address "0"
-		uniformtype "float"
+		Address "0"
+		UniformType "float"
 	}
 	{
 		type "UniformAddress"
 		id "roughness"
-		address "1"
-		uniformtype "float"
+		Address "1"
+		UniformType "float"
 	}
 ]

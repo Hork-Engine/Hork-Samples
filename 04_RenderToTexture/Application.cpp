@@ -419,7 +419,6 @@ void ExampleApplication::CreateResources()
         resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
         resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
-        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default_unlit.mat"),        
         resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),

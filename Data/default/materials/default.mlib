@@ -18,6 +18,7 @@ white
 grid8
 {
 	Material "/Root/default/materials/default.mat"
+	//Material "/Root/default/materials/mg/default.mg"
 	Textures
 	[
 		"/Root/grid8.webp"
@@ -52,6 +53,7 @@ blank256
 blank512
 {
 	Material "/Root/default/materials/default.mat"
+	//Material "/Root/default/materials/mg/default.mg"
 	Textures
 	[
 		"/Root/blank512.webp"
@@ -62,7 +64,7 @@ blank512
 		"0"
 		
 		// Roughness
-		"0.1"
+		"0.9"
 	]
 }
 
