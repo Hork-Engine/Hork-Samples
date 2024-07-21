@@ -184,6 +184,8 @@ public:
         cameraComponent->GetOwner()->SetParent(player->FindChildren(StringID("CameraBindPoint")));
 
         CreateScene();
+
+        GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
     }
 
     void Deinitialize()
@@ -202,7 +204,7 @@ public:
         ResourceID sceneResources[] = {
             resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
             resourceMngr.GetResource<MeshResource>("/Root/default/plane_xz.mesh"),
-            resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+            resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"),
             resourceMngr.GetResource<TextureResource>("/Root/grid8.webp")
         };
 

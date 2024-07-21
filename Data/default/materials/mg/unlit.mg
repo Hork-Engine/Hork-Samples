@@ -5,7 +5,7 @@ textures
 [
 	{
 		id "tex_base_color"
-		filter "Trilinear"
+		Filter "Trilinear"
 	}
 ]
 nodes

@@ -305,6 +305,8 @@ void ExampleApplication::Initialize()
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
     input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
+
+    GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
 }
 
 void ExampleApplication::Deinitialize()
@@ -339,7 +341,7 @@ void ExampleApplication::CreateResources()
         resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
-        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"),
         resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank512.webp")

@@ -17,8 +17,8 @@ white
 
 grid8
 {
-	Material "/Root/default/materials/default.mat"
-	//Material "/Root/default/materials/mg/default.mg"
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
 	Textures
 	[
 		"/Root/grid8.webp"
@@ -35,7 +35,8 @@ grid8
 
 blank256
 {
-	Material "/Root/default/materials/default.mat"
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
 	Textures
 	[
 		"/Root/blank256.webp"
@@ -52,8 +53,8 @@ blank256
 
 blank512
 {
-	Material "/Root/default/materials/default.mat"
-	//Material "/Root/default/materials/mg/default.mg"
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
 	Textures
 	[
 		"/Root/blank512.webp"
