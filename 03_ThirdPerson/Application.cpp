@@ -55,6 +55,8 @@ SOFTWARE.
 #include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/Components/PunctualLightComponent.h>
+#include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
 #include <Engine/World/Modules/Animation/NodeMotion.h>
@@ -209,6 +211,123 @@ private:
     }
 };
 
+HK_FORCEINLINE float Quantize(float frac, float quantizer)
+{
+    return quantizer > 0.0f ? Math::Floor(frac * quantizer) / quantizer : frac;
+}
+
+class LightAnimator : public Component
+{
+    Handle32<PunctualLightComponent> m_Light;
+
+public:
+    static constexpr ComponentMode Mode = ComponentMode::Static;
+
+    // Quake styled light anims
+    enum AnimationType
+    {
+        Flicker1,
+        SlowStrongPulse,
+        Candle,
+        FastStrobe,
+        GentlePulse,
+        Flicker2,
+        Candle2,
+        Candle3,
+        SlowStrobe,
+        FluorescentFlicker,
+        SlowPulseNotFadeToBlack,
+        CustomSequence
+    };
+
+    AnimationType Type = Flicker1;
+    String Sequence;
+    float TimeOffset = 0;
+
+    void BeginPlay()
+    {
+        m_Light = GetOwner()->GetComponentHandle<PunctualLightComponent>();
+    }
+
+    void Update()
+    {
+        if (auto lightComponent = GetWorld()->GetComponent(m_Light))
+        {
+            StringView sequence;
+            switch (Type)
+            {
+                case Flicker1:
+                    sequence = "mmnmmommommnonmmonqnmmo"s;
+                    break;
+                case SlowStrongPulse:
+                    sequence = "abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba";
+                    break;
+                case Candle:
+                    sequence = "mmmmmaaaaammmmmaaaaaabcdefgabcdefg";
+                    break;
+                case FastStrobe:
+                    sequence = "mamamamamama";
+                    break;
+                case GentlePulse:
+                    sequence = "jklmnopqrstuvwxyzyxwvutsrqponmlkj";
+                    break;
+                case Flicker2:
+                    sequence = "nmonqnmomnmomomno";
+                    break;
+                case Candle2:
+                    sequence = "mmmaaaabcdefgmmmmaaaammmaamm";
+                    break;
+                case Candle3:
+                    sequence = "mmmaaammmaaammmabcdefaaaammmmabcdefmmmaaaa";
+                    break;
+                case SlowStrobe:
+                    sequence = "aaaaaaaazzzzzzzz";
+                    break;
+                case FluorescentFlicker:
+                    sequence = "mmamammmmammamamaaamammma";
+                    break;
+                case SlowPulseNotFadeToBlack:
+                    sequence = "abcdefghijklmnopqrrqponmlkjihgfedcba";
+                    break;
+                case CustomSequence:
+                    sequence = Sequence;
+                    break;
+                default:
+                    sequence = "m";
+                    break;
+            }
+
+            float speed = 10;
+            float brightness = GetBrightness(sequence, TimeOffset + GetWorld()->GetTick().FrameTime * speed, 0);
+            lightComponent->SetColor(Float3(brightness));
+        }        
+    }
+
+private:
+    // Converts string to brightness: 'a' = no light, 'z' = double bright
+    float GetBrightness(StringView sequence, float position, float quantizer = 0)
+    {
+        int frameCount = sequence.Size();
+        if (frameCount > 0)
+        {
+            int keyframe = Math::Floor(position);
+            int nextframe = keyframe + 1;
+
+            float lerp = position - keyframe;
+
+            keyframe %= frameCount;
+            nextframe %= frameCount;
+
+            float a = (Math::Clamp(sequence[keyframe], 'a', 'z') - 'a') / 26.0f;
+            float b = (Math::Clamp(sequence[nextframe], 'a', 'z') - 'a') / 26.0f;
+
+            return Math::Lerp(a, b, Quantize(lerp, quantizer)) * 2;
+        }
+
+        return 1.0f;
+    }
+};
+
 ExampleApplication::ExampleApplication(ArgumentPack const& args) :
     GameApplication(args, "Hork Engine: Third Person")
 {}
@@ -281,7 +400,7 @@ void ExampleApplication::Initialize()
     m_WorldRenderView = MakeRef<WorldRenderView>();
     m_WorldRenderView->SetWorld(m_World);
     m_WorldRenderView->bClearBackground = true;
-    m_WorldRenderView->BackgroundColor = Color4(0.2f, 0.2f, 0.3f, 1);
+    m_WorldRenderView->BackgroundColor = Color4::Black();
     m_WorldRenderView->bDrawDebug = true;
     mainViewport->SetWorldRenderView(m_WorldRenderView);
 
@@ -305,8 +424,6 @@ void ExampleApplication::Initialize()
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
     input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
-
-    GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
 }
 
 void ExampleApplication::Deinitialize()
@@ -366,23 +483,58 @@ void ExampleApplication::CreateScene()
     Quat playerSpawnRotation = Quat::RotationY(Math::_HALF_PI);
 
     // Light
+    //{
+    //    Float3 lightDirection = Float3(1, -1, -1).Normalized();
+
+    //    GameObjectDesc desc;
+    //    desc.IsDynamic = true;
+
+    //    GameObject* object;
+    //    m_World->CreateObject(desc, object);
+    //    object->SetDirection(lightDirection);
+
+    //    DirectionalLightComponent* dirlight;
+    //    object->CreateComponent(dirlight);
+    //    dirlight->SetIlluminance(20000.0f);
+    //    dirlight->SetShadowMaxDistance(50);
+    //    dirlight->SetShadowCascadeResolution(2048);
+    //    dirlight->SetShadowCascadeOffset(0.0f);
+    //    dirlight->SetShadowCascadeSplitLambda(0.8f);
+    //}
+
     {
-        Float3 lightDirection = Float3(1, -1, -1).Normalized();
-
         GameObjectDesc desc;
+        desc.Name.FromString("Light");
+        desc.Position = Float3(16,2,0);
         desc.IsDynamic = true;
-
         GameObject* object;
         m_World->CreateObject(desc, object);
-        object->SetDirection(lightDirection);
 
-        DirectionalLightComponent* dirlight;
-        object->CreateComponent(dirlight);
-        dirlight->SetIlluminance(20000.0f);
-        dirlight->SetShadowMaxDistance(50);
-        dirlight->SetShadowCascadeResolution(2048);
-        dirlight->SetShadowCascadeOffset(0.0f);
-        dirlight->SetShadowCascadeSplitLambda(0.8f);
+        PunctualLightComponent* light;
+        object->CreateComponent(light);
+        light->SetCastShadow(true);
+        light->SetLumens(300);
+
+        LightAnimator* animator;
+        object->CreateComponent(animator);
+        animator->Type = LightAnimator::AnimationType::SlowPulseNotFadeToBlack;
+    }
+    {
+        GameObjectDesc desc;
+        desc.Name.FromString("Light");
+        desc.Position = Float3(-48,2,0);
+        desc.IsDynamic = true;
+        GameObject* object;
+        m_World->CreateObject(desc, object);
+
+        PunctualLightComponent* light;
+        object->CreateComponent(light);
+        light->SetCastShadow(true);
+        light->SetLumens(300);
+
+        LightAnimator* animator;
+        object->CreateComponent(animator);
+        animator->Type = LightAnimator::AnimationType::SlowPulseNotFadeToBlack;
     }
 
     // Boxes
@@ -533,6 +685,21 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         desc.Rotation = rotation;
         desc.IsDynamic = true;
         m_World->CreateObject(desc, viewPoint);
+
+        desc.Name.FromString("Torch");
+        desc.Parent = viewPoint->GetHandle();
+        desc.Position = Float3(1,0,0);
+        desc.IsDynamic = true;
+        GameObject* torch;
+        m_World->CreateObject(desc, torch);
+
+        PunctualLightComponent* light;
+        torch->CreateComponent(light);
+        light->SetCastShadow(true);
+        light->SetLumens(100);
+        LightAnimator* animator;
+        torch->CreateComponent(animator);
+
     }
 
     // Create view camera

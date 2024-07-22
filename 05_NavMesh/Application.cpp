@@ -51,6 +51,7 @@ SOFTWARE.
 #include <Engine/World/Modules/NavMesh/Components/OffMeshLinkComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Audio/AudioInterface.h>
 
@@ -312,10 +313,12 @@ void ExampleApplication::Initialize()
     input.SetActive(true);
     input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
 
+    RenderInterface& render = m_World->GetInterface<RenderInterface>();
+    render.SetAmbient(0.1f);
+
     GetCommandProcessor().Add("com_DrawNavMesh 1\n");
     //GetCommandProcessor().Add("com_DrawNavMeshAreas 1\n");    
     GetCommandProcessor().Add("com_DrawOffMeshLinks 1\n");
-    GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
 }
 
 void ExampleApplication::Deinitialize()

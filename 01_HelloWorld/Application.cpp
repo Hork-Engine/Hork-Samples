@@ -32,6 +32,7 @@ SOFTWARE.
 #include <Engine/UI/UIViewport.h>
 #include <Engine/World/Modules/Render/Components/MeshComponent.h>
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/RenderInterface.h>
 #include <Engine/World/Modules/Input/InputInterface.h>
 
 using namespace Hk;
@@ -183,9 +184,10 @@ public:
         CameraComponent* cameraComponent = m_World->GetComponent(m_MainCamera);
         cameraComponent->GetOwner()->SetParent(player->FindChildren(StringID("CameraBindPoint")));
 
-        CreateScene();
+        RenderInterface& render = m_World->GetInterface<RenderInterface>();
+        render.SetAmbient(0.1f);
 
-        GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
+        CreateScene();
     }
 
     void Deinitialize()

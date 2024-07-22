@@ -51,6 +51,7 @@ SOFTWARE.
 #include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
 #include <Engine/World/Modules/Animation/NodeMotion.h>
@@ -230,6 +231,9 @@ void ExampleApplication::Initialize()
 
     input.BindInput(player2->GetComponentHandle<PlayerInputComponent>(), PlayerController::_1);
 
+    RenderInterface& render = m_World->GetInterface<RenderInterface>();
+    render.SetAmbient(0.1f);
+
     auto& stateMachine = GetStateMachine();
 
     stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
@@ -240,7 +244,6 @@ void ExampleApplication::Initialize()
     GetCommandProcessor().Add("com_ShowStat 1\n");
     GetCommandProcessor().Add("com_ShowFPS 1\n");
     GetCommandProcessor().Add("com_MaxFPS 0\n");
-    GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
 }
 
 void ExampleApplication::Deinitialize()

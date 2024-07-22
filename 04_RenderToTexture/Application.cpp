@@ -53,6 +53,7 @@ SOFTWARE.
 #include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
 #include <Engine/World/Modules/Animation/NodeMotion.h>
@@ -385,7 +386,8 @@ void ExampleApplication::Initialize()
     input.SetActive(true);
     input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
 
-    GetCommandProcessor().Add("r_GlobalAmbient 0.1\n");
+    RenderInterface& render = m_World->GetInterface<RenderInterface>();
+    render.SetAmbient(0.1f);
 }
 
 void ExampleApplication::Deinitialize()
