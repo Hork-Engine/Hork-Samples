@@ -98,7 +98,7 @@ public:
         Float3 p2 = pos + dir * 2.0f;
         renderer.SetColor(Color4::Blue());
         renderer.DrawLine(p1, p2);
-        renderer.DrawCone(p2, owner->GetWorldRotation().ToMatrix3x3() * Float3x3::RotationAroundNormal(Math::_PI, Float3(1, 0, 0)), 0.4f, Math::_PI / 6);
+        renderer.DrawCone(p2, owner->GetWorldRotation().ToMatrix3x3() * Float3x3::RotationAroundNormal(Math::_PI, Float3(1, 0, 0)), 0.4f, 30);
     }
 };
 
