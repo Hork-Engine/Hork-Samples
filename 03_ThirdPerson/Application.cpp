@@ -236,7 +236,7 @@ public:
         Candle3,
         SlowStrobe,
         FluorescentFlicker,
-        SlowPulseNotFadeToBlack,
+        SlowPulse,
         CustomSequence
     };
 
@@ -286,7 +286,7 @@ public:
                 case FluorescentFlicker:
                     sequence = "mmamammmmammamamaaamammma";
                     break;
-                case SlowPulseNotFadeToBlack:
+                case SlowPulse:
                     sequence = "abcdefghijklmnopqrrqponmlkjihgfedcba";
                     break;
                 case CustomSequence:
@@ -517,7 +517,7 @@ void ExampleApplication::CreateScene()
 
         LightAnimator* animator;
         object->CreateComponent(animator);
-        animator->Type = LightAnimator::AnimationType::SlowPulseNotFadeToBlack;
+        animator->Type = LightAnimator::AnimationType::SlowPulse;
     }
     {
         GameObjectDesc desc;
@@ -534,7 +534,7 @@ void ExampleApplication::CreateScene()
 
         LightAnimator* animator;
         object->CreateComponent(animator);
-        animator->Type = LightAnimator::AnimationType::SlowPulseNotFadeToBlack;
+        animator->Type = LightAnimator::AnimationType::SlowPulse;
     }
 
     // Boxes
