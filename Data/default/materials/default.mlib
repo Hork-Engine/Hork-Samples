@@ -16,6 +16,24 @@ white
 	]
 }
 
+gray
+{
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
+	Textures
+	[
+		"/Root/gray.png"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"1"
+	]
+}
+
 grid8
 {
 	//Material "/Root/default/materials/default.mat"
@@ -87,6 +105,17 @@ red512
 		"0.1"
 	]
 }
+
+MetalRoughSpheres
+{
+	Material "/Root/default/materials/mg/metal_roughness.mg"
+	Textures
+	[
+		"/Root/models/MetalRoughSpheres/Spheres_BaseColor.png"
+		"/Root/models/MetalRoughSpheres/Spheres_MetalRough.png"
+	]
+}
+
 /*
 skybox
 {
