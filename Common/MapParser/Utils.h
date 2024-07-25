@@ -36,6 +36,6 @@ HK_NAMESPACE_BEGIN
 
 class World;
 
-void CreateSceneFromMap(World* world, StringView mapFilename);
+void CreateSceneFromMap(World* world, StringView mapFilename, StringView defaultMaterial = "grid8");
 
 HK_NAMESPACE_END

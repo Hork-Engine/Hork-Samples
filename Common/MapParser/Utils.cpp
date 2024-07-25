@@ -37,7 +37,7 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-void CreateSceneFromMap(World* world, StringView mapFilename)
+void CreateSceneFromMap(World* world, StringView mapFilename, StringView defaultMaterial)
 {
     auto& resourceMngr = GameApplication::GetResourceManager();
     auto& materialMngr = GameApplication::GetMaterialManager();
@@ -95,7 +95,7 @@ void CreateSceneFromMap(World* world, StringView mapFilename)
                 StaticMeshComponent* mesh;
                 object->CreateComponent(mesh);
                 mesh->SetMesh(surfaceHandle);
-                mesh->SetMaterial(materialMngr.TryGet("grid8"));
+                mesh->SetMaterial(materialMngr.TryGet(defaultMaterial));
                 mesh->SetLocalBoundingBox(bounds);
             }
 
