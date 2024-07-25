@@ -57,6 +57,7 @@ private:
     void Pause();
     void Quit();
     void ToggleWireframe();
+    void Screenshot();
     void ShowLoadingScreen(bool show);
 
     void OnStartLoading();

@@ -75,6 +75,7 @@ void ExampleApplication::Initialize()
     shortcuts->AddShortcut(VirtualKey::P, {}, {this, &ExampleApplication::Pause});
     shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &ExampleApplication::Quit});
     shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
+    shortcuts->AddShortcut(VirtualKey::F10, {}, {this, &ExampleApplication::Screenshot});
     desktop->SetShortcuts(shortcuts);
 
     // Create viewport
@@ -194,6 +195,11 @@ void ExampleApplication::Quit()
 void ExampleApplication::ToggleWireframe()
 {
     m_WorldRenderView->bWireframe = !m_WorldRenderView->bWireframe;
+}
+
+void ExampleApplication::Screenshot()
+{
+    TakeScreenshot("screenshot.png");
 }
 
 void ExampleApplication::ShowLoadingScreen(bool show)
