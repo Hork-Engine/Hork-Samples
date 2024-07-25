@@ -1,4 +1,4 @@
-project(01_Empty)
+project(00_Empty)
 
 setup_msvc_runtime_library()
 make_source_list(SOURCE_FILES)

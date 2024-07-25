@@ -629,10 +629,8 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         m_World->CreateObject(desc, camera);
 
         CameraComponent* cameraComponent;
-        auto cameraHandle = camera->CreateComponent(cameraComponent);
+        camera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(45);
-
-
         
         camera->CreateComponent<AudioListenerComponent>();
     }

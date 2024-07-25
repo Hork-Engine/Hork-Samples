@@ -57,7 +57,7 @@ public:
 
 */
 
-static alignas(alignof(ApplicationClass)) char AppData[sizeof(ApplicationClass)];
+alignas(alignof(ApplicationClass)) static char AppData[sizeof(ApplicationClass)];
 
 #ifdef HK_OS_WIN32
 #    include <Engine/Core/WindowsDefs.h>
