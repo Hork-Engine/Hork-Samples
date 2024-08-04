@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Hork Engine Source Code
 
@@ -30,39 +30,14 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/Resources/ResourceManager.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
+#include <Engine/Core/BaseTypes.h>
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication final : public GameApplication
+enum class PlayerTeam
 {
-public:
-    ExampleApplication(ArgumentPack const& args);
-    ~ExampleApplication();
-
-    void Initialize();
-    void Deinitialize();
-
-private:
-    void CreateResources();
-    void CreateScene();
-    GameObject* CreatePlayer(Float3 const& position, Quat const& rotation);
-    void Pause();
-    void Quit();
-    void ToggleWireframe();
-
-    World* m_World{};
-
-    struct SpawnPoint
-    {
-        Float3 Position;
-        Quat Rotation;
-    };
-    Vector<SpawnPoint> m_PlayerSpawnPoints;
-
-    Ref<WorldRenderView> m_WorldRenderView;
+    Blue,
+    Red
 };
 
 HK_NAMESPACE_END

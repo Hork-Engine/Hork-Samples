@@ -1,10 +1,9 @@
 project(03_ThirdPerson)
 
 setup_msvc_runtime_library()
-make_source_list(SOURCE_FILES)
 
-file(GLOB_RECURSE COMMON_FILES ../Common/*.cpp ../Common/*.h)
-source_group("Common" FILES ${COMMON_FILES})
+make_source_list(SOURCE_FILES)
+make_source_list_for_directory(../Source COMMON_FILES)
 
 file(GLOB RESOURCES res/resource.rc res/hork.ico)
 source_group("res" FILES ${RESOURCES})

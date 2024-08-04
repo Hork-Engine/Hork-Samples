@@ -28,12 +28,13 @@ SOFTWARE.
 
 */
 
-#include "../Common/MapParser/Utils.h"
-
-#include "../Common/Components/DoorComponent.h"
-#include "../Common/Components/DoorActivatorComponent.h"
-
 #include "Application.h"
+
+#include "Common/MapParser/Utils.h"
+
+#include "Common/Components/DoorComponent.h"
+#include "Common/Components/DoorActivatorComponent.h"
+#include "Common/CollisionLayer.h"
 
 #include <Engine/UI/UIViewport.h>
 #include <Engine/UI/UIGrid.h>
@@ -43,7 +44,9 @@ SOFTWARE.
 
 #include <Engine/World/Modules/Physics/CollisionFilter.h>
 #include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
 #include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
 #include <Engine/World/Modules/NavMesh/NavMeshInterface.h>
 #include <Engine/World/Modules/NavMesh/Components/NavMeshObstacleComponent.h>
@@ -51,6 +54,7 @@ SOFTWARE.
 #include <Engine/World/Modules/NavMesh/Components/OffMeshLinkComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/Components/MeshComponent.h>
 #include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Audio/AudioInterface.h>
@@ -68,6 +72,8 @@ private:
     PhysBodyID m_DragObject;
     Vector<Float3> m_Path;
     Vector<Float3> m_DebugPath;
+    Float3 m_DesiredVelocity;
+    Float3 m_MoveDir;
 
 public:
     void BindInput(InputBindings& input)
@@ -77,7 +83,7 @@ public:
         input.BindAction("Drag", this, &ThirdPersonInputComponent::OnDragEnd, InputEvent::OnRelease);
     }
 
-    void Update()
+    void FixedUpdate()
     {
         Float3 rayStart, rayDir;
         if (m_DragObject.IsValid() && GetRay(rayStart, rayDir))
@@ -103,19 +109,56 @@ public:
         {
             if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
             {
+                float MoveSpeed = 8;
+
                 Float3 p = FetchPathPoint(GetOwner()->GetWorldPosition());
                 if (p.DistSqr(GetOwner()->GetWorldPosition()) > 0.01f)
                 {
-                    Float3 dir = p - GetOwner()->GetWorldPosition();
-                    dir.Y = 0;
+                    if (controller->IsOnGround())
+                    {
+                        m_MoveDir = p - GetOwner()->GetWorldPosition();
+                        m_MoveDir.Y = 0;
 
-                    dir.NormalizeSelf();
+                        m_MoveDir.NormalizeSelf();
 
-                    controller->MoveSpeed = 8;
-                    controller->MovementDirection = dir;
+                        MoveSpeed = 8;
+                    }
+                    else
+                        MoveSpeed = 2;
                 }
                 else
-                    controller->MovementDirection.Clear();
+                    m_MoveDir.Clear();
+
+                // Smooth the player input
+                m_DesiredVelocity = 0.25f * m_MoveDir * MoveSpeed + 0.75f * m_DesiredVelocity;
+
+                Float3 gravity = GetWorld()->GetInterface<PhysicsInterface>().GetGravity();
+
+                // Determine new basic velocity
+                Float3 newVelocity;
+                if (controller->IsOnGround())
+                {
+                    newVelocity = controller->GetGroundVelocity();
+                }
+                else
+                {
+                    newVelocity.Y = controller->GetLinearVelocity().Y;
+
+                    if (controller->IsOnGround() && newVelocity.Y < 0)
+                        newVelocity.Y = 0;
+                }
+
+                if (!controller->IsOnGround())
+                {
+                    // Gravity
+                    newVelocity += gravity * GetWorld()->GetTick().FixedTimeStep;
+                }
+
+                // Player input
+                newVelocity += m_DesiredVelocity;
+
+                // Update character velocity
+                controller->SetLinearVelocity(newVelocity);
             }
         }
     }
@@ -234,7 +277,7 @@ private:
                 return position;
         }
         return m_Path[0];
-    }    
+    }
 };
 
 ExampleApplication::ExampleApplication(ArgumentPack const& args) :
@@ -422,6 +465,7 @@ void ExampleApplication::CreateScene()
             DynamicBodyComponent* phys;
             object->CreateComponent(phys);
             phys->Mass = 30;
+            phys->CanPushCharacter = false;
             BoxCollider* collider;
             object->CreateComponent(collider);
             DynamicMeshComponent* mesh;
@@ -571,8 +615,8 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     auto& resourceMngr = GetResourceManager();
     auto& materialMngr = GetMaterialManager();
 
-    const float      HeightStanding = 1.35f;
-    const float      RadiusStanding = 0.3f;
+    const float HeightStanding = 1.20f;
+    const float RadiusStanding = 0.3f;
 
     // Create character controller
     GameObject* player;
@@ -601,7 +645,14 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         DynamicMeshComponent* mesh;
         model->CreateComponent(mesh);
 
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"));
+        RawMesh rawMesh;
+        rawMesh.CreateCapsule(RadiusStanding, HeightStanding, 1.0f, 12, 10);
+        MeshResourceBuilder builder;
+        auto resource = builder.Build(rawMesh);
+        resource->Upload();
+        resourceMngr.CreateResourceWithData("character_controller_capsule", std::move(resource));
+
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("character_controller_capsule"));
         mesh->SetMaterial(materialMngr.TryGet("blank512"));
     }
 
@@ -644,4 +695,4 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
 }
 
 using ApplicationClass = ExampleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"

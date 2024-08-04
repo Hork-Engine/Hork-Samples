@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Hork Engine Source Code
 
@@ -30,39 +30,32 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/Resources/ResourceManager.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
+#include <Engine/World/Component.h>
+#include <Engine/World/Modules/Physics/PhysicsInterface.h>
+#include "PlayerTeam.h"
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication final : public GameApplication
+class ProjectileComponent : public Component
 {
 public:
-    ExampleApplication(ArgumentPack const& args);
-    ~ExampleApplication();
+    static constexpr ComponentMode Mode = ComponentMode::Static;
 
-    void Initialize();
-    void Deinitialize();
+    PlayerTeam Team = PlayerTeam::Blue;
+
+    void OnBeginContact(Collision& collision);
+
+    void OnUpdateContact(Collision& collision);
+
+    void OnEndContact(BodyComponent* body);
+
+    void DrawDebug(DebugRenderer& renderer);
 
 private:
-    void CreateResources();
-    void CreateScene();
-    GameObject* CreatePlayer(Float3 const& position, Quat const& rotation);
-    void Pause();
-    void Quit();
-    void ToggleWireframe();
-
-    World* m_World{};
-
-    struct SpawnPoint
-    {
-        Float3 Position;
-        Quat Rotation;
-    };
-    Vector<SpawnPoint> m_PlayerSpawnPoints;
-
-    Ref<WorldRenderView> m_WorldRenderView;
+    Float3 m_Contact;
+    Float3 m_Normal;
 };
+
+void SpawnProjectile(World* world, Float3 const& position, Float3 const& impulse, PlayerTeam team);
 
 HK_NAMESPACE_END

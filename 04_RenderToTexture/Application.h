@@ -33,7 +33,6 @@ SOFTWARE.
 #include <Engine/GameApplication/GameApplication.h>
 #include <Engine/World/Resources/ResourceManager.h>
 #include <Engine/World/Modules/Render/Components/CameraComponent.h>
-#include "../Common/Components/PlayerInputComponent.h"
 
 HK_NAMESPACE_BEGIN
 

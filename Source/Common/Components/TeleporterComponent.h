@@ -34,8 +34,6 @@ SOFTWARE.
 #include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
 #include <Engine/World/Modules/Render/Components/CameraComponent.h>
 #include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/GameObject.h>
-#include <Engine/World/ComponentManager.h>
 #include <Engine/GameApplication/GameApplication.h>
 
 using namespace Hk;

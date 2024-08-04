@@ -28,17 +28,14 @@ SOFTWARE.
 
 */
 
-#include "../Common/MapParser/Utils.h"
-
-#include "../Common/Components/PlayerInputComponent.h"
-#include "../Common/Components/JumpadComponent.h"
-#include "../Common/Components/TeleporterComponent.h"
-#include "../Common/Components/LifeSpanComponent.h"
-#include "../Common/Components/ElevatorComponent.h"
-#include "../Common/Components/DoorComponent.h"
-#include "../Common/Components/DoorActivatorComponent.h"
-
 #include "Application.h"
+
+#include "Common/MapParser/Utils.h"
+
+#include "Common/Components/ThirdPersonComponent.h"
+#include "Common/Components/DoorComponent.h"
+#include "Common/Components/DoorActivatorComponent.h"
+#include "Common/CollisionLayer.h"
 
 #include <Engine/UI/UIViewport.h>
 #include <Engine/UI/UIGrid.h>
@@ -48,11 +45,14 @@ SOFTWARE.
 
 #include <Engine/World/Modules/Physics/CollisionFilter.h>
 #include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
 #include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
 #include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
 #include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Engine/World/Modules/Render/Components/MeshComponent.h>
 #include <Engine/World/Modules/Render/RenderInterface.h>
 
 #include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
@@ -147,144 +147,6 @@ public:
         renderer.SetColor(Color4(1, 1, 1, 0.3f));
         renderer.DrawTriangles(&faces[0][0], 4, sizeof(Float3), true);
         renderer.DrawConvexPoly(v, true);
-    }
-};
-
-class ThirdPersonInputComponent : public Component
-{
-    float m_MoveForward = 0;
-    float m_MoveRight = 0;
-    bool m_Jump = false;
-
-public:
-    static constexpr ComponentMode Mode = ComponentMode::Static;
-
-    GameObjectHandle ViewPoint;
-    //Handle32<CameraComponent> Camera;
-
-    void BindInput(InputBindings& input)
-    {
-        input.BindAxis("MoveForward", this, &ThirdPersonInputComponent::MoveForward);
-        input.BindAxis("MoveRight", this, &ThirdPersonInputComponent::MoveRight);
-
-        input.BindAction("Attack", this, &ThirdPersonInputComponent::Attack, InputEvent::OnPress);
-
-        input.BindAxis("TurnRight", this, &ThirdPersonInputComponent::TurnRight);
-        input.BindAxis("TurnUp", this, &ThirdPersonInputComponent::TurnUp);
-
-        input.BindAxis("FreelookHorizontal", this, &ThirdPersonInputComponent::FreelookHorizontal);
-        input.BindAxis("FreelookVertical", this, &ThirdPersonInputComponent::FreelookVertical);
-
-        input.BindAxis("MoveUp", this, &ThirdPersonInputComponent::MoveUp);
-    }
-
-    void MoveForward(float amount)
-    {
-        m_MoveForward = amount;
-    }
-
-    void MoveRight(float amount)
-    {
-        m_MoveRight = amount;
-    }
-
-    void TurnRight(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep, Float3::AxisY());
-    }
-
-    void TurnUp(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(amount * GetWorld()->GetTick().FrameTimeStep, viewPoint->GetRightVector());
-    }
-
-    void FreelookHorizontal(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(-amount, Float3::AxisY());
-    }
-
-    void FreelookVertical(float amount)
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            viewPoint->Rotate(amount, viewPoint->GetRightVector());
-    }
-
-    void Attack()
-    {
-        if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-        {
-            Float3 p = GetOwner()->GetWorldPosition();
-            Float3 dir = viewPoint->GetWorldDirection();
-            const float EyeHeight = 1.7f;
-            const float Impulse = 100;
-            p.Y += EyeHeight;
-            p += dir;
-            SpawnBall(p, dir * Impulse);
-        }
-    }
-
-    void MoveUp(float amount)
-    {
-        m_Jump = amount != 0.0f;
-    }
-
-    void Update()
-    {
-        if (auto controller = GetOwner()->GetComponent<CharacterControllerComponent>())
-        {
-            if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-            {
-                Float3 right = viewPoint->GetWorldRightVector();
-                right.Y = 0;
-                right.NormalizeSelf();
-
-                Float3 forward = viewPoint->GetWorldForwardVector();
-                forward.Y = 0;
-                forward.NormalizeSelf();
-
-                Float3 dir = (right * m_MoveRight + forward * m_MoveForward);
-
-                if (dir.LengthSqr() > 1)
-                {
-                    dir.NormalizeSelf();
-                }
-
-                controller->MoveSpeed = 8;
-                controller->MovementDirection = dir;
-            }
-
-            controller->Jump = m_Jump;
-        }
-    }
-
-private:
-    void SpawnBall(Float3 const& position, Float3 const& direction)
-    {
-        auto& resourceMngr = GameApplication::GetResourceManager();
-        auto& materialMngr = GameApplication::GetMaterialManager();
-
-        GameObjectDesc desc;
-        desc.Position = position;
-        desc.Scale = Float3(0.2f);
-        desc.IsDynamic = true;
-        GameObject* object;
-        GetWorld()->CreateObject(desc, object);
-        DynamicBodyComponent* phys;
-        object->CreateComponent(phys);
-        phys->CollisionLayer = CollisionLayer::Bullets;
-        phys->UseCCD = true;
-        phys->AddImpulse(direction);
-        object->CreateComponent<SphereCollider>();
-        DynamicMeshComponent* mesh;
-        object->CreateComponent(mesh);
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"));
-        mesh->SetMaterial(materialMngr.TryGet("blank512"));
-        LifeSpanComponent* lifespan;
-        object->CreateComponent(lifespan);
-        lifespan->Time = 5;
     }
 };
 
@@ -384,7 +246,7 @@ void ExampleApplication::Initialize()
     // Bind input to the player
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
-    input.BindInput(player->GetComponentHandle<ThirdPersonInputComponent>(), PlayerController::_1);
+    input.BindInput(player->GetComponentHandle<ThirdPersonComponent>(), PlayerController::_1);
 
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
     render.SetAmbient(0.1f);
@@ -627,7 +489,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     auto& resourceMngr = GetResourceManager();
     auto& materialMngr = GetMaterialManager();
 
-    const float HeightStanding = 1.35f;
+    const float HeightStanding = 1.20f;
     const float RadiusStanding = 0.3f;
 
     // Create character controller
@@ -657,7 +519,14 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         DynamicMeshComponent* mesh;
         model->CreateComponent(mesh);
 
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"));
+        RawMesh rawMesh;
+        rawMesh.CreateCapsule(RadiusStanding, HeightStanding, 1.0f, 12, 10);
+        MeshResourceBuilder builder;
+        auto resource = builder.Build(rawMesh);
+        resource->Upload();
+        resourceMngr.CreateResourceWithData("character_controller_capsule", std::move(resource));
+
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("character_controller_capsule"));
         mesh->SetMaterial(materialMngr.TryGet("blank512"));
     }
 
@@ -693,12 +562,12 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     }
 
     // Create input
-    ThirdPersonInputComponent* playerInput;
-    player->CreateComponent(playerInput);
-    playerInput->ViewPoint = viewPoint->GetHandle();
+    ThirdPersonComponent* pawn;
+    player->CreateComponent(pawn);
+    pawn->ViewPoint = viewPoint->GetHandle();
 
     return player;
 }
 
 using ApplicationClass = ExampleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"

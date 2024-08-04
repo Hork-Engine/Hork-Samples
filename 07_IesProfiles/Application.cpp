@@ -28,11 +28,11 @@ SOFTWARE.
 
 */
 
-#include "../Common/MapParser/Utils.h"
-
-#include "../Common/Components/PlayerInputComponent.h"
-
 #include "Application.h"
+
+#include "Common/MapParser/Utils.h"
+#include "Common/Components/FirstPersonComponent.h"
+#include "Common/CollisionLayer.h"
 
 #include <Engine/UI/UIViewport.h>
 #include <Engine/UI/UIImage.h>
@@ -42,15 +42,17 @@ SOFTWARE.
 #include <Engine/World/Modules/Input/InputInterface.h>
 
 #include <Engine/World/Modules/Physics/CollisionFilter.h>
+#include <Engine/World/Modules/Physics/PhysicsInterface.h>
+#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
 #include <Engine/World/Modules/Render/RenderInterface.h>
-
-#include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
-#include <Engine/World/Modules/Animation/NodeMotion.h>
-
+#include <Engine/World/Modules/Render/Components/MeshComponent.h>
 
 #include <Engine/World/Modules/Render/Components/PunctualLightComponent.h>
 #include <Engine/Image/PhotometricData.h>
+
+#include <Engine/World/Resources/Resource_Mesh.h>
 
 using namespace Hk;
 
@@ -87,12 +89,12 @@ void ExampleApplication::Initialize()
 
     // Set input mappings
     Ref<InputMappings> inputMappings = MakeRef<InputMappings>();
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::W, 100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::S, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Up, 100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Down, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::A, -100.0f);
-    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::D, 100.0f);
+    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::W, 1);
+    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::S, -1);
+    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Up, 1);
+    inputMappings->MapAxis(PlayerController::_1, "MoveForward", VirtualKey::Down, -1);
+    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::A, -1);
+    inputMappings->MapAxis(PlayerController::_1, "MoveRight",   VirtualKey::D, 1);
     inputMappings->MapAxis(PlayerController::_1, "MoveUp",      VirtualKey::Space, 1.0f);
     inputMappings->MapAxis(PlayerController::_1, "TurnRight",   VirtualKey::Left, -200.0f);
     inputMappings->MapAxis(PlayerController::_1, "TurnRight",   VirtualKey::Right, 200.0f);
@@ -179,7 +181,7 @@ void ExampleApplication::OnStartPlay()
     // Bind input to the player
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
-    input.BindInput(player->GetComponentHandle<PlayerInputComponent>(), PlayerController::_1);   
+    input.BindInput(player->GetComponentHandle<FirstPersonComponent>(), PlayerController::_1);   
 }
 
 void ExampleApplication::Pause()
@@ -380,13 +382,13 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     }
 
     // Create input
-    PlayerInputComponent* playerInput;
-    player->CreateComponent(playerInput);
-    playerInput->ViewPoint = camera->GetHandle();
-    playerInput->Team = PlayerTeam::Blue;
+    FirstPersonComponent* pawn;
+    player->CreateComponent(pawn);
+    pawn->ViewPoint = camera->GetHandle();
+    pawn->Team = PlayerTeam::Blue;
 
     return player;
 }
 
 using ApplicationClass = ExampleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"

@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 Hork Engine Source Code
 
@@ -30,39 +30,46 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/Resources/ResourceManager.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
+#include <Engine/World/Component.h>
+#include <Engine/World/Modules/Input/InputBindings.h>
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication final : public GameApplication
+class ThirdPersonComponent : public Component
 {
 public:
-    ExampleApplication(ArgumentPack const& args);
-    ~ExampleApplication();
+    static constexpr ComponentMode Mode = ComponentMode::Static;
 
-    void Initialize();
-    void Deinitialize();
+    float               MoveSpeed = 8;
+    float               JumpSpeed = 4;
+    GameObjectHandle    ViewPoint;
+    //Handle32<CameraComponent> Camera;
+
+    void BindInput(InputBindings& input);
+    void FixedUpdate();
 
 private:
-    void CreateResources();
-    void CreateScene();
-    GameObject* CreatePlayer(Float3 const& position, Quat const& rotation);
-    void Pause();
-    void Quit();
-    void ToggleWireframe();
 
-    World* m_World{};
+    void MoveForward(float amount);
 
-    struct SpawnPoint
-    {
-        Float3 Position;
-        Quat Rotation;
-    };
-    Vector<SpawnPoint> m_PlayerSpawnPoints;
+    void MoveRight(float amount);
 
-    Ref<WorldRenderView> m_WorldRenderView;
+    void TurnRight(float amount);
+
+    void TurnUp(float amount);
+
+    void FreelookHorizontal(float amount);
+
+    void FreelookVertical(float amount);
+
+    void Attack();
+
+    void MoveUp(float amount);
+
+    float   m_MoveForward = 0;
+    float   m_MoveRight = 0;
+    bool    m_Jump = false;
+    Float3  m_DesiredVelocity;
 };
 
 HK_NAMESPACE_END

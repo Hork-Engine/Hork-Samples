@@ -324,4 +324,4 @@ public:
 };
 
 using ApplicationClass = ExampleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"

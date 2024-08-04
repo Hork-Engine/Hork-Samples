@@ -30,14 +30,15 @@ SOFTWARE.
 
 // TODO: Add to this example: HUD, Health/Damage, Frags, Sounds, Skybox
 
-#include "../Common/MapParser/Utils.h"
-
-#include "../Common/Components/PlayerInputComponent.h"
-#include "../Common/Components/JumpadComponent.h"
-#include "../Common/Components/TeleporterComponent.h"
-#include "../Common/Components/ElevatorComponent.h"
-
 #include "Application.h"
+
+#include "Common/MapParser/Utils.h"
+
+#include "Common/Components/FirstPersonComponent.h"
+#include "Common/Components/JumpadComponent.h"
+#include "Common/Components/TeleporterComponent.h"
+#include "Common/Components/ElevatorComponent.h"
+#include "Common/CollisionLayer.h"
 
 #include <Engine/UI/UIViewport.h>
 #include <Engine/UI/UIGrid.h>
@@ -136,12 +137,13 @@ void ExampleApplication::Initialize()
 
     // Set input mappings
     Ref<InputMappings> inputMappings = MakeRef<InputMappings>();
-    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::W, 100.0f);
-    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::S, -100.0f);
-    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::Up, 100.0f);
-    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::Down, -100.0f);
-    inputMappings->MapAxis(PlayerController::_2, "MoveRight",   VirtualKey::A, -100.0f);
-    inputMappings->MapAxis(PlayerController::_2, "MoveRight",   VirtualKey::D, 100.0f);
+    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::W, 1);
+    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::S, -1);
+    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::Up, 1);
+    inputMappings->MapAxis(PlayerController::_2, "MoveForward", VirtualKey::Down, -1);
+    inputMappings->MapAxis(PlayerController::_2, "MoveRight",   VirtualKey::A, -1);
+    inputMappings->MapAxis(PlayerController::_2, "MoveRight",   VirtualKey::D, 1);
+
     inputMappings->MapAxis(PlayerController::_2, "MoveUp",      VirtualKey::Space, 1.0f);
     inputMappings->MapAxis(PlayerController::_2, "TurnRight",   VirtualKey::Left, -200.0f);
     inputMappings->MapAxis(PlayerController::_2, "TurnRight",   VirtualKey::Right, 200.0f);
@@ -227,9 +229,9 @@ void ExampleApplication::Initialize()
     // Bind input to the player
     InputInterface& input = m_World->GetInterface<InputInterface>();
     input.SetActive(true);
-    input.BindInput(player->GetComponentHandle<PlayerInputComponent>(), PlayerController::_2);    
+    input.BindInput(player->GetComponentHandle<FirstPersonComponent>(), PlayerController::_2);    
 
-    input.BindInput(player2->GetComponentHandle<PlayerInputComponent>(), PlayerController::_1);
+    input.BindInput(player2->GetComponentHandle<FirstPersonComponent>(), PlayerController::_1);
 
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
     render.SetAmbient(0.1f);
@@ -259,7 +261,7 @@ void ExampleApplication::OnStartLoading()
 void ExampleApplication::OnUpdateLoading(float timeStep)
 {
     auto& resourceMngr = GameApplication::GetResourceManager();
-    if (resourceMngr.IsAreaReady(m_Resources)) // TODO: Get resource from black board
+    if (resourceMngr.IsAreaReady(m_Resources))
     {
         GetStateMachine().MakeCurrent("State_Play");
     }
@@ -449,7 +451,7 @@ void ExampleApplication::CreateScene()
     {
         GameObjectDesc desc;
         desc.Position = Float3(0, -20, 0);
-        desc.Scale = Float3(100, 20, 100);
+        desc.Scale = Float3(200, 20, 200);
         GameObject* object;
         m_World->CreateObject(desc, object);
         TriggerComponent* phys;
@@ -475,7 +477,7 @@ void ExampleApplication::CreateScene()
         object->CreateComponent<BoxCollider>();
         JumpadComponent* jumpad;
         object->CreateComponent(jumpad);
-        jumpad->ThrowVelocity = Float3(0, 20, 0);
+        jumpad->ThrowVelocity = Float3(0, 20, 0);//Float3(0, 30, 0);
     }
 
     // Boxes
@@ -565,13 +567,14 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     auto& resourceMngr = GetResourceManager();
     auto& materialMngr = GetMaterialManager();
 
-    const float      HeightStanding = 1.35f;
-    const float      RadiusStanding = 0.3f;
+    const float HeightStanding = 1.20f;
+    const float RadiusStanding = 0.3f;
 
     // Create character controller
     GameObject* player;
     {
         GameObjectDesc desc;
+        desc.Name.FromString("Player");
         desc.Position = position;
         desc.IsDynamic = true;
         m_World->CreateObject(desc, player);
@@ -581,6 +584,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         characterController->CollisionLayer = CollisionLayer::Character;
         characterController->HeightStanding = HeightStanding;
         characterController->RadiusStanding = RadiusStanding;
+        characterController->ShapeType = CharacterShapeType::Cylinder;
     }
 
     // Create model
@@ -595,7 +599,14 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         DynamicMeshComponent* mesh;
         model->CreateComponent(mesh);
 
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"));
+        RawMesh rawMesh;
+        rawMesh.CreateCapsule(RadiusStanding, HeightStanding, 1.0f, 12, 10);
+        MeshResourceBuilder builder;
+        auto resource = builder.Build(rawMesh);
+        resource->Upload();
+        resourceMngr.CreateResourceWithData("character_controller_capsule", std::move(resource));
+
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("character_controller_capsule"));
         mesh->SetMaterial(materialMngr.TryGet(team == PlayerTeam::Blue ? "blank512" : "red512"));
     }
 
@@ -618,13 +629,13 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     }
 
     // Create input
-    PlayerInputComponent* playerInput;
-    player->CreateComponent(playerInput);
-    playerInput->ViewPoint = camera->GetHandle();
-    playerInput->Team = team;
+    FirstPersonComponent* playerPawn;
+    player->CreateComponent(playerPawn);
+    playerPawn->ViewPoint = camera->GetHandle();
+    playerPawn->Team = team;
 
     return player;
 }
 
 using ApplicationClass = ExampleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"

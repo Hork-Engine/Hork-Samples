@@ -51,4 +51,4 @@ public:
 };
 
 using ApplicationClass = SimpleApplication;
-#include "../Common/EntryPoint.h"
+#include "Common/EntryPoint.h"
