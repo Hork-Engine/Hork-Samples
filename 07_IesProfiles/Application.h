@@ -64,7 +64,7 @@ private:
 
     UIDesktop* m_Desktop;
     UIViewport* m_Viewport;
-    UIImage* m_LoadingScreen;
+    UIWidget* m_LoadingScreen;
     ResourceAreaID m_Resources;
     TextureHandle m_LoadingTexture;
     World* m_World{};

@@ -298,10 +298,11 @@ void ExampleApplication::ShowLoadingScreen(bool show)
     {
         if (!m_LoadingScreen)
         {
-            m_Desktop->AddWidget(UINewAssign(m_LoadingScreen, UIImage)
-                .WithStretchedX(true)
-                .WithStretchedY(true)
-                .WithPadding({0,0,0,0}));
+            m_LoadingScreen = UINew(UIWidget);
+            m_LoadingScreen->WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_CENTER));
+            m_LoadingScreen->WithBackground(UINew(UISolidBrush, Color4::Black()));
+
+            m_Desktop->AddWidget(m_LoadingScreen);
 
             auto textureHandle = resourceMngr.CreateResourceFromFile<TextureResource>("/Root/loading.png");
             auto texture = resourceMngr.TryGet(textureHandle);
@@ -309,8 +310,10 @@ void ExampleApplication::ShowLoadingScreen(bool show)
             {
                 texture->Upload();
 
-                m_LoadingScreen->WithTexture(textureHandle);
-                m_LoadingScreen->WithTextureSize(texture->GetWidth(), texture->GetHeight());
+                m_LoadingScreen->AddWidget(UINew(UIImage)
+                    .WithTexture(textureHandle)
+                    .WithTextureSize(texture->GetWidth(), texture->GetHeight())
+                    .WithSize(Float2(texture->GetWidth(), texture->GetHeight())));
             }
         }
 
