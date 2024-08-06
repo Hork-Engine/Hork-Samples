@@ -339,6 +339,7 @@ void ExampleApplication::CreateScene()
             object->CreateComponent(mesh);
             mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
             mesh->SetMaterial(materialMngr.TryGet("gray"));
+            mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
         }
     }
 }

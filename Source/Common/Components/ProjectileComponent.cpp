@@ -112,6 +112,7 @@ void SpawnProjectile(World* world, Float3 const& position, Float3 const& impulse
     object->CreateComponent(mesh);
     mesh->SetMesh(meshResource);
     mesh->SetMaterial(materialMngr.TryGet(team == PlayerTeam::Blue ? "blank512" : "red512"));
+    mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
     LifeSpanComponent* lifespan;
     object->CreateComponent(lifespan);
     lifespan->Time = 2;

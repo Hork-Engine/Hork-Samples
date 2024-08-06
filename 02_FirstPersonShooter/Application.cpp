@@ -507,6 +507,7 @@ void ExampleApplication::CreateScene()
             object->CreateComponent(mesh);
             mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
             mesh->SetMaterial(materialMngr.TryGet("blank256"));
+            mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
         }
     }
 
@@ -541,6 +542,7 @@ void ExampleApplication::CreateElevator(Float3 const& position)
     object->CreateComponent(mesh);
     mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
     mesh->SetMaterial(materialMngr.TryGet("grid8"));
+    mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
 
     ElevatorComponent* elevatorComp;
     auto elevatorHandle = object->CreateComponent(elevatorComp);
@@ -604,10 +606,15 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         MeshResourceBuilder builder;
         auto resource = builder.Build(rawMesh);
         resource->Upload();
+
+        mesh->SetLocalBoundingBox(resource->GetBoundingBox());
+
         resourceMngr.CreateResourceWithData("character_controller_capsule", std::move(resource));
 
         mesh->SetMesh(resourceMngr.GetResource<MeshResource>("character_controller_capsule"));
         mesh->SetMaterial(materialMngr.TryGet(team == PlayerTeam::Blue ? "blank512" : "red512"));
+
+        mesh->SetVisibilityLayer(team == PlayerTeam::Blue ? 1 : 2);
     }
 
     // Create view camera
@@ -624,8 +631,15 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         CameraComponent* cameraComponent;
         camera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(75);
+        uint32_t visLayers = 0xffffffff;
+        if (team == PlayerTeam::Blue)
+            visLayers &= ~(1 << 1);
+        else
+            visLayers &= ~(1 << 2);
+        cameraComponent->SetVisibilityMask(visLayers);
 
         camera->CreateComponent<AudioListenerComponent>();
+
     }
 
     // Create input

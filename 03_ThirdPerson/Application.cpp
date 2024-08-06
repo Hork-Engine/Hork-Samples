@@ -282,6 +282,7 @@ void ExampleApplication::CreateScene()
             object->CreateComponent(mesh);
             mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
             mesh->SetMaterial(materialMngr.TryGet("blank256"));
+            mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
         }
     }
 
@@ -315,6 +316,7 @@ void ExampleApplication::CreateScene()
         object->CreateComponent(mesh);
         mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
         mesh->SetMaterial(materialMngr.TryGet("grid8"));
+        mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
 
         DoorComponent* doorComponent;
         object->CreateComponent(doorComponent);
@@ -340,6 +342,7 @@ void ExampleApplication::CreateScene()
         object->CreateComponent(mesh);
         mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
         mesh->SetMaterial(materialMngr.TryGet("grid8"));
+        mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
 
         DoorComponent* doorComponent;
         object->CreateComponent(doorComponent);
@@ -395,6 +398,9 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         MeshResourceBuilder builder;
         auto resource = builder.Build(rawMesh);
         resource->Upload();
+
+        mesh->SetLocalBoundingBox(resource->GetBoundingBox());
+
         resourceMngr.CreateResourceWithData("character_controller_capsule", std::move(resource));
 
         mesh->SetMesh(resourceMngr.GetResource<MeshResource>("character_controller_capsule"));

@@ -255,6 +255,7 @@ public:
             model->CreateComponent(mesh);
             mesh->SetMesh(playerMesh);
             mesh->SetMaterial(GetMaterialManager().TryGet("grid8"));
+            mesh->SetLocalBoundingBox({Float3(-0.5f), Float3(0.5f)});
         }
 
         return player;
@@ -303,12 +304,13 @@ public:
             GameObject* ground;
             m_World->CreateObject(desc, ground);
 
-            DynamicMeshComponent* groundModel;
+            StaticMeshComponent* groundModel;
             ground->CreateComponent(groundModel);
 
             groundModel->SetMesh(groundMesh);
             groundModel->SetMaterial(GetMaterialManager().TryGet("grid8"));
             groundModel->SetCastShadow(false);
+            groundModel->SetLocalBoundingBox({Float3(-128,-0.1f,-128), Float3(128,0.1f,128)});
         }
     }
 
