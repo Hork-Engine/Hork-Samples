@@ -32,6 +32,7 @@ SOFTWARE.
 
 #include <Engine/World/Component.h>
 #include <Engine/World/Modules/Input/InputBindings.h>
+#include <Engine/World/Modules/Physics/PhysicsInterface.h>
 #include "PlayerTeam.h"
 
 HK_NAMESPACE_BEGIN
@@ -50,6 +51,7 @@ public:
     void                ApplyDamage(Float3 const& damageVector);
 
     void                FixedUpdate();
+    void                PhysicsUpdate();
 
 private:
     void                MoveForward(float amount);
@@ -66,6 +68,16 @@ private:
     float               m_MoveRight = 0;
     bool                m_Jump = false;
     Float3              m_DesiredVelocity;
+    float               m_ViewY = 0;
 };
+
+namespace TickGroup_PhysicsUpdate
+{
+    template <>
+    HK_INLINE void InitializeTickFunction<FirstPersonComponent>(TickFunctionDesc& desc)
+    {
+        desc.AddPrerequisiteInterface<PhysicsInterface>();
+    }
+}
 
 HK_NAMESPACE_END

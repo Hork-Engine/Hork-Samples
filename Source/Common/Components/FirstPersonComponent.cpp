@@ -36,6 +36,8 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
+const float EyeHeight = 1.7f;
+
 void FirstPersonComponent::BindInput(InputBindings& input)
 {
     input.BindAxis("MoveForward", this, &FirstPersonComponent::MoveForward);
@@ -92,7 +94,6 @@ void FirstPersonComponent::Attack()
     {
         Float3 p = GetOwner()->GetWorldPosition();
         Float3 dir = viewPoint->GetWorldDirection();
-        const float EyeHeight = 1.7f;
         const float Impulse = 100;
         p.Y += EyeHeight;
         p += dir;
@@ -175,6 +176,32 @@ void FirstPersonComponent::ApplyDamage(Float3 const& damageVector)
 {
     if (auto controller = GetOwner()->GetComponent<CharacterControllerComponent>())
         m_DesiredVelocity += damageVector * 2;
+}
+
+void FirstPersonComponent::PhysicsUpdate()
+{
+    auto controller = GetOwner()->GetComponent<CharacterControllerComponent>();
+    if (!controller)
+        return;
+
+    auto viewPoint = GetViewPoint();
+
+    if (controller->IsOnGround())
+    {
+        const float StepHeight = 0.5f;
+
+        float curY = controller->GetWorldPosition().Y;
+        float d = Math::Abs(m_ViewY - curY);
+        if (d > 0.001f && d <= StepHeight)
+            m_ViewY = Math::Lerp(m_ViewY, curY, 0.4f);
+        else
+            m_ViewY = curY;
+
+        float delta = m_ViewY - curY;
+        viewPoint->SetPosition(Float3(0,EyeHeight + delta,0));
+    }
+    else
+        viewPoint->SetPosition(Float3(0,EyeHeight,0));
 }
 
 HK_NAMESPACE_END
