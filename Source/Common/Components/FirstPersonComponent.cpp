@@ -36,7 +36,7 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-const float EyeHeight = 1.7f;
+const float EyeHeight = 1.6f;//1.7f;
 
 void FirstPersonComponent::BindInput(InputBindings& input)
 {

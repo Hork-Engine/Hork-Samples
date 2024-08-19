@@ -80,7 +80,7 @@ public:
             switch (Type)
             {
             case Flicker1:
-                sequence = "mmnmmommommnonmmonqnmmo"s;
+                sequence = "mmnmmommommnonmmonqnmmo";
                 break;
             case SlowStrongPulse:
                 sequence = "abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba";

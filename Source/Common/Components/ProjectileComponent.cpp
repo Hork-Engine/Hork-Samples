@@ -104,6 +104,7 @@ void SpawnProjectile(World* world, Float3 const& position, Float3 const& impulse
     phys->UseCCD = true;
     phys->DispatchContactEvents = true;
     phys->CanPushCharacter = false;
+    phys->Material.Restitution = 0.3f;
     phys->AddImpulse(impulse);
     SphereCollider* collider;
     object->CreateComponent(collider);

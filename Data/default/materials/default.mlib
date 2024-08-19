@@ -34,6 +34,24 @@ gray
 	]
 }
 
+dirt
+{
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
+	Textures
+	[
+		"/Root/dirt.png"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"1"
+	]
+}
+
 grid8
 {
 	//Material "/Root/default/materials/default.mat"
@@ -85,6 +103,24 @@ blank512
 		
 		// Roughness
 		"0.9"
+	]
+}
+
+blank512_glossy
+{
+	//Material "/Root/default/materials/default.mat"
+	Material "/Root/default/materials/mg/default.mg"
+	Textures
+	[
+		"/Root/blank512.webp"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"0.3"
 	]
 }
 
