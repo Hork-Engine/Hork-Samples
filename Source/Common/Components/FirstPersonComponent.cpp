@@ -36,7 +36,7 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-const float EyeHeight = 1.6f;//1.7f;
+const float EyeHeight = 1.6f;
 
 void FirstPersonComponent::BindInput(InputBindings& input)
 {
@@ -174,8 +174,7 @@ void FirstPersonComponent::FixedUpdate()
 
 void FirstPersonComponent::ApplyDamage(Float3 const& damageVector)
 {
-    if (auto controller = GetOwner()->GetComponent<CharacterControllerComponent>())
-        m_DesiredVelocity += damageVector * 2;
+    m_DesiredVelocity += damageVector * 2;
 }
 
 void FirstPersonComponent::PhysicsUpdate()
