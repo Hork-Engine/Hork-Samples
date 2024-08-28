@@ -507,7 +507,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
 
         CharacterControllerComponent* characterController;
         player->CreateComponent(characterController);
-        characterController->CollisionLayer = CollisionLayer::Character;
+        characterController->SetCollisionLayer(CollisionLayer::Character);
         characterController->HeightStanding = HeightStanding;
         characterController->RadiusStanding = RadiusStanding;
     }

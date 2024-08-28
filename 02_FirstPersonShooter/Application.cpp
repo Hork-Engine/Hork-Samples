@@ -348,6 +348,7 @@ void ExampleApplication::CreateResources()
         resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
         resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"),
+        //resourceMngr.GetResource<TextureResource>("/Root/dirt.png"),
         resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),
@@ -366,7 +367,7 @@ void ExampleApplication::CreateScene()
     auto& resourceMngr = GameApplication::GetResourceManager();
     auto& materialMngr = GameApplication::GetMaterialManager();
 
-    CreateSceneFromMap(m_World, "/Root/sample2.map");
+    CreateSceneFromMap(m_World, "/Root/sample2.map"/*, "dirt"*/);
 
     Float3 playerSpawnPosition = Float3(0,8.25f,28);
     Quat playerSpawnRotation = Quat::Identity();
@@ -586,10 +587,15 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
 
         CharacterControllerComponent* characterController;
         player->CreateComponent(characterController);
-        characterController->CollisionLayer = CollisionLayer::Character;
+        characterController->SetCollisionLayer(CollisionLayer::Character);
         characterController->HeightStanding = HeightStanding;
         characterController->RadiusStanding = RadiusStanding;
         characterController->ShapeType = CharacterShapeType::Cylinder;
+
+        //if (team==PlayerTeam::Blue)
+        //    characterController->CanPushCharacter = false;
+        //else
+        //    characterController->CanPushCharacter = true;
     }
 
     // Create model
