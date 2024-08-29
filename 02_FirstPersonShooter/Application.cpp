@@ -28,7 +28,7 @@ SOFTWARE.
 
 */
 
-// TODO: Add to this example: HUD, Health/Damage, Frags, Sounds, Skybox
+// TODO: Add to this example: HUD, Health/Damage, Frags, Sounds
 
 #include "Application.h"
 
@@ -342,12 +342,22 @@ void ExampleApplication::CreateResources()
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
+    // Procedurally generate a skybox image
+    ImageStorage skyboxImage = GetRenderBackend().GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, Float3(1, -1, -1).Normalized());
+    // Convert image to resource
+    UniqueRef<TextureResource> skybox = MakeUnique<TextureResource>(std::move(skyboxImage));
+    skybox->Upload();
+    // Register the resource in the resource manager with the name "internal_skybox" so that it can be accessed by name from the materials.
+    resourceMngr.CreateResourceWithData<TextureResource>("internal_skybox", std::move(skybox));
+
     // List of resources used in scene
     ResourceID sceneResources[] = {
+        resourceMngr.GetResource<MeshResource>("/Root/default/skybox.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh"),
         resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
         resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/skybox.mg"),
         //resourceMngr.GetResource<TextureResource>("/Root/dirt.png"),
         resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
@@ -648,7 +658,26 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         cameraComponent->SetVisibilityMask(visLayers);
 
         camera->CreateComponent<AudioListenerComponent>();
+    }
 
+    // Create skybox attached to camera
+    {
+        GameObjectDesc desc;
+        desc.Name.FromString("Skybox");
+        desc.Parent = camera->GetHandle();
+        desc.IsDynamic = true;
+        desc.AbsoluteRotation = true;
+        GameObject* skybox;
+        m_World->CreateObject(desc, skybox);
+
+        DynamicMeshComponent* mesh;
+        skybox->CreateComponent(mesh);
+        mesh->SetLocalBoundingBox({{-0.5f,-0.5f,-0.5f},{0.5f,0.5f,0.5f}});
+
+        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/skybox.mesh"));
+        mesh->SetMaterial(materialMngr.TryGet("skybox"));
+
+        mesh->SetVisibilityLayer(team == PlayerTeam::Blue ? 2 : 1);
     }
 
     // Create input

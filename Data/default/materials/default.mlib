@@ -152,13 +152,11 @@ MetalRoughSpheres
 	]
 }
 
-/*
 skybox
 {
-	Material "/Root/default/materials/skybox.mat"
+	Material "/Root/default/materials/mg/skybox.mg"
 	Textures
 	[
 		"internal_skybox"
 	]
 }
-*/
