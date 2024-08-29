@@ -107,59 +107,56 @@ public:
 
         if (auto controller = GetOwner()->GetComponent<CharacterControllerComponent>())
         {
-            if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
+            float MoveSpeed = 8;
+
+            Float3 p = FetchPathPoint(GetOwner()->GetWorldPosition());
+            if (p.DistSqr(GetOwner()->GetWorldPosition()) > 0.01f)
             {
-                float MoveSpeed = 8;
-
-                Float3 p = FetchPathPoint(GetOwner()->GetWorldPosition());
-                if (p.DistSqr(GetOwner()->GetWorldPosition()) > 0.01f)
-                {
-                    if (controller->IsOnGround())
-                    {
-                        m_MoveDir = p - GetOwner()->GetWorldPosition();
-                        m_MoveDir.Y = 0;
-
-                        m_MoveDir.NormalizeSelf();
-
-                        MoveSpeed = 8;
-                    }
-                    else
-                        MoveSpeed = 2;
-                }
-                else
-                    m_MoveDir.Clear();
-
-                // Smooth the player input
-                m_DesiredVelocity = 0.25f * m_MoveDir * MoveSpeed + 0.75f * m_DesiredVelocity;
-
-                Float3 gravity = GetWorld()->GetInterface<PhysicsInterface>().GetGravity();
-
-                // Determine new basic velocity
-                Float3 newVelocity;
                 if (controller->IsOnGround())
                 {
-                    newVelocity = controller->GetGroundVelocity();
+                    m_MoveDir = p - GetOwner()->GetWorldPosition();
+                    m_MoveDir.Y = 0;
+
+                    m_MoveDir.NormalizeSelf();
+
+                    MoveSpeed = 8;
                 }
                 else
-                {
-                    newVelocity.Y = controller->GetLinearVelocity().Y;
-
-                    if (controller->IsOnGround() && newVelocity.Y < 0)
-                        newVelocity.Y = 0;
-                }
-
-                if (!controller->IsOnGround())
-                {
-                    // Gravity
-                    newVelocity += gravity * GetWorld()->GetTick().FixedTimeStep;
-                }
-
-                // Player input
-                newVelocity += m_DesiredVelocity;
-
-                // Update character velocity
-                controller->SetLinearVelocity(newVelocity);
+                    MoveSpeed = 2;
             }
+            else
+                m_MoveDir.Clear();
+
+            // Smooth the player input
+            m_DesiredVelocity = 0.25f * m_MoveDir * MoveSpeed + 0.75f * m_DesiredVelocity;
+
+            Float3 gravity = GetWorld()->GetInterface<PhysicsInterface>().GetGravity();
+
+            // Determine new basic velocity
+            Float3 newVelocity;
+            if (controller->IsOnGround())
+            {
+                newVelocity = controller->GetGroundVelocity();
+            }
+            else
+            {
+                newVelocity.Y = controller->GetLinearVelocity().Y;
+
+                if (controller->IsOnGround() && newVelocity.Y < 0)
+                    newVelocity.Y = 0;
+            }
+
+            if (!controller->IsOnGround())
+            {
+                // Gravity
+                newVelocity += gravity * GetWorld()->GetTick().FixedTimeStep;
+            }
+
+            // Player input
+            newVelocity += m_DesiredVelocity;
+
+            // Update character velocity
+            controller->SetLinearVelocity(newVelocity);
         }
     }
 
