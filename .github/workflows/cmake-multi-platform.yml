@@ -50,8 +50,10 @@ jobs:
         submodules: recursive
 
     - name: Update packages
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: sudo apt-get update
     - name: Install packages
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: sudo apt-get install --fix-missing libgl1-mesa-dev
 
     - name: Set reusable strings
