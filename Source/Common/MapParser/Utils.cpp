@@ -30,17 +30,17 @@ SOFTWARE.
 
 #include "MapGeometry.h"
 
-#include <Engine/World/World.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
-#include <Engine/GameApplication/GameApplication.h>
+#include <Hork/World/World.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Hork/GameApplication/GameApplication.h>
 
 HK_NAMESPACE_BEGIN
 
 void CreateSceneFromMap(World* world, StringView mapFilename, StringView defaultMaterial)
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     if (auto file = resourceMngr.OpenFile(mapFilename))
     {
@@ -54,6 +54,7 @@ void CreateSceneFromMap(World* world, StringView mapFilename, StringView default
         auto& vertices = geometry.GetVertices();
         auto& indices = geometry.GetIndices();
         auto& clipVertices = geometry.GetClipVertices();
+        //auto& clipIndices = geometry.GetClipIndices();
         auto& clipHull = geometry.GetClipHulls();
         auto& entities = geometry.GetEntities();
 
@@ -69,9 +70,9 @@ void CreateSceneFromMap(World* world, StringView mapFilename, StringView default
             {
                 int surfaceIndex = entity.FirstSurface + surfaceNum;
                 auto& surface = surfaces[surfaceIndex];
-                auto surfaceHandle = GameApplication::GetResourceManager().CreateResource<MeshResource>("surface_" + Core::ToString(surfaceIndex));
+                auto surfaceHandle = GameApplication::sGetResourceManager().CreateResource<MeshResource>("surface_" + Core::ToString(surfaceIndex));
 
-                MeshResource* resource = GameApplication::GetResourceManager().TryGet(surfaceHandle);
+                MeshResource* resource = GameApplication::sGetResourceManager().TryGet(surfaceHandle);
                 HK_ASSERT(resource);
 
                 BvAxisAlignedBox bounds;
@@ -128,6 +129,9 @@ void CreateSceneFromMap(World* world, StringView mapFilename, StringView default
 #endif
                 collider->Data = MakeRef<MeshCollisionData>();
                 collider->Data->CreateConvexHull(ArrayView(&clipVertices[chull.FirstVert], chull.VertexCount));
+
+                //collider->Data->CreateTriangleSoup(ArrayView(&clipVertices[chull.FirstVert], chull.VertexCount),
+                //                                   ArrayView(&clipIndices[chull.FirstIndex], chull.IndexCount));
             }
         }
     }

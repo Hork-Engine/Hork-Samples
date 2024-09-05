@@ -30,8 +30,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/World.h>
+#include <Hork/GameApplication/GameApplication.h>
+#include <Hork/World/World.h>
 #include "Common/Components/PlayerTeam.h"
 
 HK_NAMESPACE_BEGIN

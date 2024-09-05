@@ -30,8 +30,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/World/Component.h>
-#include <Engine/World/Modules/Input/InputBindings.h>
+#include <Hork/World/Component.h>
+#include <Hork/World/Modules/Input/InputBindings.h>
 
 HK_NAMESPACE_BEGIN
 

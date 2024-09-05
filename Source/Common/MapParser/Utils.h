@@ -30,7 +30,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/Core/String.h>
+#include <Hork/Core/String.h>
 
 HK_NAMESPACE_BEGIN
 

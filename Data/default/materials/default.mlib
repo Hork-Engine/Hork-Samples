@@ -52,6 +52,25 @@ dirt
 	]
 }
 
+dirt_sslr
+{
+	//Material "/Root/default/materials/default_sslr.mat"
+	Material "/Root/default/materials/mg/default_sslr.mg"
+	Textures
+	[
+		"/Root/dirt.png"
+	]
+	Constants
+	[
+		// Metallic
+		"0"
+		
+		// Roughness
+		"0.6"
+	]
+}
+
+
 grid8
 {
 	//Material "/Root/default/materials/default.mat"

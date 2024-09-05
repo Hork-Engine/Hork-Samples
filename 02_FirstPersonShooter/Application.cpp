@@ -40,24 +40,25 @@ SOFTWARE.
 #include "Common/Components/ElevatorComponent.h"
 #include "Common/CollisionLayer.h"
 
-#include <Engine/UI/UIViewport.h>
-#include <Engine/UI/UIGrid.h>
-#include <Engine/UI/UILabel.h>
-#include <Engine/UI/UIImage.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/UI/UIGrid.h>
+#include <Hork/UI/UILabel.h>
+#include <Hork/UI/UIImage.h>
 
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
-#include <Engine/World/Modules/Physics/CollisionFilter.h>
-#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Hork/World/Modules/Physics/CollisionFilter.h>
+#include <Hork/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/TriggerComponent.h>
 
-#include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-#include <Engine/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
 
-#include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
-#include <Engine/World/Modules/Animation/NodeMotion.h>
+#include <Hork/World/Modules/Animation/Components/NodeMotionComponent.h>
+#include <Hork/World/Modules/Animation/NodeMotion.h>
 
-#include <Engine/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/Components/SoundSource.h>
 
 #define SPLIT_SCREEN
 
@@ -170,7 +171,7 @@ void ExampleApplication::Initialize()
     inputMappings->MapGamepadAxis(PlayerController::_2,     "TurnRight",    GamepadAxis::RightX, 200.0f);
     inputMappings->MapGamepadAxis(PlayerController::_2,     "TurnUp",       GamepadAxis::RightY, 200.0f);
 
-    GetInputSystem().SetInputMappings(inputMappings);
+    sGetInputSystem().SetInputMappings(inputMappings);
 
     // Create game resources
     CreateResources();
@@ -187,8 +188,7 @@ void ExampleApplication::Initialize()
     {
         m_WorldRenderView[i] = MakeRef<WorldRenderView>();
         m_WorldRenderView[i]->SetWorld(m_World);
-        m_WorldRenderView[i]->bClearBackground = true;
-        m_WorldRenderView[i]->BackgroundColor = Color4(0.2f,0.2f,0.3f,1);
+        m_WorldRenderView[i]->bClearBackground = false;
         m_WorldRenderView[i]->bDrawDebug = true;
     }
     m_Viewports[0]->SetWorldRenderView(m_WorldRenderView[0]);
@@ -236,16 +236,16 @@ void ExampleApplication::Initialize()
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
     render.SetAmbient(0.1f);
 
-    auto& stateMachine = GetStateMachine();
+    auto& stateMachine = sGetStateMachine();
 
     stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
     stateMachine.Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, {});
 
     stateMachine.MakeCurrent("State_Loading");
 
-    GetCommandProcessor().Add("com_ShowStat 1\n");
-    GetCommandProcessor().Add("com_ShowFPS 1\n");
-    GetCommandProcessor().Add("com_MaxFPS 0\n");
+    sGetCommandProcessor().Add("com_ShowStat 1\n");
+    sGetCommandProcessor().Add("com_ShowFPS 1\n");
+    sGetCommandProcessor().Add("com_MaxFPS 0\n");
 }
 
 void ExampleApplication::Deinitialize()
@@ -260,16 +260,30 @@ void ExampleApplication::OnStartLoading()
 
 void ExampleApplication::OnUpdateLoading(float timeStep)
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
     if (resourceMngr.IsAreaReady(m_Resources))
     {
-        GetStateMachine().MakeCurrent("State_Play");
+        sGetStateMachine().MakeCurrent("State_Play");
     }
 }
 
 void ExampleApplication::OnStartPlay()
 {
     ShowLoadingScreen(false);
+
+#if 0
+    {
+        auto& resourceMngr = GameApplication::GetResourceManager();
+
+        GameObject* object;
+        m_World->CreateObject({}, object);
+        SoundSource* sound;
+        object->CreateComponent(sound);
+        sound->SetVolume(0.2f);
+        sound->SetSourceType(SoundSourceType::Background);
+        sound->PlaySound(resourceMngr.GetResource<SoundResource>("/Root/soundtrack.ogg"), 0, 0);
+    }
+#endif
 }
 
 void ExampleApplication::Pause()
@@ -292,7 +306,7 @@ void ExampleApplication::ToggleWireframe()
 
 void ExampleApplication::ShowLoadingScreen(bool show)
 {
-    auto& resourceMngr = GetResourceManager();
+    auto& resourceMngr = sGetResourceManager();
 
     if (show)
     {
@@ -300,7 +314,7 @@ void ExampleApplication::ShowLoadingScreen(bool show)
         {
             m_LoadingScreen = UINew(UIWidget);
             m_LoadingScreen->WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_CENTER));
-            m_LoadingScreen->WithBackground(UINew(UISolidBrush, Color4::Black()));
+            m_LoadingScreen->WithBackground(UINew(UISolidBrush, Color4::sBlack()));
 
             m_Desktop->AddWidget(m_LoadingScreen);
 
@@ -337,13 +351,13 @@ void ExampleApplication::ShowLoadingScreen(bool show)
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
     // Procedurally generate a skybox image
-    ImageStorage skyboxImage = GetRenderBackend().GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, Float3(1, -1, -1).Normalized());
+    ImageStorage skyboxImage = sGetRenderBackend().GenerateAtmosphereSkybox(SKYBOX_IMPORT_TEXTURE_FORMAT_R11G11B10_FLOAT, 512, Float3(1, -1, -1).Normalized());
     // Convert image to resource
     UniqueRef<TextureResource> skybox = MakeUnique<TextureResource>(std::move(skyboxImage));
     skybox->Upload();
@@ -374,15 +388,15 @@ void ExampleApplication::CreateResources()
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample2.map"/*, "dirt"*/);
 
     Float3 playerSpawnPosition = Float3(0,8.25f,28);
-    Quat playerSpawnRotation = Quat::Identity();
+    Quat playerSpawnRotation = Quat::sIdentity();
     Float3 playerSpawnPosition2 = Float3(0,8.25f,-28);
-    Quat playerSpawnRotation2 = Quat::RotationAroundNormal(Math::_PI, Float3(0,1,0));
+    Quat playerSpawnRotation2 = Quat::sRotationAroundNormal(Math::_PI, Float3(0,1,0));
 
     // Light
     {
@@ -536,8 +550,8 @@ void ExampleApplication::CreateScene()
 
 void ExampleApplication::CreateElevator(Float3 const& position)
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     GameObject* object;
 
@@ -564,7 +578,7 @@ void ExampleApplication::CreateElevator(Float3 const& position)
 
     GameObject* triggerObject;
     desc = {};
-    desc.Position = position + Float3::AxisY() * 0.5f;
+    desc.Position = position + Float3::sAxisY() * 0.5f;
     desc.Scale = Float3(2.5f,0.5f,3);
     desc.IsDynamic = false;
     m_World->CreateObject(desc, triggerObject);
@@ -580,8 +594,8 @@ void ExampleApplication::CreateElevator(Float3 const& position)
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation, PlayerTeam team)
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     const float HeightStanding = 1.20f;
     const float RadiusStanding = 0.3f;

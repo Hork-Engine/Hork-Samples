@@ -30,11 +30,11 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/GameApplication/GameApplication.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Render/Components/CameraComponent.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/GameApplication/GameApplication.h>
 
 using namespace Hk;
 
@@ -53,9 +53,9 @@ public:
 
     void OnBeginOverlap(BodyComponent* body)
     {
-        auto& dest = TeleportPoints[GameApplication::GetRandom().Get() & 1];
+        auto& dest = TeleportPoints[GameApplication::sGetRandom().Get() & 1];
 
-        if (auto character = Upcast<CharacterControllerComponent>(body))
+        if (auto character = sUpcast<CharacterControllerComponent>(body))
         {
             character->SetWorldPosition(dest.Position);
 
@@ -73,7 +73,7 @@ public:
             }
         }
 
-        if (auto rigidbody = Upcast<DynamicBodyComponent>(body))
+        if (auto rigidbody = sUpcast<DynamicBodyComponent>(body))
         {
             rigidbody->SetWorldPosition(dest.Position);
             rigidbody->SetWorldRotation(dest.Rotation);

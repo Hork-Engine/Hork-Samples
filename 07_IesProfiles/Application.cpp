@@ -34,25 +34,26 @@ SOFTWARE.
 #include "Common/Components/FirstPersonComponent.h"
 #include "Common/CollisionLayer.h"
 
-#include <Engine/UI/UIViewport.h>
-#include <Engine/UI/UIImage.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/UI/UIImage.h>
 
-#include <Engine/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/Components/SoundSource.h>
 
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
-#include <Engine/World/Modules/Physics/CollisionFilter.h>
-#include <Engine/World/Modules/Physics/PhysicsInterface.h>
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/CollisionFilter.h>
+#include <Hork/World/Modules/Physics/PhysicsInterface.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
-#include <Engine/World/Modules/Render/RenderInterface.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
 
-#include <Engine/World/Modules/Render/Components/PunctualLightComponent.h>
-#include <Engine/Image/PhotometricData.h>
+#include <Hork/World/Modules/Render/Components/PunctualLightComponent.h>
+#include <Hork/Image/PhotometricData.h>
 
-#include <Engine/World/Resources/Resource_Mesh.h>
+#include <Hork/Resources/Resource_Mesh.h>
 
 using namespace Hk;
 
@@ -113,7 +114,7 @@ void ExampleApplication::Initialize()
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnRight",    GamepadAxis::RightX, 200.0f);
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnUp",       GamepadAxis::RightY, 200.0f);
 
-    GetInputSystem().SetInputMappings(inputMappings);
+    sGetInputSystem().SetInputMappings(inputMappings);
 
     // Create game resources
     CreateResources();
@@ -131,7 +132,7 @@ void ExampleApplication::Initialize()
     m_WorldRenderView->bDrawDebug = true;
     m_Viewport->SetWorldRenderView(m_WorldRenderView);
 
-    auto& stateMachine = GetStateMachine();
+    auto& stateMachine = sGetStateMachine();
 
     stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
     stateMachine.Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, {});
@@ -151,10 +152,10 @@ void ExampleApplication::OnStartLoading()
 
 void ExampleApplication::OnUpdateLoading(float timeStep)
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
     if (resourceMngr.IsAreaReady(m_Resources))
     {
-        GetStateMachine().MakeCurrent("State_Play");
+        sGetStateMachine().MakeCurrent("State_Play");
     }
 }
 
@@ -166,7 +167,7 @@ void ExampleApplication::OnStartPlay()
     CreateScene();
 
     // Create player
-    GameObject* player = CreatePlayer(Float3(0,0,6), Quat::Identity());
+    GameObject* player = CreatePlayer(Float3(0,0,6), Quat::sIdentity());
 
     if (GameObject* camera = player->FindChildren(StringID("Camera")))
     {
@@ -206,7 +207,7 @@ void ExampleApplication::Screenshot()
 
 void ExampleApplication::ShowLoadingScreen(bool show)
 {
-    auto& resourceMngr = GetResourceManager();
+    auto& resourceMngr = sGetResourceManager();
 
     if (show)
     {
@@ -214,7 +215,7 @@ void ExampleApplication::ShowLoadingScreen(bool show)
         {
             m_LoadingScreen = UINew(UIWidget);
             m_LoadingScreen->WithLayout(UINew(UIBoxLayout, UIBoxLayout::HALIGNMENT_CENTER, UIBoxLayout::VALIGNMENT_CENTER));
-            m_LoadingScreen->WithBackground(UINew(UISolidBrush, Color4::Black()));
+            m_LoadingScreen->WithBackground(UINew(UISolidBrush, Color4::sBlack()));
 
             m_Desktop->AddWidget(m_LoadingScreen);
 
@@ -251,8 +252,8 @@ void ExampleApplication::ShowLoadingScreen(bool show)
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
@@ -264,6 +265,7 @@ void ExampleApplication::CreateResources()
         resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),
         resourceMngr.GetResource<TextureResource>("/Root/gray.png")
+        
     };
 
     // Load resources asynchronously
@@ -275,8 +277,8 @@ void ExampleApplication::CreateScene()
 {
     CreateSceneFromMap(m_World, "/Root/sample7.map", "gray");
 
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     auto& renderInterface = m_World->GetInterface<RenderInterface>();
     auto& photometricPool = renderInterface.GetPhotometricPool();
@@ -345,6 +347,35 @@ void ExampleApplication::CreateScene()
             mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
         }
     }
+
+#if 0
+    // Center of mass test
+    {
+            GameObjectDesc desc;
+            desc.Position = Float3(0, 2, 3);
+            desc.Scale = Float3(1,2,1);
+            desc.IsDynamic = true;
+            GameObject* object;
+            m_World->CreateObject(desc, object);
+            DynamicBodyComponent* phys;
+            object->CreateComponent(phys);
+            phys->Mass = 30;
+            phys->CenterOfMassOverride = Float3(0.5f, -0.5f, 0);
+            BoxCollider* boxCollider;
+            object->CreateComponent<BoxCollider>(boxCollider);
+            boxCollider->OffsetPosition.X = 0.5f;
+
+            BoxCollider* boxCollider2;
+            object->CreateComponent<BoxCollider>(boxCollider2);
+            boxCollider2->OffsetPosition.Y = 0.5f;
+
+            DynamicMeshComponent* mesh;
+            object->CreateComponent(mesh);
+            mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
+            mesh->SetMaterial(materialMngr.TryGet("grid8"));
+            mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
+    }
+#endif
 }
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)

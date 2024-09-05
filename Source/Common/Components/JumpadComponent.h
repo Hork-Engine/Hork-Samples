@@ -30,9 +30,9 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
-#include <Engine/World/ComponentManager.h>
-#include <Engine/Core/Logger.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/ComponentManager.h>
+#include <Hork/Core/Logger.h>
 
 using namespace Hk;
 
@@ -45,7 +45,7 @@ public:
 
     void OnBeginOverlap(BodyComponent* body)
     {
-        if (auto character = Upcast<CharacterControllerComponent>(body))
+        if (auto character = sUpcast<CharacterControllerComponent>(body))
         {
             character->SetLinearVelocity(ThrowVelocity);
         }

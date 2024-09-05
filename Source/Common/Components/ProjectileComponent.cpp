@@ -33,9 +33,9 @@ SOFTWARE.
 #include "LifeSpanComponent.h"
 #include "../CollisionLayer.h"
 
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/GameApplication/GameApplication.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/GameApplication/GameApplication.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -86,8 +86,8 @@ void ProjectileComponent::DrawDebug(DebugRenderer& renderer)
 
 void SpawnProjectile(World* world, Float3 const& position, Float3 const& impulse, PlayerTeam team)
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     static auto meshResource = resourceMngr.GetResource<MeshResource>("/Root/default/sphere.mesh");
 

@@ -37,44 +37,29 @@ SOFTWARE.
 #include "Common/Components/DoorActivatorComponent.h"
 #include "Common/CollisionLayer.h"
 
-#include <Engine/UI/UIViewport.h>
-#include <Engine/UI/UIGrid.h>
-#include <Engine/UI/UILabel.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/UI/UIImage.h>
 
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
-#include <Engine/World/Modules/Physics/CollisionFilter.h>
-#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/CollisionFilter.h>
+#include <Hork/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
-#include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
+#include <Hork/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
-#include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
 
-#include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
-#include <Engine/World/Modules/Animation/NodeMotion.h>
+#include <Hork/World/Modules/Animation/Components/NodeMotionComponent.h>
+#include <Hork/World/Modules/Animation/NodeMotion.h>
 
-#include <Engine/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/AudioInterface.h>
 
 using namespace Hk;
-
-
-class RenderToTextureComponent : public Component
-{
-public:
-    static constexpr ComponentMode Mode = ComponentMode::Static;
-
-    Ref<WorldRenderView> RenderView;
-
-    void Update()
-    {
-        GameApplication::GetFrameLoop().RegisterView(RenderView);
-    }
-};
 
 class CameraAnimationComponent : public Component
 {
@@ -208,7 +193,7 @@ void ExampleApplication::Initialize()
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnRight",    GamepadAxis::RightX, 200.0f);
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnUp",       GamepadAxis::RightY, 200.0f);
 
-    GetInputSystem().SetInputMappings(inputMappings);
+    sGetInputSystem().SetInputMappings(inputMappings);
 
     // Create game resources
     CreateResources();
@@ -250,11 +235,24 @@ void ExampleApplication::Initialize()
 
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
     render.SetAmbient(0.1f);
+
+    sGetStateMachine().Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, &ExampleApplication::OnUpdate);
+
+    sGetStateMachine().MakeCurrent("State_Play");
 }
 
 void ExampleApplication::Deinitialize()
 {
     DestroyWorld(m_World);
+}
+
+void ExampleApplication::OnStartPlay()
+{
+}
+
+void ExampleApplication::OnUpdate(float timeStep)
+{
+    sGetFrameLoop().RegisterView(m_OffscreenRenderView);
 }
 
 void ExampleApplication::Pause()
@@ -274,8 +272,8 @@ void ExampleApplication::ToggleWireframe()
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
@@ -302,22 +300,20 @@ void ExampleApplication::CreateResources()
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample3.map");
 
     Float3 playerSpawnPosition = Float3(12,0,0);
-    Quat playerSpawnRotation = Quat::RotationY(Math::_HALF_PI);
+    Quat playerSpawnRotation = Quat::sRotationY(Math::_HALF_PI);
 
-   
-#if 1
-    auto offscreenRenderView = MakeRef<WorldRenderView>();
-    offscreenRenderView->SetViewport(512, 512);
-    offscreenRenderView->SetWorld(m_World);
-    offscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
-    offscreenRenderView->bClearBackground = true;
-    offscreenRenderView->AcquireRenderTarget();
+    m_OffscreenRenderView = MakeRef<WorldRenderView>();
+    m_OffscreenRenderView->SetViewport(512, 512);
+    m_OffscreenRenderView->SetWorld(m_World);
+    m_OffscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
+    m_OffscreenRenderView->bClearBackground = true;
+    m_OffscreenRenderView->AcquireRenderTarget();
     
     {
         GameObjectDesc desc;
@@ -325,9 +321,6 @@ void ExampleApplication::CreateScene()
         desc.Rotation.FromAngles(0, Math::Radians(90), 0);
         GameObject* monitor;
         m_World->CreateObject(desc, monitor);
-        RenderToTextureComponent* renderToTextureComp;
-        monitor->CreateComponent(renderToTextureComp);
-        renderToTextureComp->RenderView = offscreenRenderView;
         StaticMeshComponent* face;
         monitor->CreateComponent(face);
 
@@ -339,7 +332,7 @@ void ExampleApplication::CreateScene()
         if (quadMesh)
             quadMesh->Upload();
 
-        auto surfaceHandle = GameApplication::GetResourceManager().CreateResourceWithData<MeshResource>("monitor_surface", std::move(quadMesh));
+        auto surfaceHandle = GameApplication::sGetResourceManager().CreateResourceWithData<MeshResource>("monitor_surface", std::move(quadMesh));
 
         face->SetMesh(surfaceHandle);
         face->SetLocalBoundingBox(rawMesh.CalcBoundingBox());
@@ -347,7 +340,7 @@ void ExampleApplication::CreateScene()
         Ref<MaterialLibrary> matlib = materialMngr.CreateLibrary();
         Material* material = matlib->CreateMaterial("render_to_tex_material");
         material->SetResource(resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"));
-        material->SetTexture(0, offscreenRenderView->GetTextureHandle());
+        material->SetTexture(0, m_OffscreenRenderView->GetTextureHandle());
         material->SetConstant(0,0.0f);
         material->SetConstant(1,1.0f);
         face->SetMaterial(material);
@@ -360,11 +353,10 @@ void ExampleApplication::CreateScene()
         CameraComponent* cameraComponent;
         auto cameraHandle = renderCamera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(75);
-        offscreenRenderView->SetCamera(cameraHandle);
+        m_OffscreenRenderView->SetCamera(cameraHandle);
         renderCamera->CreateComponent<CameraAnimationComponent>();
-        offscreenRenderView->SetCamera(cameraHandle);
+        m_OffscreenRenderView->SetCamera(cameraHandle);
     }
-#endif
 
     // Light
     {
@@ -491,8 +483,8 @@ void ExampleApplication::CreateScene()
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     const float HeightStanding = 1.20f;
     const float RadiusStanding = 0.3f;

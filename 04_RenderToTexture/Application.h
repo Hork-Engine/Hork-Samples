@@ -30,9 +30,9 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/Resources/ResourceManager.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
+#include <Hork/GameApplication/GameApplication.h>
+#include <Hork/Resources/ResourceManager.h>
+#include <Hork/World/Modules/Render/Components/CameraComponent.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -52,6 +52,8 @@ private:
     void Pause();
     void Quit();
     void ToggleWireframe();
+    void OnStartPlay();
+    void OnUpdate(float timeStep);
 
     World* m_World{};
 
@@ -63,6 +65,7 @@ private:
     Vector<SpawnPoint> m_PlayerSpawnPoints;
 
     Ref<WorldRenderView> m_WorldRenderView;
+    Ref<WorldRenderView> m_OffscreenRenderView;
 };
 
 HK_NAMESPACE_END

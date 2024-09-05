@@ -40,29 +40,29 @@ SOFTWARE.
 #include "Common/Components/LightAnimator.h"
 #include "Common/CollisionLayer.h"
 
-#include <Engine/UI/UIViewport.h>
-#include <Engine/UI/UIGrid.h>
-#include <Engine/UI/UILabel.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/UI/UIGrid.h>
+#include <Hork/UI/UILabel.h>
 
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
-#include <Engine/World/Modules/Physics/CollisionFilter.h>
-#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/CollisionFilter.h>
+#include <Hork/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
-#include <Engine/World/Modules/Gameplay/Components/SpringArmComponent.h>
+#include <Hork/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
-#include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-#include <Engine/World/Modules/Render/Components/PunctualLightComponent.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/Components/PunctualLightComponent.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
 
-#include <Engine/World/Modules/Animation/Components/NodeMotionComponent.h>
-#include <Engine/World/Modules/Animation/NodeMotion.h>
+#include <Hork/World/Modules/Animation/Components/NodeMotionComponent.h>
+#include <Hork/World/Modules/Animation/NodeMotion.h>
 
-#include <Engine/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/AudioInterface.h>
 
 using namespace Hk;
 
@@ -123,7 +123,7 @@ void ExampleApplication::Initialize()
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnRight",    GamepadAxis::RightX, 200.0f);
     inputMappings->MapGamepadAxis(PlayerController::_1,     "TurnUp",       GamepadAxis::RightY, 200.0f);
 
-    GetInputSystem().SetInputMappings(inputMappings);
+    sGetInputSystem().SetInputMappings(inputMappings);
 
     // Create game resources
     CreateResources();
@@ -138,7 +138,7 @@ void ExampleApplication::Initialize()
     m_WorldRenderView = MakeRef<WorldRenderView>();
     m_WorldRenderView->SetWorld(m_World);
     m_WorldRenderView->bClearBackground = true;
-    m_WorldRenderView->BackgroundColor = Color4::Black();
+    m_WorldRenderView->BackgroundColor = Color4::sBlack();
     m_WorldRenderView->bDrawDebug = true;
     mainViewport->SetWorldRenderView(m_WorldRenderView);
 
@@ -186,8 +186,8 @@ void ExampleApplication::ToggleWireframe()
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
@@ -212,13 +212,13 @@ void ExampleApplication::CreateResources()
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample3.map");
 
     Float3 playerSpawnPosition = Float3(12,0,0);
-    Quat playerSpawnRotation = Quat::RotationY(Math::_HALF_PI);
+    Quat playerSpawnRotation = Quat::sRotationY(Math::_HALF_PI);
 
     {
         GameObjectDesc desc;
@@ -360,8 +360,8 @@ void ExampleApplication::CreateScene()
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     const float HeightStanding = 1.20f;
     const float RadiusStanding = 0.3f;

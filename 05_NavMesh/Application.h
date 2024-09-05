@@ -30,9 +30,9 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/World/Resources/ResourceManager.h>
-#include <Engine/World/Modules/Render/Components/CameraComponent.h>
+#include <Hork/GameApplication/GameApplication.h>
+#include <Hork/Resources/ResourceManager.h>
+#include <Hork/World/Modules/Render/Components/CameraComponent.h>
 
 HK_NAMESPACE_BEGIN
 

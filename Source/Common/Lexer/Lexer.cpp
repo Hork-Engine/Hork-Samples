@@ -29,8 +29,8 @@ SOFTWARE.
 */
 
 #include "Lexer.h"
-#include <Engine/Core/Logger.h>
-#include <Engine/Core/Parse.h>
+#include <Hork/Core/Logger.h>
+#include <Hork/Core/Parse.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -663,22 +663,22 @@ double Lexer::ExpectDouble(CrossLine crossLine)
 
 bool Lexer::ExpectQuaternion(Quat& q, CrossLine crossLine)
 {
-    return ExpectVector(q.ToPtr(), q.NumComponents(), crossLine);
+    return ExpectVector(q.ToPtr(), q.sNumComponents(), crossLine);
 }
 
 bool Lexer::ExpectVector(Float2& v, CrossLine crossLine)
 {
-    return ExpectVector(v.ToPtr(), v.NumComponents(), crossLine);
+    return ExpectVector(v.ToPtr(), v.sNumComponents(), crossLine);
 }
 
 bool Lexer::ExpectVector(Float3& v, CrossLine crossLine)
 {
-    return ExpectVector(v.ToPtr(), v.NumComponents(), crossLine);
+    return ExpectVector(v.ToPtr(), v.sNumComponents(), crossLine);
 }
 
 bool Lexer::ExpectVector(Float4& v, CrossLine crossLine)
 {
-    return ExpectVector(v.ToPtr(), v.NumComponents(), crossLine);
+    return ExpectVector(v.ToPtr(), v.sNumComponents(), crossLine);
 }
 
 bool Lexer::ExpectVector(float* v, int numComponents, CrossLine crossLine)

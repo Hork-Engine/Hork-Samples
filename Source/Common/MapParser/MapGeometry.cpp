@@ -30,10 +30,10 @@ SOFTWARE.
 
 #include "MapGeometry.h"
 
-#include <Engine/Core/Logger.h>
-#include <Engine/Geometry/ConvexHull.h>
-#include <Engine/Geometry/ConvexDecomposition.h>
-#include <Engine/Geometry/TangentSpace.h>
+#include <Hork/Core/Logger.h>
+#include <Hork/Geometry/ConvexHull.h>
+#include <Hork/Geometry/ConvexDecomposition.h>
+#include <Hork/Geometry/TangentSpace.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -171,8 +171,8 @@ void MapGeometry::ExtractSurfaces(Vector<FaceInfo> const& faceInfos, Vector<MapP
     if (surface)
         Geometry::CalcTangentSpace(m_Vertices.ToPtr() + surface->FirstVert, m_Indices.ToPtr() + surface->FirstIndex, surface->IndexCount);
 }
-#if 0
-void ConvexHullVerticesFromPlanes2(PlaneF const* planes, int planeCount, Vector<Float3>& vertices)
+#if 1
+void ConvexHullVerticesFromPlanes2(PlaneF const* planes, int planeCount, Vector<Float3>& vertices, Vector<uint32_t>& indices)
 {
     ConvexHull hull;
     ConvexHull front;
@@ -197,27 +197,34 @@ void ConvexHullVerticesFromPlanes2(PlaneF const* planes, int planeCount, Vector<
             continue;
 
         int vertexCount = hull.NumPoints();
-
-        
-        
-
+        uint32_t index0, index1;
         for (int v = 0; v < vertexCount; ++v)
         {
             if (planes[i].Normal.Y > 0.9999f)
                 hull[v].Y = hull[0].Y;
 
-            bool exists = false;
-            for (int t = firstVert ; t < vertices.Size(); ++t)
+            int t;
+            for (t = firstVert ; t < vertices.Size(); ++t)
             {
                 if (vertices[t].CompareEps(hull[v], 0.001f))
-                {
-                    exists = true;
                     break;
-                }
             }
 
-            if (!exists)
+            if (t == vertices.Size())
                 vertices.Add(hull[v]);
+
+            t -= firstVert;
+            if (v == 0)
+                index0 = t;
+            else if (v == 1)
+                index1 = t;
+            else
+            {
+                indices.Add(index0);
+                indices.Add(index1);
+                indices.Add(t);
+                index1 = t;
+            }
         }
     }
 }
@@ -233,7 +240,9 @@ void MapGeometry::ExtractClipHull(MapParser::Brush const& brush, Vector<MapParse
     }
 
     auto firstClipVert = m_ClipVertices.Size();
-    Geometry::ConvexHullVerticesFromPlanes(clipPlanes.ToPtr(), clipPlanes.Size(), m_ClipVertices);
+    //Geometry::ConvexHullVerticesFromPlanes(clipPlanes.ToPtr(), clipPlanes.Size(), m_ClipVertices);
+    auto firstClipIndex = m_ClipIndices.Size();
+    ConvexHullVerticesFromPlanes2(clipPlanes.ToPtr(), clipPlanes.Size(), m_ClipVertices, m_ClipIndices);
 
     auto clipVertCount = m_ClipVertices.Size() - firstClipVert;
     if (clipVertCount < 4)
@@ -242,12 +251,15 @@ void MapGeometry::ExtractClipHull(MapParser::Brush const& brush, Vector<MapParse
 
         // fallback
         m_ClipVertices.Resize(firstClipVert);
+        m_ClipIndices.Resize(firstClipIndex);
         return;
     }
 
     auto& clipHull = m_ClipHulls.EmplaceBack();
     clipHull.FirstVert = firstClipVert;
     clipHull.VertexCount = clipVertCount;
+    clipHull.FirstIndex = firstClipIndex;
+    clipHull.IndexCount = m_ClipIndices.Size() - firstClipIndex;
 }
 
 HK_NAMESPACE_END

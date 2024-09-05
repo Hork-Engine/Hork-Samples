@@ -32,7 +32,7 @@ SOFTWARE.
 #include "ProjectileComponent.h"
 #include "../CollisionLayer.h"
 
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -65,7 +65,7 @@ void ThirdPersonComponent::MoveRight(float amount)
 void ThirdPersonComponent::TurnRight(float amount)
 {
     if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-        viewPoint->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep, Float3::AxisY());
+        viewPoint->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep, Float3::sAxisY());
 }
 
 void ThirdPersonComponent::TurnUp(float amount)
@@ -77,7 +77,7 @@ void ThirdPersonComponent::TurnUp(float amount)
 void ThirdPersonComponent::FreelookHorizontal(float amount)
 {
     if (auto viewPoint = GetWorld()->GetObject(ViewPoint))
-        viewPoint->Rotate(-amount, Float3::AxisY());
+        viewPoint->Rotate(-amount, Float3::sAxisY());
 }
 
 void ThirdPersonComponent::FreelookVertical(float amount)

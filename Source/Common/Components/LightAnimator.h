@@ -30,7 +30,7 @@ SOFTWARE.
 
 #pragma once
 
-#include <Engine/World/Modules/Render/Components/PunctualLightComponent.h>
+#include <Hork/World/Modules/Render/Components/PunctualLightComponent.h>
 
 HK_NAMESPACE_BEGIN
 

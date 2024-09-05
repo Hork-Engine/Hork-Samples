@@ -32,7 +32,7 @@ SOFTWARE.
 
 #include "MapParser.h"
 
-#include <Engine/Geometry/VertexFormat.h>
+#include <Hork/Geometry/VertexFormat.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -52,6 +52,8 @@ public:
     {
         int             FirstVert;
         int             VertexCount;
+        int             FirstIndex;
+        int             IndexCount;
     };
 
     struct Entity
@@ -69,6 +71,7 @@ public:
     Vector<MeshVertex> const&  GetVertices() const { return m_Vertices; }
     Vector<uint32_t> const&    GetIndices() const { return m_Indices; }
     Vector<Float3> const&      GetClipVertices() const { return m_ClipVertices; }
+    Vector<uint32_t> const&    GetClipIndices() const { return m_ClipIndices; }
     Vector<ClipHull> const&    GetClipHulls() const { return m_ClipHulls; }
     Vector<Entity> const&      GetEntities() const { return m_Entities; }
 
@@ -87,6 +90,7 @@ private:
     Vector<MeshVertex>  m_Vertices;
     Vector<uint32_t>    m_Indices;
     Vector<Float3>      m_ClipVertices;
+    Vector<uint32_t>    m_ClipIndices;
     Vector<ClipHull>    m_ClipHulls;
     Vector<Entity>      m_Entities;
 };

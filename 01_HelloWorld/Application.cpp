@@ -28,12 +28,12 @@ SOFTWARE.
 
 */
 
-#include <Engine/GameApplication/GameApplication.h>
-#include <Engine/UI/UIViewport.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-#include <Engine/World/Modules/Render/RenderInterface.h>
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/GameApplication/GameApplication.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
 using namespace Hk;
 
@@ -64,7 +64,7 @@ public:
 
     void MoveUp(float amount)
     {
-        GetOwner()->Move(Float3::AxisY() * amount * GetWorld()->GetTick().FrameTimeStep);
+        GetOwner()->Move(Float3::sAxisY() * amount * GetWorld()->GetTick().FrameTimeStep);
     }
 
     void MoveDown(float amount)
@@ -80,13 +80,13 @@ public:
     void TurnRight(float amount)
     {
         const float RotationSpeed = 1;
-        GetOwner()->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep * RotationSpeed, Float3::AxisY());
+        GetOwner()->Rotate(-amount * GetWorld()->GetTick().FrameTimeStep * RotationSpeed, Float3::sAxisY());
     }
 
     void FreelookHorizontal(float amount)
     {
         const float RotationSpeed = 1;
-        GetOwner()->Rotate(-amount * RotationSpeed, Float3::AxisY());
+        GetOwner()->Rotate(-amount * RotationSpeed, Float3::sAxisY());
     }
 
     void DrawDebug(DebugRenderer& renderer)
@@ -96,9 +96,9 @@ public:
         Float3 dir = owner->GetWorldForwardVector();
         Float3 p1 = pos + dir * 0.5f;
         Float3 p2 = pos + dir * 2.0f;
-        renderer.SetColor(Color4::Blue());
+        renderer.SetColor(Color4::sBlue());
         renderer.DrawLine(p1, p2);
-        renderer.DrawCone(p2, owner->GetWorldRotation().ToMatrix3x3() * Float3x3::RotationAroundNormal(Math::_PI, Float3(1, 0, 0)), 0.4f, 30);
+        renderer.DrawCone(p2, owner->GetWorldRotation().ToMatrix3x3() * Float3x3::sRotationAroundNormal(Math::_PI, Float3(1, 0, 0)), 0.4f, 30);
     }
 };
 
@@ -129,7 +129,7 @@ public:
         inputMappings->MapAxis(PlayerController::_1, "TurnRight", VirtualKey::Left, -90.0f);
         inputMappings->MapAxis(PlayerController::_1, "TurnRight", VirtualKey::Right, 90.0f);
 
-        GetInputSystem().SetInputMappings(inputMappings);
+        sGetInputSystem().SetInputMappings(inputMappings);
 
         // Set rendering parameters
         m_WorldRenderView = MakeRef<WorldRenderView>();
@@ -173,7 +173,7 @@ public:
         m_WorldRenderView->SetWorld(m_World);
 
         // Spawn player
-        GameObject* player = CreatePlayer(Float3(0, 0, 0), Quat::Identity());
+        GameObject* player = CreatePlayer(Float3(0, 0, 0), Quat::sIdentity());
 
         // Bind input to the player
         InputInterface& input = m_World->GetInterface<InputInterface>();
@@ -197,8 +197,8 @@ public:
 
     void CreateResources()
     {
-        auto& resourceMngr = GetResourceManager();
-        auto& materialMngr = GetMaterialManager();
+        auto& resourceMngr = sGetResourceManager();
+        auto& materialMngr = sGetMaterialManager();
 
         materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
@@ -220,7 +220,7 @@ public:
 
     GameObject* CreatePlayer(Float3 const& position, Quat const& rotation)
     {
-        static MeshHandle playerMesh = GetResourceManager().GetResource<MeshResource>("/Root/default/box.mesh");
+        static MeshHandle playerMesh = sGetResourceManager().GetResource<MeshResource>("/Root/default/box.mesh");
 
         GameObject* player;
         Handle32<PlayerComponent> playerComponent;
@@ -254,7 +254,7 @@ public:
             DynamicMeshComponent* mesh;
             model->CreateComponent(mesh);
             mesh->SetMesh(playerMesh);
-            mesh->SetMaterial(GetMaterialManager().TryGet("grid8"));
+            mesh->SetMaterial(sGetMaterialManager().TryGet("grid8"));
             mesh->SetLocalBoundingBox({Float3(-0.5f), Float3(0.5f)});
         }
 
@@ -296,7 +296,7 @@ public:
 
         // Spawn ground
         {
-            static MeshHandle groundMesh = GetResourceManager().GetResource<MeshResource>("/Root/default/plane_xz.mesh");
+            static MeshHandle groundMesh = sGetResourceManager().GetResource<MeshResource>("/Root/default/plane_xz.mesh");
 
             GameObjectDesc desc;
             desc.Scale = {2, 1, 2};
@@ -308,7 +308,7 @@ public:
             ground->CreateComponent(groundModel);
 
             groundModel->SetMesh(groundMesh);
-            groundModel->SetMaterial(GetMaterialManager().TryGet("grid8"));
+            groundModel->SetMaterial(sGetMaterialManager().TryGet("grid8"));
             groundModel->SetCastShadow(false);
             groundModel->SetLocalBoundingBox({Float3(-128,-0.1f,-128), Float3(128,0.1f,128)});
         }

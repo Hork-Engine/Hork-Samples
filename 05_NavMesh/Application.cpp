@@ -36,28 +36,28 @@ SOFTWARE.
 #include "Common/Components/DoorActivatorComponent.h"
 #include "Common/CollisionLayer.h"
 
-#include <Engine/UI/UIViewport.h>
-#include <Engine/UI/UIGrid.h>
-#include <Engine/UI/UILabel.h>
+#include <Hork/UI/UIViewport.h>
+#include <Hork/UI/UIGrid.h>
+#include <Hork/UI/UILabel.h>
 
-#include <Engine/World/Modules/Input/InputInterface.h>
+#include <Hork/World/Modules/Input/InputInterface.h>
 
-#include <Engine/World/Modules/Physics/CollisionFilter.h>
-#include <Engine/World/Modules/Physics/Components/StaticBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/DynamicBodyComponent.h>
-#include <Engine/World/Modules/Physics/Components/TriggerComponent.h>
-#include <Engine/World/Modules/Physics/Components/CharacterControllerComponent.h>
+#include <Hork/World/Modules/Physics/CollisionFilter.h>
+#include <Hork/World/Modules/Physics/Components/StaticBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/DynamicBodyComponent.h>
+#include <Hork/World/Modules/Physics/Components/TriggerComponent.h>
+#include <Hork/World/Modules/Physics/Components/CharacterControllerComponent.h>
 
-#include <Engine/World/Modules/NavMesh/NavMeshInterface.h>
-#include <Engine/World/Modules/NavMesh/Components/NavMeshObstacleComponent.h>
-#include <Engine/World/Modules/NavMesh/Components/NavMeshAreaComponent.h>
-#include <Engine/World/Modules/NavMesh/Components/OffMeshLinkComponent.h>
+#include <Hork/World/Modules/NavMesh/NavMeshInterface.h>
+#include <Hork/World/Modules/NavMesh/Components/NavMeshObstacleComponent.h>
+#include <Hork/World/Modules/NavMesh/Components/NavMeshAreaComponent.h>
+#include <Hork/World/Modules/NavMesh/Components/OffMeshLinkComponent.h>
 
-#include <Engine/World/Modules/Render/Components/DirectionalLightComponent.h>
-#include <Engine/World/Modules/Render/Components/MeshComponent.h>
-#include <Engine/World/Modules/Render/RenderInterface.h>
+#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/Components/MeshComponent.h>
+#include <Hork/World/Modules/Render/RenderInterface.h>
 
-#include <Engine/World/Modules/Audio/AudioInterface.h>
+#include <Hork/World/Modules/Audio/AudioInterface.h>
 
 using namespace Hk;
 
@@ -95,7 +95,7 @@ public:
 
             auto& physics = GetWorld()->GetInterface<PhysicsInterface>();
 
-            if (physics.CastBoxClosest(rayStart, rayDir, Float3(0.5f * 1.5f), Quat::Identity(), result, filter))
+            if (physics.CastBoxClosest(rayStart, rayDir, Float3(0.5f * 1.5f), Quat::sIdentity(), result, filter))
             {
                 if (auto body = physics.TryGetComponent<DynamicBodyComponent>(m_DragObject))
                 {
@@ -163,7 +163,7 @@ public:
     void DrawDebug(DebugRenderer& renderer)
     {
         renderer.SetDepthTest(false);
-        renderer.SetColor(Color4::Blue());
+        renderer.SetColor(Color4::sBlue());
         renderer.DrawLine(m_DebugPath);
     }
 
@@ -313,7 +313,7 @@ void ExampleApplication::Initialize()
     inputMappings->MapAction(PlayerController::_1, "Pick", VirtualKey::MouseLeftBtn, {});
     inputMappings->MapAction(PlayerController::_1, "Drag", VirtualKey::MouseRightBtn, {});
 
-    GetInputSystem().SetInputMappings(inputMappings);
+    sGetInputSystem().SetInputMappings(inputMappings);
 
     // Create game resources
     CreateResources();
@@ -356,9 +356,9 @@ void ExampleApplication::Initialize()
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
     render.SetAmbient(0.1f);
 
-    GetCommandProcessor().Add("com_DrawNavMesh 1\n");
-    //GetCommandProcessor().Add("com_DrawNavMeshAreas 1\n");    
-    GetCommandProcessor().Add("com_DrawOffMeshLinks 1\n");
+    sGetCommandProcessor().Add("com_DrawNavMesh 1\n");
+    //sGetCommandProcessor().Add("com_DrawNavMeshAreas 1\n");    
+    sGetCommandProcessor().Add("com_DrawOffMeshLinks 1\n");
 }
 
 void ExampleApplication::Deinitialize()
@@ -383,8 +383,8 @@ void ExampleApplication::ToggleWireframe()
 
 void ExampleApplication::CreateResources()
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     materialMngr.LoadLibrary("/Root/default/materials/default.mlib");
 
@@ -410,13 +410,13 @@ void ExampleApplication::CreateResources()
 
 void ExampleApplication::CreateScene()
 {
-    auto& resourceMngr = GameApplication::GetResourceManager();
-    auto& materialMngr = GameApplication::GetMaterialManager();
+    auto& resourceMngr = GameApplication::sGetResourceManager();
+    auto& materialMngr = GameApplication::sGetMaterialManager();
 
     CreateSceneFromMap(m_World, "/Root/sample5.map");
 
     Float3 playerSpawnPosition = Float3(-1344/32.0f,0,0);
-    Quat playerSpawnRotation = Quat::RotationY(-Math::_HALF_PI);
+    Quat playerSpawnRotation = Quat::sRotationY(-Math::_HALF_PI);
 
     // Light
     {
@@ -612,8 +612,8 @@ void ExampleApplication::CreateScene()
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
-    auto& resourceMngr = GetResourceManager();
-    auto& materialMngr = GetMaterialManager();
+    auto& resourceMngr = sGetResourceManager();
+    auto& materialMngr = sGetMaterialManager();
 
     const float HeightStanding = 1.20f;
     const float RadiusStanding = 0.3f;

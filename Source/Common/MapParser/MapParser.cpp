@@ -31,7 +31,7 @@ SOFTWARE.
 #include "MapParser.h"
 
 #include "../Lexer/Lexer.h"
-#include <Engine/Core/Parse.h>
+#include <Hork/Core/Parse.h>
 
 HK_NAMESPACE_BEGIN
 
@@ -250,7 +250,7 @@ void MapParser::ParseEntity(Entity& entity, Lexer& lex)
                     break;
             }
 
-            entity.Angle = Angl::Normalize360(a - 90.0f);
+            entity.Angle = Angl::sNormalize360(a - 90.0f);
         }
         else if (!Core::Stricmp(token, "lip"))
         {

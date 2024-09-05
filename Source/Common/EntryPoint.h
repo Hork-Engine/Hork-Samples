@@ -60,7 +60,7 @@ public:
 alignas(alignof(ApplicationClass)) static char AppData[sizeof(ApplicationClass)];
 
 #ifdef HK_OS_WIN32
-#    include <Engine/Core/WindowsDefs.h>
+#    include <Hork/Core/WindowsDefs.h>
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 #else
 int main(int argc, char* argv[])
