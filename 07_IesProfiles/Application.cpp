@@ -57,14 +57,14 @@ SOFTWARE.
 
 using namespace Hk;
 
-ExampleApplication::ExampleApplication(ArgumentPack const& args) :
+SampleApplication::SampleApplication(ArgumentPack const& args) :
     GameApplication(args, "Hork Engine: Ies Profiles")
 {}
 
-ExampleApplication::~ExampleApplication()
+SampleApplication::~SampleApplication()
 {}
 
-void ExampleApplication::Initialize()
+void SampleApplication::Initialize()
 {
     // Create UI
     UIDesktop* desktop = UINew(UIDesktop);
@@ -74,11 +74,11 @@ void ExampleApplication::Initialize()
 
     // Add shortcuts
     UIShortcutContainer* shortcuts = UINew(UIShortcutContainer);
-    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &ExampleApplication::Quit});
-    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
-    shortcuts->AddShortcut(VirtualKey::F10, {}, {this, &ExampleApplication::Screenshot});
+    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &SampleApplication::Quit});
+    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &SampleApplication::ToggleWireframe});
+    shortcuts->AddShortcut(VirtualKey::F10, {}, {this, &SampleApplication::Screenshot});
     desktop->SetShortcuts(shortcuts);
 
     // Create viewport
@@ -134,23 +134,23 @@ void ExampleApplication::Initialize()
 
     auto& stateMachine = sGetStateMachine();
 
-    stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
-    stateMachine.Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, {});
+    stateMachine.Bind("State_Loading", this, &SampleApplication::OnStartLoading, {}, &SampleApplication::OnUpdateLoading);
+    stateMachine.Bind("State_Play", this, &SampleApplication::OnStartPlay, {}, {});
 
     stateMachine.MakeCurrent("State_Loading");
 }
 
-void ExampleApplication::Deinitialize()
+void SampleApplication::Deinitialize()
 {
     DestroyWorld(m_World);
 }
 
-void ExampleApplication::OnStartLoading()
+void SampleApplication::OnStartLoading()
 {
     ShowLoadingScreen(true);
 }
 
-void ExampleApplication::OnUpdateLoading(float timeStep)
+void SampleApplication::OnUpdateLoading(float timeStep)
 {
     auto& resourceMngr = GameApplication::sGetResourceManager();
     if (resourceMngr.IsAreaReady(m_Resources))
@@ -159,7 +159,7 @@ void ExampleApplication::OnUpdateLoading(float timeStep)
     }
 }
 
-void ExampleApplication::OnStartPlay()
+void SampleApplication::OnStartPlay()
 {
     ShowLoadingScreen(false);
 
@@ -185,27 +185,27 @@ void ExampleApplication::OnStartPlay()
     input.BindInput(player->GetComponentHandle<FirstPersonComponent>(), PlayerController::_1);   
 }
 
-void ExampleApplication::Pause()
+void SampleApplication::Pause()
 {
     m_World->SetPaused(!m_World->GetTick().IsPaused);
 }
 
-void ExampleApplication::Quit()
+void SampleApplication::Quit()
 {
     PostTerminateEvent();
 }
 
-void ExampleApplication::ToggleWireframe()
+void SampleApplication::ToggleWireframe()
 {
     m_WorldRenderView->bWireframe = !m_WorldRenderView->bWireframe;
 }
 
-void ExampleApplication::Screenshot()
+void SampleApplication::Screenshot()
 {
     TakeScreenshot("screenshot.png");
 }
 
-void ExampleApplication::ShowLoadingScreen(bool show)
+void SampleApplication::ShowLoadingScreen(bool show)
 {
     auto& resourceMngr = sGetResourceManager();
 
@@ -250,7 +250,7 @@ void ExampleApplication::ShowLoadingScreen(bool show)
     }
 }
 
-void ExampleApplication::CreateResources()
+void SampleApplication::CreateResources()
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -273,7 +273,7 @@ void ExampleApplication::CreateResources()
     resourceMngr.LoadArea(m_Resources);
 }
 
-void ExampleApplication::CreateScene()
+void SampleApplication::CreateScene()
 {
     CreateSceneFromMap(m_World, "/Root/sample7.map", "gray");
 
@@ -378,7 +378,7 @@ void ExampleApplication::CreateScene()
 #endif
 }
 
-GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
+GameObject* SampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
     const float HeightStanding = 1.35f;
     const float RadiusStanding = 0.3f;
@@ -425,5 +425,5 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     return player;
 }
 
-using ApplicationClass = ExampleApplication;
+using ApplicationClass = SampleApplication;
 #include "Common/EntryPoint.h"

@@ -36,11 +36,11 @@ SOFTWARE.
 
 HK_NAMESPACE_BEGIN
 
-class ExampleApplication final : public GameApplication
+class SampleApplication final : public GameApplication
 {
 public:
-    ExampleApplication(ArgumentPack const& args);
-    ~ExampleApplication();
+    SampleApplication(ArgumentPack const& args);
+    ~SampleApplication();
 
     void Initialize();
     void Deinitialize();

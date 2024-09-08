@@ -39,11 +39,11 @@ class UIGrid;
 class UIViewport;
 class UIImage;
 
-class ExampleApplication final : public GameApplication
+class SampleApplication final : public GameApplication
 {
 public:
-    ExampleApplication(ArgumentPack const& args);
-    ~ExampleApplication();
+    SampleApplication(ArgumentPack const& args);
+    ~SampleApplication();
 
     void Initialize();
     void Deinitialize();

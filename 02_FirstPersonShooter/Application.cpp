@@ -64,14 +64,14 @@ SOFTWARE.
 
 using namespace Hk;
 
-ExampleApplication::ExampleApplication(ArgumentPack const& args) :
+SampleApplication::SampleApplication(ArgumentPack const& args) :
     GameApplication(args, "Hork Engine: First Person Shooter")
 {}
 
-ExampleApplication::~ExampleApplication()
+SampleApplication::~SampleApplication()
 {}
 
-void ExampleApplication::Initialize()
+void SampleApplication::Initialize()
 {
     // Create UI
     UIDesktop* desktop = UINew(UIDesktop);
@@ -81,10 +81,10 @@ void ExampleApplication::Initialize()
 
     // Add shortcuts
     UIShortcutContainer* shortcuts = UINew(UIShortcutContainer);
-    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &ExampleApplication::Quit});
-    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
+    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &SampleApplication::Quit});
+    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &SampleApplication::ToggleWireframe});
     desktop->SetShortcuts(shortcuts);
 
     // Create viewport
@@ -238,8 +238,8 @@ void ExampleApplication::Initialize()
 
     auto& stateMachine = sGetStateMachine();
 
-    stateMachine.Bind("State_Loading", this, &ExampleApplication::OnStartLoading, {}, &ExampleApplication::OnUpdateLoading);
-    stateMachine.Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, {});
+    stateMachine.Bind("State_Loading", this, &SampleApplication::OnStartLoading, {}, &SampleApplication::OnUpdateLoading);
+    stateMachine.Bind("State_Play", this, &SampleApplication::OnStartPlay, {}, {});
 
     stateMachine.MakeCurrent("State_Loading");
 
@@ -248,17 +248,17 @@ void ExampleApplication::Initialize()
     sGetCommandProcessor().Add("com_MaxFPS 0\n");
 }
 
-void ExampleApplication::Deinitialize()
+void SampleApplication::Deinitialize()
 {
     DestroyWorld(m_World);
 }
 
-void ExampleApplication::OnStartLoading()
+void SampleApplication::OnStartLoading()
 {
     ShowLoadingScreen(true);
 }
 
-void ExampleApplication::OnUpdateLoading(float timeStep)
+void SampleApplication::OnUpdateLoading(float timeStep)
 {
     auto& resourceMngr = GameApplication::sGetResourceManager();
     if (resourceMngr.IsAreaReady(m_Resources))
@@ -267,7 +267,7 @@ void ExampleApplication::OnUpdateLoading(float timeStep)
     }
 }
 
-void ExampleApplication::OnStartPlay()
+void SampleApplication::OnStartPlay()
 {
     ShowLoadingScreen(false);
 
@@ -286,17 +286,17 @@ void ExampleApplication::OnStartPlay()
 #endif
 }
 
-void ExampleApplication::Pause()
+void SampleApplication::Pause()
 {
     m_World->SetPaused(!m_World->GetTick().IsPaused);
 }
 
-void ExampleApplication::Quit()
+void SampleApplication::Quit()
 {
     PostTerminateEvent();
 }
 
-void ExampleApplication::ToggleWireframe()
+void SampleApplication::ToggleWireframe()
 {
     m_WorldRenderView[0]->bWireframe = !m_WorldRenderView[0]->bWireframe;
 #ifdef SPLIT_SCREEN
@@ -304,7 +304,7 @@ void ExampleApplication::ToggleWireframe()
 #endif
 }
 
-void ExampleApplication::ShowLoadingScreen(bool show)
+void SampleApplication::ShowLoadingScreen(bool show)
 {
     auto& resourceMngr = sGetResourceManager();
 
@@ -349,7 +349,7 @@ void ExampleApplication::ShowLoadingScreen(bool show)
     }
 }
 
-void ExampleApplication::CreateResources()
+void SampleApplication::CreateResources()
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -386,7 +386,7 @@ void ExampleApplication::CreateResources()
     //resourceMngr.MainThread_WaitResourceArea(m_Resources);
 }
 
-void ExampleApplication::CreateScene()
+void SampleApplication::CreateScene()
 {
     auto& resourceMngr = GameApplication::sGetResourceManager();
     auto& materialMngr = GameApplication::sGetMaterialManager();
@@ -548,7 +548,7 @@ void ExampleApplication::CreateScene()
     m_PlayerSpawnPoints.Add({playerSpawnPosition2, playerSpawnRotation2});
 }
 
-void ExampleApplication::CreateElevator(Float3 const& position)
+void SampleApplication::CreateElevator(Float3 const& position)
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -592,7 +592,7 @@ void ExampleApplication::CreateElevator(Float3 const& position)
     activator->Elevator = elevatorHandle;
 }
 
-GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation, PlayerTeam team)
+GameObject* SampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation, PlayerTeam team)
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -703,5 +703,5 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     return player;
 }
 
-using ApplicationClass = ExampleApplication;
+using ApplicationClass = SampleApplication;
 #include "Common/EntryPoint.h"

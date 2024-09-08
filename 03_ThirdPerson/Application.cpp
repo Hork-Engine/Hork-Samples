@@ -66,14 +66,14 @@ SOFTWARE.
 
 using namespace Hk;
 
-ExampleApplication::ExampleApplication(ArgumentPack const& args) :
+SampleApplication::SampleApplication(ArgumentPack const& args) :
     GameApplication(args, "Hork Engine: Third Person")
 {}
 
-ExampleApplication::~ExampleApplication()
+SampleApplication::~SampleApplication()
 {}
 
-void ExampleApplication::Initialize()
+void SampleApplication::Initialize()
 {
     // Create UI
     UIDesktop* desktop = UINew(UIDesktop);
@@ -81,10 +81,10 @@ void ExampleApplication::Initialize()
 
     // Add shortcuts
     UIShortcutContainer* shortcuts = UINew(UIShortcutContainer);
-    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &ExampleApplication::Pause});
-    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &ExampleApplication::Quit});
-    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &ExampleApplication::ToggleWireframe});
+    shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::P, {}, {this, &SampleApplication::Pause});
+    shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &SampleApplication::Quit});
+    shortcuts->AddShortcut(VirtualKey::Y, {}, {this, &SampleApplication::ToggleWireframe});
     desktop->SetShortcuts(shortcuts);
 
     // Create viewport
@@ -164,27 +164,27 @@ void ExampleApplication::Initialize()
     input.BindInput(player->GetComponentHandle<ThirdPersonComponent>(), PlayerController::_1);
 }
 
-void ExampleApplication::Deinitialize()
+void SampleApplication::Deinitialize()
 {
     DestroyWorld(m_World);
 }
 
-void ExampleApplication::Pause()
+void SampleApplication::Pause()
 {
     m_World->SetPaused(!m_World->GetTick().IsPaused);
 }
 
-void ExampleApplication::Quit()
+void SampleApplication::Quit()
 {
     PostTerminateEvent();
 }
 
-void ExampleApplication::ToggleWireframe()
+void SampleApplication::ToggleWireframe()
 {
     m_WorldRenderView->bWireframe = !m_WorldRenderView->bWireframe;
 }
 
-void ExampleApplication::CreateResources()
+void SampleApplication::CreateResources()
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -210,7 +210,7 @@ void ExampleApplication::CreateResources()
     resourceMngr.MainThread_WaitResourceArea(resources);
 }
 
-void ExampleApplication::CreateScene()
+void SampleApplication::CreateScene()
 {
     auto& resourceMngr = GameApplication::sGetResourceManager();
     auto& materialMngr = GameApplication::sGetMaterialManager();
@@ -358,7 +358,7 @@ void ExampleApplication::CreateScene()
 }
 
 
-GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
+GameObject* SampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
     auto& resourceMngr = sGetResourceManager();
     auto& materialMngr = sGetMaterialManager();
@@ -461,5 +461,5 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
     return player;
 }
 
-using ApplicationClass = ExampleApplication;
+using ApplicationClass = SampleApplication;
 #include "Common/EntryPoint.h"

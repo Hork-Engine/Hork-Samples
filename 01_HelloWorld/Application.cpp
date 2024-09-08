@@ -102,14 +102,14 @@ public:
     }
 };
 
-class ExampleApplication final : public GameApplication
+class SampleApplication final : public GameApplication
 {
     World*                      m_World{};
     Ref<WorldRenderView>        m_WorldRenderView;
     Handle32<CameraComponent>   m_MainCamera;
 
 public:
-    ExampleApplication(ArgumentPack const& args) :
+    SampleApplication(ArgumentPack const& args) :
         GameApplication(args, "Hork Engine: Hello World")
     {}
 
@@ -154,9 +154,9 @@ public:
 
         // Add shortcuts
         UIShortcutContainer* shortcuts = UINew(UIShortcutContainer);
-        shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &ExampleApplication::Quit});
-        shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &ExampleApplication::Pause});
-        shortcuts->AddShortcut(VirtualKey::P, {}, {this, &ExampleApplication::Pause});
+        shortcuts->AddShortcut(VirtualKey::Escape, {}, {this, &SampleApplication::Quit});
+        shortcuts->AddShortcut(VirtualKey::Pause, {}, {this, &SampleApplication::Pause});
+        shortcuts->AddShortcut(VirtualKey::P, {}, {this, &SampleApplication::Pause});
         desktop->SetShortcuts(shortcuts);
 
         // Create game resources
@@ -325,5 +325,5 @@ public:
     }
 };
 
-using ApplicationClass = ExampleApplication;
+using ApplicationClass = SampleApplication;
 #include "Common/EntryPoint.h"
