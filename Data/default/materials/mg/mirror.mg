@@ -1,32 +1,29 @@
 version "1"
 MaterialType "Unlit"
-$Color "result_color"
+$Color "base_color"
 textures
 [
 	{
 		id "tex_base_color"
 		Filter "Trilinear"
-		AddressU "Clamp"
-		AddressV "Clamp"
 	}
 ]
 nodes
 [
 	{
-		type "InTexCoord"
-		id "tc"
+		type "InScreenUV"
+		id "screen_uv"
+	}
+	{
+		type "Mul"
+		id "mirrored_uv"
+		$A "screen_uv"
+		$B "=(-1, 1)"
 	}
 	{
 		type "TextureLoad"
 		id "base_color"
-		$TexCoord "tc"
+		$TexCoord "mirrored_uv"
 		$Texture "tex_base_color"
-	}
-	
-	{
-		type "Mul"
-		id "result_color"
-		$A "base_color"
-		$B "=0.4"
 	}
 ]

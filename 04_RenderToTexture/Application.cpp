@@ -50,7 +50,7 @@ SOFTWARE.
 
 #include <Hork/World/Modules/Gameplay/Components/SpringArmComponent.h>
 
-#include <Hork/World/Modules/Render/Components/DirectionalLightComponent.h>
+#include <Hork/World/Modules/Render/Components/PunctualLightComponent.h>
 #include <Hork/World/Modules/Render/Components/MeshComponent.h>
 #include <Hork/World/Modules/Render/RenderInterface.h>
 
@@ -61,77 +61,59 @@ SOFTWARE.
 
 using namespace Hk;
 
-class CameraAnimationComponent : public Component
+Handle32<CameraComponent> MainCamera;
+GameObjectHandle Mirror;
+
+void MirrorTransform(PlaneF const& mirrorPlane, Float3 const& inPosition, Quat const& inRotation, Float3& outPosition, Quat& outRotation)
+{
+    // Mirror position
+    outPosition = inPosition + mirrorPlane.Normal * (-mirrorPlane.DistanceToPoint(inPosition) * 2.0f);
+
+    // Mirror orientation
+    const float sqrt2_div_2 = 0.707106769f;   // square root 2 divided by 2 (sin 45)
+    Quat mirrorRotation = mirrorPlane.GetRotation() * Quat(sqrt2_div_2, 0,sqrt2_div_2,0);
+    //Quat mirrorRotation = (mirrorPlane.Normal.X < -0.9999) ? Quat(0, 0, -1, 0) : Quat(mirrorPlane.Normal.X + 1.0f, 0, -mirrorPlane.Normal.Z, mirrorPlane.Normal.Y).Normalized();
+    Quat localRotation = mirrorRotation.Conjugated() * inRotation;
+    localRotation.X = -localRotation.X;
+    localRotation.W = -localRotation.W;
+    outRotation = mirrorRotation * localRotation;
+}
+
+class CameraMirrorComponent : public Component
 {
 public:
     static constexpr ComponentMode Mode = ComponentMode::Dynamic;
 
-    void Update()
+    void LateUpdate()
     {
-        float roll = 0;//Math::Sin(GetWorld()->GetTick().FrameTime)*7.0f;
+        if (auto mainCamera = GetWorld()->GetComponent(MainCamera))
+        {
+            auto& tick = GetWorld()->GetTick();
 
-        GetOwner()->SetAngles({0, 90, roll});
-    }
+            // Compute the final camera position by interpolating the two frames.
+            Float3 worldPos = Math::Lerp (mainCamera->GetPosition(tick.PrevStateIndex), mainCamera->GetPosition(tick.StateIndex), tick.Interpolate);
+            Quat   worldRot = Math::Slerp(mainCamera->GetRotation(tick.PrevStateIndex), mainCamera->GetRotation(tick.StateIndex), tick.Interpolate);
 
-    void DrawDebug(DebugRenderer& renderer)
-    {
-        Float3 vectorTR;
-        Float3 vectorTL;
-        Float3 vectorBR;
-        Float3 vectorBL;
-        Float3 origin = GetOwner()->GetWorldPosition();
-        Float3 v[4];
-        Float3 faces[4][3];
-        float rayLength = 0.5f;
+            auto mirror = GetWorld()->GetObject(Mirror);
 
-        auto cameraComponent = GetOwner()->GetComponent<CameraComponent>();
-        if (!cameraComponent)
-            return;
+            PlaneF plane(mirror->GetBackVector(), mirror->GetWorldPosition());
 
-        auto frustum = cameraComponent->GetFrustum();
+            // Mirror camera relative to plane
+            MirrorTransform(plane, worldPos, worldRot, worldPos, worldRot);
 
-        frustum.CornerVector_TR(vectorTR);
-        frustum.CornerVector_TL(vectorTL);
-        frustum.CornerVector_BR(vectorBR);
-        frustum.CornerVector_BL(vectorBL);
+            // Set mirrored camera transform
+            GetOwner()->SetWorldPosition(worldPos);
+            GetOwner()->SetWorldRotation(worldRot);
 
-        v[0] = origin + vectorTR * rayLength;
-        v[1] = origin + vectorBR * rayLength;
-        v[2] = origin + vectorBL * rayLength;
-        v[3] = origin + vectorTL * rayLength;
+            if (auto camera = GetOwner()->GetComponent<CameraComponent>())
+            {
+                // Update viewport size
+                camera->SetViewportSize(mainCamera->GetViewportSize());
 
-        // top
-        faces[0][0] = origin;
-        faces[0][1] = v[0];
-        faces[0][2] = v[3];
-
-        // left
-        faces[1][0] = origin;
-        faces[1][1] = v[3];
-        faces[1][2] = v[2];
-
-        // bottom
-        faces[2][0] = origin;
-        faces[2][1] = v[2];
-        faces[2][2] = v[1];
-
-        // right
-        faces[3][0] = origin;
-        faces[3][1] = v[1];
-        faces[3][2] = v[0];
-
-        renderer.SetDepthTest(true);
-
-        renderer.SetColor(Color4(0, 1, 1, 1));
-        renderer.DrawLine(origin, v[0]);
-        renderer.DrawLine(origin, v[3]);
-        renderer.DrawLine(origin, v[1]);
-        renderer.DrawLine(origin, v[2]);
-        renderer.DrawLine(v, true);
-
-        renderer.SetColor(Color4(1, 1, 1, 0.3f));
-        renderer.DrawTriangles(&faces[0][0], 4, sizeof(Float3), true);
-        renderer.DrawConvexPoly(v, true);
+                // No interpolation needed (world pos already stores the interpolated value)
+                camera->SkipInterpolation();
+            }
+        }
     }
 };
 
@@ -204,25 +186,49 @@ void ExampleApplication::Initialize()
     // Setup world collision
     m_World->GetInterface<PhysicsInterface>().SetCollisionFilter(CollisionLayer::CreateFilter());
 
-    // Set rendering parameters
+    // Create main render view
     m_WorldRenderView = MakeRef<WorldRenderView>();
     m_WorldRenderView->SetWorld(m_World);
     m_WorldRenderView->bClearBackground = true;
-    m_WorldRenderView->BackgroundColor = Color4(0.2f, 0.2f, 0.3f, 1);
+    m_WorldRenderView->BackgroundColor = Color4::sBlack();
     m_WorldRenderView->bDrawDebug = true;
     mainViewport->SetWorldRenderView(m_WorldRenderView);
 
+    // Create offscreen render view. Use resolution of window frame buffer
+    auto window = GUIManager->GetGenericWindow();
+    uint32_t width = window->GetFramebufferWidth();
+    uint32_t height = window->GetFramebufferHeight();
+    m_OffscreenRenderView = MakeRef<WorldRenderView>();
+    m_OffscreenRenderView->SetViewport(width, height);
+    m_OffscreenRenderView->SetWorld(m_World);
+    m_OffscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
+    m_OffscreenRenderView->bClearBackground = true;
+    m_OffscreenRenderView->bAllowMotionBlur = false;
+    m_OffscreenRenderView->TextureFormat = TEXTURE_FORMAT_RGBA16_FLOAT;
+    m_OffscreenRenderView->AcquireRenderTarget();
+
+    sGetStateMachine().Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, &ExampleApplication::OnUpdate);
+    sGetStateMachine().MakeCurrent("State_Play");
+}
+
+void ExampleApplication::Deinitialize()
+{
+    DestroyWorld(m_World);
+}
+
+void ExampleApplication::OnStartPlay()
+{
     // Create scene
     CreateScene();
 
-    // Create players
-    GameObject* player = CreatePlayer(m_PlayerSpawnPoints[0].Position, m_PlayerSpawnPoints[0].Rotation);
+    // Create player
+    GameObject* player = CreatePlayer(Float3(10,0,0), Quat::sRotationY(Math::_HALF_PI));
 
     if (GameObject* camera = player->FindChildrenRecursive(StringID("Camera")))
     {
         // Set camera for rendering
         m_WorldRenderView->SetCamera(camera->GetComponentHandle<CameraComponent>());
-    
+
         // Set audio listener
         auto& audio = m_World->GetInterface<AudioInterface>();
         audio.SetListener(camera->GetComponentHandle<AudioListenerComponent>());
@@ -234,24 +240,12 @@ void ExampleApplication::Initialize()
     input.BindInput(player->GetComponentHandle<ThirdPersonComponent>(), PlayerController::_1);
 
     RenderInterface& render = m_World->GetInterface<RenderInterface>();
-    render.SetAmbient(0.1f);
-
-    sGetStateMachine().Bind("State_Play", this, &ExampleApplication::OnStartPlay, {}, &ExampleApplication::OnUpdate);
-
-    sGetStateMachine().MakeCurrent("State_Play");
-}
-
-void ExampleApplication::Deinitialize()
-{
-    DestroyWorld(m_World);
-}
-
-void ExampleApplication::OnStartPlay()
-{
+    render.SetAmbient(0.001f);
 }
 
 void ExampleApplication::OnUpdate(float timeStep)
 {
+    // We must register the render view in a loop for offscreen rendering
     sGetFrameLoop().RegisterView(m_OffscreenRenderView);
 }
 
@@ -284,10 +278,10 @@ void ExampleApplication::CreateResources()
         resourceMngr.GetResource<MeshResource>("/Root/default/capsule.mesh"),
         resourceMngr.GetResource<MaterialResource>("/Root/default/materials/default.mat"),
         resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"),
-        resourceMngr.GetResource<TextureResource>("/Root/grid8.webp"),
+        resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/mirror.mg"),
+        resourceMngr.GetResource<TextureResource>("/Root/dirt.png"),
         resourceMngr.GetResource<TextureResource>("/Root/blank256.webp"),
-        resourceMngr.GetResource<TextureResource>("/Root/blank512.webp"),
-        resourceMngr.GetResource<MeshResource>("/Root/default/quad_xy.mesh")
+        resourceMngr.GetResource<TextureResource>("/Root/blank512.webp")
     };
     
     // Load resources asynchronously
@@ -303,46 +297,45 @@ void ExampleApplication::CreateScene()
     auto& resourceMngr = GameApplication::sGetResourceManager();
     auto& materialMngr = GameApplication::sGetMaterialManager();
 
-    CreateSceneFromMap(m_World, "/Root/sample3.map");
+    // Create level geometry
+    CreateSceneFromMap(m_World, "/Root/sample4.map", "dirt");
 
-    Float3 playerSpawnPosition = Float3(12,0,0);
-    Quat playerSpawnRotation = Quat::sRotationY(Math::_HALF_PI);
-
-    m_OffscreenRenderView = MakeRef<WorldRenderView>();
-    m_OffscreenRenderView->SetViewport(512, 512);
-    m_OffscreenRenderView->SetWorld(m_World);
-    m_OffscreenRenderView->BackgroundColor = m_WorldRenderView->BackgroundColor;
-    m_OffscreenRenderView->bClearBackground = true;
-    m_OffscreenRenderView->AcquireRenderTarget();
-    
+    // Create mirror
     {
         GameObjectDesc desc;
-        desc.Position = Float3(0,3,0);
+        desc.Position = Float3(0,4,0);
         desc.Rotation.FromAngles(0, Math::Radians(90), 0);
-        GameObject* monitor;
-        m_World->CreateObject(desc, monitor);
-        StaticMeshComponent* face;
-        monitor->CreateComponent(face);
+        desc.IsDynamic=true;
+        GameObject* mirror;
+        m_World->CreateObject(desc, mirror);
+        DynamicMeshComponent* face;
+        mirror->CreateComponent(face);
+
+        BoxCollider* boxCollider;
+        mirror->CreateComponent(boxCollider);
+        boxCollider->HalfExtents = Float3(2,4,0.05f);
+        StaticBodyComponent* body;
+        mirror->CreateComponent(body);
+
+        Mirror= mirror->GetHandle();
 
         RawMesh rawMesh;
-        rawMesh.CreatePlaneXY(4.0f, 4.0f, Float2(1,-1));
+        rawMesh.CreatePlaneXY(4.0f, 8.0f);
 
         MeshResourceBuilder builder;
         UniqueRef<MeshResource> quadMesh = builder.Build(rawMesh);
         if (quadMesh)
             quadMesh->Upload();
 
-        auto surfaceHandle = GameApplication::sGetResourceManager().CreateResourceWithData<MeshResource>("monitor_surface", std::move(quadMesh));
+        auto surfaceHandle = GameApplication::sGetResourceManager().CreateResourceWithData<MeshResource>("mirror_surface", std::move(quadMesh));
 
         face->SetMesh(surfaceHandle);
         face->SetLocalBoundingBox(rawMesh.CalcBoundingBox());
         
         Ref<MaterialLibrary> matlib = materialMngr.CreateLibrary();
         Material* material = matlib->CreateMaterial("render_to_tex_material");
-        material->SetResource(resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/default.mg"));
+        material->SetResource(resourceMngr.GetResource<MaterialResource>("/Root/default/materials/mg/mirror.mg"));
         material->SetTexture(0, m_OffscreenRenderView->GetTextureHandle());
-        material->SetConstant(0,0.0f);
-        material->SetConstant(1,1.0f);
         face->SetMaterial(material);
     }
     {
@@ -353,45 +346,56 @@ void ExampleApplication::CreateScene()
         CameraComponent* cameraComponent;
         auto cameraHandle = renderCamera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(75);
+        cameraComponent->SetExposure(0);
         m_OffscreenRenderView->SetCamera(cameraHandle);
-        renderCamera->CreateComponent<CameraAnimationComponent>();
+        renderCamera->CreateComponent<CameraMirrorComponent>();
         m_OffscreenRenderView->SetCamera(cameraHandle);
     }
 
-    // Light
+    // Create first point light
     {
-        Float3 lightDirection = Float3(1, -1, -1).Normalized();
-
         GameObjectDesc desc;
+        desc.Name.FromString("Light");
+        desc.Position = Float3(12,2.3f,0);
         desc.IsDynamic = true;
-
         GameObject* object;
         m_World->CreateObject(desc, object);
-        object->SetDirection(lightDirection);
 
-        DirectionalLightComponent* dirlight;
-        object->CreateComponent(dirlight);
-        dirlight->SetIlluminance(20000.0f);
-        dirlight->SetShadowMaxDistance(50);
-        dirlight->SetShadowCascadeResolution(2048);
-        dirlight->SetShadowCascadeOffset(0.0f);
-        dirlight->SetShadowCascadeSplitLambda(0.8f);
+        PunctualLightComponent* light;
+        object->CreateComponent(light);
+        light->SetCastShadow(true);
+        light->SetLumens(300);
     }
 
-    // Boxes
+    // Create second point light
+    {
+        GameObjectDesc desc;
+        desc.Name.FromString("Light");
+        desc.Position = Float3(-12,2.3f,0);
+        desc.IsDynamic = true;
+        GameObject* object;
+        m_World->CreateObject(desc, object);
+
+        PunctualLightComponent* light;
+        object->CreateComponent(light);
+        light->SetCastShadow(true);
+        light->SetLumens(300);
+    }
+
+    // Create boxes
     {
         Float3 positions[] = {
-            Float3( -21, 0, 27 ),
-            Float3( -18, 0, 28 ),
-            Float3( -23.5, 0, 26.5 ),
-            Float3( -21, 3, 27 ) };
+            Float3( 6, 0, -4 ),
+            Float3( 9, 0, -3 ),
+            Float3( 3.5, 0, -4.5 ),
+            Float3( 6, 3, -4 )};
 
         float yaws[] = { 0, 15, 10, 10 };
 
         for (int i = 0; i < HK_ARRAY_SIZE(positions); i++)
         {
             GameObjectDesc desc;
-            desc.Position = positions[i] + Float3(22-33, 0, -28-6);
+            desc.Position = positions[i];
             desc.Rotation.FromAngles(0, Math::Radians(yaws[i]), 0);
             desc.Scale = Float3(1.5f);
             desc.IsDynamic = true;
@@ -408,78 +412,7 @@ void ExampleApplication::CreateScene()
             mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
         }
     }
-
-    // Door
-
-    GameObject* doorTrigger;
-    DoorActivatorComponent* doorActivator;
-    {
-        GameObjectDesc desc;
-        desc.Position = Float3(-512, 120, 0)/32;
-        desc.Scale = Float3(32*6, 240, 112*2)/32.0f;
-        m_World->CreateObject(desc, doorTrigger);
-        TriggerComponent* trigger;
-        doorTrigger->CreateComponent(trigger);
-        trigger->CollisionLayer = CollisionLayer::CharacterOnlyTrigger;
-        doorTrigger->CreateComponent<BoxCollider>();
-        doorTrigger->CreateComponent(doorActivator);
-    }
-    {
-        GameObjectDesc desc;
-        desc.Position = Float3(-512, 120, 56)/32;
-        desc.Scale = Float3(32, 240, 112)/32.0f;
-        desc.IsDynamic = true;
-        GameObject* object;
-        m_World->CreateObject(desc, object);
-        DynamicBodyComponent* phys;
-        object->CreateComponent(phys);
-        phys->SetKinematic(true);
-        object->CreateComponent<BoxCollider>();
-        DynamicMeshComponent* mesh;
-        object->CreateComponent(mesh);
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
-        mesh->SetMaterial(materialMngr.TryGet("grid8"));
-        mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
-
-        DoorComponent* doorComponent;
-        object->CreateComponent(doorComponent);
-        doorComponent->Direction = Float3(0, 0, 1);
-        doorComponent->m_MaxOpenDist = 2.9f;
-        doorComponent->m_OpenSpeed = 4;
-        doorComponent->m_CloseSpeed = 2;
-
-        doorActivator->Parts.Add(Handle32<DoorComponent>(doorComponent->GetHandle()));
-    }
-    {
-        GameObjectDesc desc;
-        desc.Position = Float3(-512, 120, -56)/32;
-        desc.Scale = Float3(32, 240, 112)/32.0f;
-        desc.IsDynamic = true;
-        GameObject* object;
-        m_World->CreateObject(desc, object);
-        DynamicBodyComponent* phys;
-        object->CreateComponent(phys);
-        phys->SetKinematic(true);
-        object->CreateComponent<BoxCollider>();
-        DynamicMeshComponent* mesh;
-        object->CreateComponent(mesh);
-        mesh->SetMesh(resourceMngr.GetResource<MeshResource>("/Root/default/box.mesh"));
-        mesh->SetMaterial(materialMngr.TryGet("grid8"));
-        mesh->SetLocalBoundingBox({Float3(-0.5f),Float3(0.5f)});
-
-        DoorComponent* doorComponent;
-        object->CreateComponent(doorComponent);
-        doorComponent->Direction = Float3(0, 0, -1);
-        doorComponent->m_MaxOpenDist = 2.9f;
-        doorComponent->m_OpenSpeed = 4;
-        doorComponent->m_CloseSpeed = 2;
-
-        doorActivator->Parts.Add(Handle32<DoorComponent>(doorComponent->GetHandle()));
-    }
-
-    m_PlayerSpawnPoints.Add({playerSpawnPosition, playerSpawnRotation});
 }
-
 
 GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const& rotation)
 {
@@ -551,7 +484,7 @@ GameObject* ExampleApplication::CreatePlayer(Float3 const& position, Quat const&
         m_World->CreateObject(desc, camera);
 
         CameraComponent* cameraComponent;
-        camera->CreateComponent(cameraComponent);
+        MainCamera = camera->CreateComponent(cameraComponent);
         cameraComponent->SetFovY(75);
 
         SpringArmComponent* sprintArm;

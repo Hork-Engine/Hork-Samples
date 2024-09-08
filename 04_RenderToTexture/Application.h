@@ -57,13 +57,6 @@ private:
 
     World* m_World{};
 
-    struct SpawnPoint
-    {
-        Float3 Position;
-        Quat Rotation;
-    };
-    Vector<SpawnPoint> m_PlayerSpawnPoints;
-
     Ref<WorldRenderView> m_WorldRenderView;
     Ref<WorldRenderView> m_OffscreenRenderView;
 };
